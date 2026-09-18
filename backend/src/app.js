@@ -54,13 +54,19 @@ app.use(
 );
 
 // Strict CORS: configure explicit allowed origins for Dev, Demo, and Production
+const configuredOrigins = (ENV.FRONTEND_URL || "")
+  .split(",")
+  .map((o) => o.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
 const allowedOrigins = new Set(
   [
-    ENV.FRONTEND_URL,
+    ...configuredOrigins,
     ENV.CLOUDFRONT_URL,
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:5000",
+    "http://13.201.4.62",
   ]
     .filter(Boolean)
     .map((origin) => origin.replace(/\/+$/, ""))
@@ -77,11 +83,13 @@ app.use(
         return callback(null, true);
       }
 
+      // Allow requests matching server public IP or localhost
+      if (/^https?:\/\/(localhost|127\.0\.0\.1|13\.201\.4\.62)(:\d+)?$/.test(normalizedOrigin)) {
+        return callback(null, true);
+      }
+
       if (ENV.NODE_ENV === "development") {
-        // Allow localhost on other ports in development only
-        if (/^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin)) {
-          return callback(null, true);
-        }
+        return callback(null, true);
       }
 
       // Reject unauthorized origins without crashing the server
