@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import api from "../../lib/api.js";
+import { useAdminAuth } from "./AdminAuthContext.jsx";
 
 const AdminDataContext = createContext(null);
 
@@ -246,6 +247,9 @@ export function AdminDataProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const auth = useAdminAuth();
+  const isAuthenticated = Boolean(auth?.isAuthenticated);
+
   // Clean obsolete localStorage database keys
   useEffect(() => {
     try {
@@ -262,88 +266,89 @@ export function AdminDataProvider({ children }) {
     }
   }, []);
 
-  const refreshData = useCallback(async () => {
+  const refreshData = useCallback(async (forcedAdminStatus) => {
+    const adminMode = typeof forcedAdminStatus === "boolean" ? forcedAdminStatus : isAuthenticated;
     setLoading(true);
     setError(null);
     try {
-      const [
-        bks,
-        enqs,
-        gal,
-        port,
-        srv,
-        flm,
-        br,
-        tst,
-        gMeta,
-        cnt,
-        stg,
-        woods,
-        designs,
-        ratios,
-        orders,
-      ] = await Promise.allSettled([
-        api.get("/api/bookings"),
-        api.get("/api/enquiries"),
-        api.get("/api/gallery?all=true"),
-        api.get("/api/portfolio?all=true"),
+      const publicRequests = [
+        api.get(adminMode ? "/api/gallery?all=true" : "/api/gallery"),
+        api.get(adminMode ? "/api/portfolio?all=true" : "/api/portfolio"),
         api.get("/api/services"),
-        api.get("/api/films?all=true"),
-        api.get("/api/branches?all=true"),
-        api.get("/api/testimonials?admin=true"),
-        api.get("/api/testimonials/google-meta"),
+        api.get(adminMode ? "/api/films?all=true" : "/api/films"),
+        api.get(adminMode ? "/api/branches?all=true" : "/api/branches"),
+        api.get(adminMode ? "/api/testimonials?admin=true" : "/api/testimonials"),
         api.get("/api/content"),
-        api.get("/api/settings"),
-        api.get("/api/frames/wood-types?all=true"),
-        api.get("/api/frames/designs?all=true"),
-        api.get("/api/frames/ratios?all=true"),
-        api.get("/api/frames/orders"),
+        api.get(adminMode ? "/api/frames/wood-types?all=true" : "/api/frames/wood-types"),
+        api.get(adminMode ? "/api/frames/designs?all=true" : "/api/frames/designs"),
+        api.get(adminMode ? "/api/frames/ratios?all=true" : "/api/frames/ratios"),
+      ];
+
+      const adminRequests = adminMode
+        ? [
+            api.get("/api/bookings"),
+            api.get("/api/enquiries"),
+            api.get("/api/testimonials/google-meta"),
+            api.get("/api/settings"),
+            api.get("/api/frames/orders"),
+          ]
+        : [];
+
+      const [publicResults, adminResults] = await Promise.all([
+        Promise.allSettled(publicRequests),
+        Promise.allSettled(adminRequests),
       ]);
 
-      if (bks.status === "fulfilled" && Array.isArray(bks.value)) {
-        setBookings(bks.value.map(normalizeBooking));
-      }
-      if (enqs.status === "fulfilled" && Array.isArray(enqs.value)) {
-        setEnquiries(enqs.value.map(normalizeEnquiry));
-      }
-      if (gal.status === "fulfilled" && Array.isArray(gal.value)) {
+      const [gal, port, srv, flm, br, tst, cnt, woods, designs, ratios] = publicResults;
+
+      if (gal && gal.status === "fulfilled" && Array.isArray(gal.value)) {
         setGallery(gal.value.map(normalizeGalleryItem));
       }
-      if (port.status === "fulfilled" && Array.isArray(port.value)) {
+      if (port && port.status === "fulfilled" && Array.isArray(port.value)) {
         setPortfolio(port.value.map(normalizePortfolioItem));
       }
-      if (srv.status === "fulfilled" && Array.isArray(srv.value)) {
+      if (srv && srv.status === "fulfilled" && Array.isArray(srv.value)) {
         setServices(srv.value.map(normalizeService));
       }
-      if (flm.status === "fulfilled" && Array.isArray(flm.value)) {
+      if (flm && flm.status === "fulfilled" && Array.isArray(flm.value)) {
         setFilms(flm.value.map(normalizeFilm));
       }
-      if (br.status === "fulfilled" && Array.isArray(br.value)) {
+      if (br && br.status === "fulfilled" && Array.isArray(br.value)) {
         setBranches(br.value.map(normalizeBranch));
       }
-      if (tst.status === "fulfilled" && Array.isArray(tst.value)) {
+      if (tst && tst.status === "fulfilled" && Array.isArray(tst.value)) {
         setTestimonials(tst.value.map(normalizeTestimonial));
       }
-      if (gMeta.status === "fulfilled" && gMeta.value) {
-        setGoogleReviewsMeta(gMeta.value);
-      }
-      if (cnt.status === "fulfilled" && cnt.value) {
+      if (cnt && cnt.status === "fulfilled" && cnt.value) {
         setWebsiteContent(cnt.value);
       }
-      if (stg.status === "fulfilled" && stg.value) {
-        setSettings(stg.value);
-      }
-      if (woods.status === "fulfilled" && Array.isArray(woods.value)) {
+      if (woods && woods.status === "fulfilled" && Array.isArray(woods.value)) {
         setFrameWoodTypes(woods.value);
       }
-      if (designs.status === "fulfilled" && Array.isArray(designs.value)) {
+      if (designs && designs.status === "fulfilled" && Array.isArray(designs.value)) {
         setFrameDesigns(designs.value);
       }
-      if (ratios.status === "fulfilled" && Array.isArray(ratios.value)) {
+      if (ratios && ratios.status === "fulfilled" && Array.isArray(ratios.value)) {
         setFrameRatios(ratios.value);
       }
-      if (orders.status === "fulfilled" && Array.isArray(orders.value)) {
-        setFrameOrders(orders.value);
+
+      if (adminMode && adminResults.length === 5) {
+        const [bks, enqs, gMeta, stg, orders] = adminResults;
+        if (bks && bks.status === "fulfilled" && Array.isArray(bks.value)) {
+          setBookings(bks.value.map(normalizeBooking));
+        }
+        if (enqs && enqs.status === "fulfilled" && Array.isArray(enqs.value)) {
+          setEnquiries(enqs.value.map(normalizeEnquiry));
+        }
+        if (gMeta && gMeta.status === "fulfilled" && gMeta.value) {
+          setGoogleReviewsMeta(gMeta.value);
+        }
+        if (stg && stg.status === "fulfilled" && stg.value) {
+          setSettings(stg.value);
+        }
+        if (orders && orders.status === "fulfilled" && Array.isArray(orders.value)) {
+          setFrameOrders(orders.value);
+        }
       }
     } catch (err) {
       console.error("Failed to load initial studio data from backend API:", err);
@@ -351,11 +356,11 @@ export function AdminDataProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    refreshData(isAuthenticated);
+  }, [refreshData, isAuthenticated]);
 
   // 1. Bookings
   const addBooking = useCallback(async (booking) => {

@@ -210,3 +210,30 @@ html.lenis, html.lenis body {
   }
 }
 
+/* Accessibility & Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High-contrast focus indicators for accessible keyboard navigation */
+:focus-visible {
+  outline: 2px solid #C9A669 !important;
+  outline-offset: 3px !important;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #C9A669 !important;
+  outline-offset: 2px !important;
+}
+
