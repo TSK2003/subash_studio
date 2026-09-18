@@ -21,6 +21,7 @@ router.get("/health", (req, res) => {
   res.json({
     status: "ok",
     service: "Subash Studio API",
+    version: "1.0.0",
     timestamp: new Date().toISOString(),
   });
 });
