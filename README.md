@@ -149,9 +149,7 @@ The frontend will be available at `http://localhost:5173` and automatically prox
 - **JWT Verification**: Protected admin routes require a valid Bearer token in the `Authorization` header or an `admin_token` cookie.
 - **Rate Limiting**: Configured for authentication endpoints and public inquiry forms to prevent brute-force attacks.
 - **Error Handling**: Centralized error middleware prevents stack traces, internal paths, and SQL/Prisma details from being leaked in production.
-- **Initial Admin User**: Automatically seeded on first startup if the database is empty:
-  - **Email**: `subashstudio009@gmail.com`
-  - **Default Password**: `subash@2026` *(change immediately in production via Admin Settings)*
+- **Initial Admin Provisioning**: When starting on an empty database, provide `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` in your environment. If running locally without an environment password, a secure one-time temporary password is generated and logged to the console for the initial setup.
 
 ---
 

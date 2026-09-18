@@ -2,11 +2,12 @@ import { Router } from "express";
 import * as enquiriesController from "../controllers/enquiriesController.js";
 import { authenticateAdmin } from "../middleware/auth.js";
 import { submissionLimiter } from "../middleware/rateLimiter.js";
+import { validateCreateEnquiry } from "../middleware/validation.js";
 
 const router = Router();
 
-// Public contact form inquiry creation
-router.post("/", submissionLimiter, enquiriesController.createEnquiry);
+// Public contact form inquiry creation with rate-limiting and validation
+router.post("/", submissionLimiter, validateCreateEnquiry, enquiriesController.createEnquiry);
 
 // Protected admin endpoints
 router.get("/", authenticateAdmin, enquiriesController.getAllEnquiries);

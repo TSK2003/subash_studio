@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+import ENV from "../config/env.js";
 import prisma from "../config/prisma.js";
 import { hashPassword } from "../utils/password.js";
 import {
@@ -22,17 +24,40 @@ export async function seedInitialDataIfNeeded() {
     // 1. Seed Admin User if none exists
     const adminCount = await prisma.adminUser.count();
     if (adminCount === 0) {
-      const defaultPasswordHash = await hashPassword("subash@2026");
-      await prisma.adminUser.create({
-        data: {
-          email: "subashstudio009@gmail.com",
-          passwordHash: defaultPasswordHash,
-          name: "Subash",
-          role: "Studio Director & Founder",
-          avatar: "/images/admin/profile.png",
-        },
-      });
-      console.log("✓ Default admin user seeded (subashstudio009@gmail.com)");
+      const adminEmail = ENV.INITIAL_ADMIN_EMAIL || "subashstudio009@gmail.com";
+      let initialPassword = ENV.INITIAL_ADMIN_PASSWORD;
+
+      if (!initialPassword) {
+        if (ENV.NODE_ENV === "production") {
+          console.warn(
+            "[SECURITY NOTICE] No admin user exists and INITIAL_ADMIN_PASSWORD is not set. Set INITIAL_ADMIN_PASSWORD to provision the initial administrator."
+          );
+        } else {
+          initialPassword = crypto.randomBytes(9).toString("base64url");
+          console.log("=================================================");
+          console.log("✓ Initial development admin account provisioned:");
+          console.log(`  Email:    ${adminEmail}`);
+          console.log(`  Password: ${initialPassword}`);
+          console.log("  (Please change password in Admin Settings)");
+          console.log("=================================================");
+        }
+      }
+
+      if (initialPassword) {
+        const passwordHash = await hashPassword(initialPassword);
+        await prisma.adminUser.create({
+          data: {
+            email: adminEmail,
+            passwordHash,
+            name: "Subash",
+            role: "Studio Director & Founder",
+            avatar: "/images/admin/profile.png",
+          },
+        });
+        if (ENV.INITIAL_ADMIN_PASSWORD) {
+          console.log(`✓ Admin user created from environment configuration (${adminEmail})`);
+        }
+      }
     }
 
     // 2. Services

@@ -11,6 +11,7 @@
     "dev": "node src/server.js",
     "build": "prisma generate --schema=prisma/schema.prisma",
     "lint": "node -e \"console.log('Backend syntax clean')\"",
+    "test": "node --test tests/**/*.test.js",
     "prisma:validate": "prisma validate --schema=prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema=prisma/schema.prisma"
   },

@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { upload } from "../middleware/upload.js";
 import { handleUpload } from "../controllers/uploadController.js";
+import { authenticateAdmin } from "../middleware/auth.js";
 
 const router = Router();
 
-// Accept either 'file' or 'image' field name
+// Protected admin upload endpoint — reject unauthenticated uploads
 router.post(
   "/",
+  authenticateAdmin,
   (req, res, next) => {
     upload.single("file")(req, res, (err) => {
       if (err) {

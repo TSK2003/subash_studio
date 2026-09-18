@@ -4,7 +4,8 @@ import ENV from "../config/env.js";
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: ENV.NODE_ENV === "production",
-  sameSite: "lax",
+  sameSite: ENV.NODE_ENV === "production" ? "strict" : "lax",
+  path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 

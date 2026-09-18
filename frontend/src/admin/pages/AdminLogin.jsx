@@ -9,10 +9,9 @@ import {
   EyeOff,
   ArrowRight,
   ShieldCheck,
-  Sparkles,
   AlertCircle,
 } from "lucide-react";
-import { useAdminAuth, getStoredCredentials } from "../context/AdminAuthContext";
+import { useAdminAuth } from "../context/AdminAuthContext";
 import { useToast } from "../context/ToastContext";
 import PremiumPageBackground from "../../components/PremiumPageBackground";
 
@@ -48,13 +47,6 @@ export default function AdminLogin() {
     }
   };
 
-  const handleFillDemo = () => {
-    const credentials = getStoredCredentials();
-    const active = credentials[0] || { email: "admin@subashstudio.com", password: "subash@2026" };
-    setEmail(active.email || "admin@subashstudio.com");
-    setPassword(active.password || "subash@2026");
-    setErrorMsg("");
-  };
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] flex flex-col justify-center items-center p-4 sm:p-6 selection:bg-[#C9A669] selection:text-white relative overflow-hidden font-body">
@@ -147,8 +139,8 @@ export default function AdminLogin() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@subashstudio.com"
-                    autoComplete="off"
+                    placeholder="name@subashstudio.com"
+                    autoComplete="email"
                     className="w-full pl-10 pr-4 py-3 bg-white border border-[#E7E0D2] rounded-xl text-sm text-[#2B2B2B] placeholder:text-[#AAA398] focus:outline-none focus:border-[#C9A669] transition-all shadow-sm"
                   />
                 </div>
@@ -160,17 +152,9 @@ export default function AdminLogin() {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-[#6F6A62]">
                     Password
                   </label>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      alert(
-                        "Default admin credentials: admin@subashstudio.com / subash@2026. You can update your password in Settings → Security & Password."
-                      )
-                    }
-                    className="text-xs text-[#9C7B3D] hover:underline font-medium"
-                  >
-                    Forgot Password?
-                  </button>
+                  <span className="text-xs text-[#8E867B]">
+                    Authorized Staff Only
+                  </span>
                 </div>
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8E867B]" />
@@ -209,14 +193,6 @@ export default function AdminLogin() {
                   />
                   <span>Remember my session</span>
                 </label>
-                <button
-                  type="button"
-                  onClick={handleFillDemo}
-                  className="text-xs text-[#9C7B3D] hover:text-[#7A5F28] font-semibold flex items-center gap-1"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Fill Demo Login</span>
-                </button>
               </div>
 
               {/* Submit Button */}

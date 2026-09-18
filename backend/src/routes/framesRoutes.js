@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as framesController from "../controllers/framesController.js";
 import { authenticateAdmin } from "../middleware/auth.js";
 import { submissionLimiter } from "../middleware/rateLimiter.js";
+import { validateCreateFrameOrder } from "../middleware/validation.js";
 
 const router = Router();
 
@@ -36,7 +37,7 @@ router.patch("/ratios/:id/toggle-status", authenticateAdmin, framesController.to
 // ORDERS
 // ==========================================
 // Public order submission from /frames atelier
-router.post("/orders", submissionLimiter, framesController.createOrder);
+router.post("/orders", submissionLimiter, validateCreateFrameOrder, framesController.createOrder);
 
 // Protected admin order management
 router.get("/orders", authenticateAdmin, framesController.getOrders);

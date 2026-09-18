@@ -15,46 +15,84 @@ const app = express();
 // Trust reverse proxies (AWS CloudFront / ALB / EC2 Nginx)
 app.set("trust proxy", 1);
 
-// Security Headers
+// Security Headers with custom CSP that preserves all photography and media requirements
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
-    contentSecurityPolicy: false, // Managed by CloudFront or custom Nginx if needed
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+        mediaSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+        frameSrc: [
+          "'self'",
+          "https://www.youtube.com",
+          "https://youtube.com",
+          "https://www.google.com",
+          "https://maps.google.com",
+        ],
+        connectSrc: ["'self'", "https:", "http:"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+      },
+    },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    xContentTypeOptions: true,
   })
 );
 
-// Strict CORS
-const allowedOrigins = [
-  ENV.FRONTEND_URL,
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-].filter(Boolean);
+// Strict CORS: configure explicit allowed origins for Dev, Demo, and Production
+const allowedOrigins = new Set(
+  [
+    ENV.FRONTEND_URL,
+    ENV.CLOUDFRONT_URL,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5000",
+  ]
+    .filter(Boolean)
+    .map((origin) => origin.replace(/\/+$/, ""))
+);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or same-origin)
+      // Allow requests with no origin (mobile apps, server-to-server, curl, same-origin)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || ENV.NODE_ENV === "development") {
+
+      const normalizedOrigin = origin.replace(/\/+$/, "");
+      if (allowedOrigins.has(normalizedOrigin)) {
         return callback(null, true);
       }
-      callback(new Error(`CORS origin '${origin}' not allowed.`));
+
+      if (ENV.NODE_ENV === "development") {
+        // Allow localhost on other ports in development only
+        if (/^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin)) {
+          return callback(null, true);
+        }
+      }
+
+      // Reject unauthorized origins without crashing the server
+      return callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-Request-Id"],
   })
 );
 
-// Standard parsers
+// Request parsing with safe payload limits
 app.use(cookieParser());
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 
-// Rate Limiting
+// Rate Limiting on API endpoints
 app.use("/api", generalLimiter);
 
-// Serve static local uploads if present
+// Serve static local uploads if present (development / fallback)
 const uploadsDir = path.resolve(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });

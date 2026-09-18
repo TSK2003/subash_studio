@@ -4,16 +4,6 @@ import api, { setAuthToken, clearAuthToken, getAuthToken } from "../../lib/api";
 
 const AdminAuthContext = createContext(null);
 
-export function getStoredCredentials() {
-  return [
-    {
-      email: "subashstudio009@gmail.com",
-      password: "subash@2026",
-      name: "Subash",
-      role: "Studio Director & Founder",
-    },
-  ];
-}
 
 export function AdminAuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(getAuthToken()));
