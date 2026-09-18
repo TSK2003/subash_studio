@@ -1,0 +1,16 @@
+{
+  "name": "subash-studio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "build": "npm run build --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "build:backend": "npm run build --prefix backend",
+    "lint": "npm run lint --prefix frontend",
+    "prisma:validate": "npm run prisma:validate --prefix backend",
+    "prisma:generate": "npm run prisma:generate --prefix backend"
+  }
+}

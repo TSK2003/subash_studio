@@ -1,0 +1,330 @@
+// Prisma schema for Subash Studio
+// Strictly based on the migration audit of client-side localStorage and application state.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum BookingStatus {
+  NEW
+  CONTACTED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum EnquiryStatus {
+  NEW
+  READ
+  CONTACTED
+  CLOSED
+}
+
+enum FrameOrderStatus {
+  NEW
+  CONFIRMED
+  IN_PRODUCTION
+  READY_FOR_PICKUP
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+/// Admin authentication & account management
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("Studio Director & Founder")
+  avatar       String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+/// Photography & cinematography event bookings
+model Booking {
+  id                        String        @id
+  customerName              String
+  clientName                String?
+  phone                     String
+  email                     String
+  eventType                 String
+  eventDate                 String
+  location                  String
+  numberOfDays              String        @default("1 Day")
+  requiredService           String
+  photographyRequirement    String?       @db.Text
+  cinematographyRequirement String?       @db.Text
+  budget                    String?
+  branch                    String        @default("Tirunelveli")
+  status                    BookingStatus @default(NEW)
+  adminNotes                String?       @db.Text
+  createdAt                 String
+  updatedAt                 DateTime      @updatedAt
+
+  @@index([status])
+  @@index([eventDate])
+  @@map("bookings")
+}
+
+/// Incoming client enquiries from public website contact form
+model Enquiry {
+  id                String        @id
+  clientName        String
+  phone             String
+  email             String
+  interestedService String
+  eventDate         String?
+  location          String?
+  message           String        @db.Text
+  status            EnquiryStatus @default(NEW)
+  receivedDate      String
+  createdAt         String
+  updatedAt         DateTime      @updatedAt
+
+  @@index([status])
+  @@map("enquiries")
+}
+
+/// Curated public gallery showcase
+model GalleryItem {
+  id        String   @id
+  title     String
+  category  String
+  imageUrl  String   @db.Text
+  aspect    String   @default("landscape")
+  featured  Boolean  @default(false)
+  published Boolean  @default(true)
+  createdAt String
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([published])
+  @@map("gallery_items")
+}
+
+/// Narrative portfolio stories and client showcases
+model PortfolioProject {
+  id          String   @id
+  title       String
+  subtitle    String?
+  category    String
+  coverImage  String   @db.Text
+  eventDate   String?
+  location    String?
+  description String   @db.Text
+  images      Json     @default("[]")
+  featured    Boolean  @default(false)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([published])
+  @@map("portfolio_projects")
+}
+
+/// Studio photography services & pricing packages
+model Service {
+  id            String   @id
+  name          String   @unique
+  slug          String   @unique
+  image         String   @db.Text
+  shortDesc     String   @db.Text
+  fullDesc      String?  @db.Text
+  startingPrice String
+  features      Json     @default("[]")
+  status        String   @default("Active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("services")
+}
+
+/// Cinematic wedding & event video reels
+model Film {
+  id          String   @id
+  title       String
+  category    String
+  videoUrl    String
+  duration    String   @default("Highlight")
+  thumbnail   String   @db.Text
+  description String?  @db.Text
+  featured    Boolean  @default(false)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("films")
+}
+
+/// Physical studio branches, consultation lounges & atelier locations
+model Branch {
+  id        String   @id
+  name      String
+  city      String
+  tag       String
+  address   String   @db.Text
+  phone     String
+  whatsapp  String
+  email     String
+  mapsUrl   String   @db.Text
+  embedUrl  String   @db.Text
+  hours     String
+  image     String   @db.Text
+  manager   String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("branches")
+}
+
+/// Client reviews and imported Google Business reviews
+model Testimonial {
+  id               String   @id
+  customerName     String
+  customerRole     String   @default("Client")
+  customerImage    String?  @db.Text
+  review           String   @db.Text
+  rating           Int      @default(5)
+  eventType        String?
+  source           String   @default("manual") // "manual" | "google"
+  approved         Boolean  @default(true)
+  featured         Boolean  @default(false)
+  hidden           Boolean  @default(false)
+  syncStatus       String   @default("approved")
+  date             String
+  googleReviewId   String?  @unique
+  googleUpdateTime String?
+  googleReply      String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([approved, hidden])
+  @@map("testimonials")
+}
+
+/// Google Business Profile review sync metadata
+model GoogleReviewsMeta {
+  id                 String    @id @default("singleton")
+  lastSynced         DateTime?
+  totalGoogleReviews Int       @default(0)
+  accountName        String    @default("Subash Studio")
+  updatedAt          DateTime  @updatedAt
+
+  @@map("google_reviews_meta")
+}
+
+/// Custom frame atelier wood varieties
+model FrameWoodType {
+  id          String   @id
+  name        String   @unique
+  basePrice   Int
+  description String   @db.Text
+  grain       String
+  image       String   @db.Text
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("frame_wood_types")
+}
+
+/// Custom frame atelier molding profiles & border designs
+model FrameDesign {
+  id              String   @id
+  name            String   @unique
+  additionalPrice Int      @default(0)
+  description     String   @db.Text
+  image           String   @db.Text
+  compatibleWoods Json     @default("[\"All\"]")
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("frame_designs")
+}
+
+/// Custom frame aspect ratios & dimension specs
+model FrameRatio {
+  id         String   @id
+  name       String   @unique
+  label      String
+  dimensions String
+  price      Int
+  aspect     String
+  popular    Boolean  @default(false)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("frame_ratios")
+}
+
+/// Customer customized frame orders (including snapshot prices for historical immutability)
+model FrameOrder {
+  id                  String           @id
+  customerName        String
+  phone               String
+  whatsapp            String?
+  email               String
+  deliveryType        String
+  address             String           @db.Text
+  notes               String?          @db.Text
+  woodType            String
+  woodPrice           Int
+  frameDesign         String
+  designPrice         Int
+  frameRatio          String
+  ratioPrice          Int
+  orientation         String
+  quantity            Int              @default(1)
+  unitPrice           Int
+  totalAmount         Int
+  photoUrl            String           @db.Text
+  photoName           String
+  customizationParams Json
+  items               Json?
+  status              FrameOrderStatus @default(NEW)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([status])
+  @@map("frame_orders")
+}
+
+/// Editorial website copy for Home, About, and Contact
+model WebsiteContent {
+  section   String   @id // "home" | "about" | "contact"
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@map("website_content")
+}
+
+/// Studio settings, profile information, and notification preferences
+model StudioSettings {
+  section   String   @id // "profile" | "studio" | "notifications"
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@map("studio_settings")
+}
