@@ -83,8 +83,8 @@ app.use(
         return callback(null, true);
       }
 
-      // Allow requests matching server public IP or localhost
-      if (/^https?:\/\/(localhost|127\.0\.0\.1|13\.201\.4\.62)(:\d+)?$/.test(normalizedOrigin)) {
+      // Allow requests matching server public IP, SSL hostnames, or localhost
+      if (/^https?:\/\/(localhost|127\.0\.0\.1|13\.201\.4\.62|.*\.sslip\.io|.*\.nip\.io)(:\d+)?$/.test(normalizedOrigin)) {
         return callback(null, true);
       }
 
