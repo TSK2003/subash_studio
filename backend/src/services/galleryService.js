@@ -1,7 +1,48 @@
+import crypto from "node:crypto";
 import prisma from "../config/prisma.js";
 
-export async function getAllGallery(includeUnpublished = false) {
-  const where = includeUnpublished ? {} : { published: true };
+export async function getAllGallery(options = {}) {
+  // Support both boolean includeUnpublished and object options for backward compatibility
+  const isObject = typeof options === "object" && options !== null;
+  const includeUnpublished = isObject ? Boolean(options.includeUnpublished || options.all) : Boolean(options);
+  const category = isObject ? options.category : null;
+  const page = isObject ? options.page : undefined;
+  const limit = isObject ? options.limit : undefined;
+
+  const where = {};
+  if (!includeUnpublished) {
+    where.published = true;
+  }
+  if (category && category !== "ALL" && category !== "all") {
+    where.category = category;
+  }
+
+  if (page !== undefined || limit !== undefined) {
+    const pageNum = Math.max(1, Number(page) || 1);
+    const take = Math.min(100, Math.max(1, Number(limit) || 30));
+    const skip = (pageNum - 1) * take;
+
+    const [items, total] = await Promise.all([
+      prisma.galleryItem.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.galleryItem.count({ where }),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: take,
+        totalPages: Math.ceil(total / take),
+      },
+    };
+  }
+
   return prisma.galleryItem.findMany({
     where,
     orderBy: { createdAt: "desc" },
@@ -9,14 +50,15 @@ export async function getAllGallery(includeUnpublished = false) {
 }
 
 export async function createGalleryItem(data) {
-  const id = data.id || `GAL-${Math.floor(100 + Math.random() * 900)}`;
+  const id =
+    data.id || `GAL-${Date.now()}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
   const title = (data.title || data.caption || "Subash Studio Gallery").trim();
   const category = data.category || "Wedding";
   const imageUrl = (data.imageUrl || data.src || "").trim();
   const aspect = data.aspect || "landscape";
   const featured = Boolean(data.featured);
   const published = data.published !== false;
-  const createdAt = data.createdAt || new Date().toISOString().split("T")[0];
+  const createdAt = data.createdAt ? new Date(data.createdAt) : new Date();
 
   return prisma.galleryItem.create({
     data: {
@@ -55,25 +97,5 @@ export async function updateGalleryItem(id, data) {
 export async function deleteGalleryItem(id) {
   return prisma.galleryItem.delete({
     where: { id },
-  });
-}
-
-export async function toggleGalleryFeatured(id) {
-  const item = await prisma.galleryItem.findUnique({ where: { id } });
-  if (!item) throw new Error("Gallery item not found.");
-
-  return prisma.galleryItem.update({
-    where: { id },
-    data: { featured: !item.featured },
-  });
-}
-
-export async function toggleGalleryPublished(id) {
-  const item = await prisma.galleryItem.findUnique({ where: { id } });
-  if (!item) throw new Error("Gallery item not found.");
-
-  return prisma.galleryItem.update({
-    where: { id },
-    data: { published: !item.published },
   });
 }

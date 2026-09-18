@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import prisma from "../config/prisma.js";
 
 const VALID_STATUSES = ["NEW", "CONTACTED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
@@ -8,8 +9,47 @@ function normalizeStatus(status) {
   return VALID_STATUSES.includes(upper) ? upper : "NEW";
 }
 
-export async function getAllBookings() {
+export async function getAllBookings({ page, limit, status, search } = {}) {
+  const where = {};
+  if (status && status !== "ALL") {
+    where.status = normalizeStatus(status);
+  }
+  if (search) {
+    where.OR = [
+      { customerName: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { phone: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  if (page !== undefined || limit !== undefined) {
+    const pageNum = Math.max(1, Number(page) || 1);
+    const take = Math.min(100, Math.max(1, Number(limit) || 20));
+    const skip = (pageNum - 1) * take;
+
+    const [items, total] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.booking.count({ where }),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: take,
+        totalPages: Math.ceil(total / take),
+      },
+    };
+  }
+
   return prisma.booking.findMany({
+    where,
     orderBy: { createdAt: "desc" },
   });
 }
@@ -21,7 +61,8 @@ export async function getBookingById(id) {
 }
 
 export async function createBooking(data) {
-  const id = data.id || `BK-${Math.floor(1000 + Math.random() * 9000)}`;
+  const id =
+    data.id || `BK-${Date.now()}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
   const customerName = (data.customerName || data.clientName || "Valued Client").trim();
   const phone = (data.phone || "").trim();
   const email = (data.email || "").trim();
@@ -31,7 +72,7 @@ export async function createBooking(data) {
   const numberOfDays = data.numberOfDays || "1 Day";
   const requiredService = data.requiredService || data.service || "Wedding Photography";
   const status = normalizeStatus(data.status);
-  const createdAt = data.createdAt || new Date().toISOString().split("T")[0];
+  const createdAt = data.createdAt ? new Date(data.createdAt) : new Date();
 
   return prisma.booking.create({
     data: {

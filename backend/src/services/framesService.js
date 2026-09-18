@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import prisma from "../config/prisma.js";
 
 // ==========================================
@@ -198,8 +199,48 @@ function normalizeOrderStatus(status) {
   return VALID_ORDER_STATUSES.includes(upper) ? upper : "NEW";
 }
 
-export async function getOrders() {
+export async function getOrders({ page, limit, status, search } = {}) {
+  const where = {};
+  if (status && status !== "ALL") {
+    where.status = normalizeOrderStatus(status);
+  }
+  if (search) {
+    where.OR = [
+      { customerName: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { phone: { contains: search, mode: "insensitive" } },
+      { id: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  if (page !== undefined || limit !== undefined) {
+    const pageNum = Math.max(1, Number(page) || 1);
+    const take = Math.min(100, Math.max(1, Number(limit) || 20));
+    const skip = (pageNum - 1) * take;
+
+    const [items, total] = await Promise.all([
+      prisma.frameOrder.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.frameOrder.count({ where }),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: take,
+        totalPages: Math.ceil(total / take),
+      },
+    };
+  }
+
   return prisma.frameOrder.findMany({
+    where,
     orderBy: { createdAt: "desc" },
   });
 }
@@ -212,8 +253,8 @@ export async function getOrderById(id) {
 
 export async function createOrder(data) {
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const rand = Math.floor(100 + Math.random() * 900);
-  const id = data.id || `SS-FR-${today}-${rand}`;
+  const id =
+    data.id || `SS-FR-${today}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
 
   const customerName = (data.customerName || data.name || "Client").trim();
   const phone = (data.phone || "").trim();

@@ -3,7 +3,12 @@ import * as galleryService from "../services/galleryService.js";
 export async function getAllGallery(req, res, next) {
   try {
     const includeUnpublished = req.query.all === "true" || Boolean(req.user);
-    const gallery = await galleryService.getAllGallery(includeUnpublished);
+    const gallery = await galleryService.getAllGallery({
+      includeUnpublished,
+      category: req.query.category,
+      page: req.query.page,
+      limit: req.query.limit,
+    });
     res.json(gallery);
   } catch (err) {
     next(err);

@@ -2,7 +2,7 @@ import * as enquiriesService from "../services/enquiriesService.js";
 
 export async function getAllEnquiries(req, res, next) {
   try {
-    const enquiries = await enquiriesService.getAllEnquiries();
+    const enquiries = await enquiriesService.getAllEnquiries(req.query);
     res.json(enquiries);
   } catch (err) {
     next(err);

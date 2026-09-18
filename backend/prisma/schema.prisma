@@ -76,11 +76,12 @@ model Booking {
   branch                    String        @default("Tirunelveli")
   status                    BookingStatus @default(NEW)
   adminNotes                String?       @db.Text
-  createdAt                 String
+  createdAt                 DateTime      @default(now())
   updatedAt                 DateTime      @updatedAt
 
   @@index([status])
   @@index([eventDate])
+  @@index([createdAt])
   @@map("bookings")
 }
 
@@ -96,10 +97,11 @@ model Enquiry {
   message           String        @db.Text
   status            EnquiryStatus @default(NEW)
   receivedDate      String
-  createdAt         String
+  createdAt                 DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
   @@index([status])
+  @@index([createdAt])
   @@map("enquiries")
 }
 
@@ -112,11 +114,12 @@ model GalleryItem {
   aspect    String   @default("landscape")
   featured  Boolean  @default(false)
   published Boolean  @default(true)
-  createdAt String
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category])
   @@index([published])
+  @@index([createdAt])
   @@map("gallery_items")
 }
 
@@ -308,6 +311,7 @@ model FrameOrder {
   updatedAt           DateTime         @updatedAt
 
   @@index([status])
+  @@index([createdAt])
   @@map("frame_orders")
 }
 

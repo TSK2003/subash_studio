@@ -152,7 +152,7 @@ export async function toggleRatio(req, res, next) {
 // ==========================================
 export async function getOrders(req, res, next) {
   try {
-    const orders = await framesService.getOrders();
+    const orders = await framesService.getOrders(req.query);
     res.json(orders);
   } catch (err) {
     next(err);

@@ -12,6 +12,7 @@
     "lint": "npm run lint --prefix frontend",
     "test": "npm run test --prefix backend",
     "prisma:validate": "npm run prisma:validate --prefix backend",
-    "prisma:generate": "npm run prisma:generate --prefix backend"
+    "prisma:generate": "npm run prisma:generate --prefix backend",
+    "prisma:migrate:deploy": "npm run prisma:migrate:deploy --prefix backend"
   }
 }

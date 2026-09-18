@@ -190,7 +190,7 @@ export async function seedInitialDataIfNeeded() {
             aspect: item.aspect || "landscape",
             featured: Boolean(item.featured),
             published: item.published !== false,
-            createdAt: item.createdAt || new Date().toISOString().split("T")[0],
+            createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
           },
         });
       }
@@ -322,7 +322,7 @@ export async function seedInitialDataIfNeeded() {
             branch: item.branch || "Tirunelveli",
             status: "NEW",
             adminNotes: item.adminNotes || null,
-            createdAt: item.createdAt || new Date().toISOString().split("T")[0],
+            createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
           },
         });
       }
@@ -345,7 +345,7 @@ export async function seedInitialDataIfNeeded() {
             message: item.message || item.notes || "",
             status: "NEW",
             receivedDate: item.receivedDate || new Date().toISOString().split("T")[0],
-            createdAt: item.createdAt || new Date().toISOString().split("T")[0],
+            createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
           },
         });
       }

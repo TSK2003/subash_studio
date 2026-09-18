@@ -2,7 +2,7 @@ import * as bookingsService from "../services/bookingsService.js";
 
 export async function getAllBookings(req, res, next) {
   try {
-    const bookings = await bookingsService.getAllBookings();
+    const bookings = await bookingsService.getAllBookings(req.query);
     res.json(bookings);
   } catch (err) {
     next(err);
