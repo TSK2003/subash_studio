@@ -1,0 +1,36 @@
+name: Deploy Subash Studio to AWS EC2
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH into EC2 and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Starting deployment on EC2..."
+            cd /var/www/subash-studio
+            git reset --hard HEAD
+            git pull origin main
+
+            echo "Updating backend dependencies & database schema..."
+            cd /var/www/subash-studio/backend
+            npm install
+            npx prisma db push
+            pm2 restart subash-backend
+
+            echo "Building frontend bundle..."
+            cd /var/www/subash-studio/frontend
+            npm install
+            npm run build
+
+            echo "Deployment completed successfully!"
