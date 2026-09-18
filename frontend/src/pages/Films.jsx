@@ -20,7 +20,7 @@ export default function Films() {
     title: f.title || "Subash Studio Film",
     type: f.type || f.category || "Wedding Film",
     duration: f.duration || "Highlight",
-    poster: f.posterImage || f.thumbnail || f.image || (f.seed ? img(f.seed, 900, 506) : "/public/images/films.png"),
+    poster: f.posterImage || f.thumbnail || f.image || (f.seed ? img(f.seed, 900, 506) : "/images/films.png"),
     videoUrl: f.videoUrl || f.youtubeUrl || "",
   }));
 
@@ -29,7 +29,10 @@ export default function Films() {
       <Seo title="Films" description="Cinematic wedding films and showreels by SUBASH STUDIO." />
 
       <section className="relative h-[68vh] min-h-[460px] flex items-center justify-center overflow-hidden">
-        <img src="/images/films.png" alt="A still from a SUBASH STUDIO wedding film" className="absolute inset-0 w-full h-full object-cover" />
+        <picture>
+          <source srcSet="/images/films.webp" type="image/webp" />
+          <img src="/images/films.png" alt="A still from a SUBASH STUDIO wedding film" fetchPriority="high" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
+        </picture>
         <div className="absolute inset-0 bg-ink/65" />
         <div className="relative text-center px-6">
           <p className="eyebrow text-gold-light mb-5">Motion Studio</p>

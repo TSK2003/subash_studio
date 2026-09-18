@@ -29,7 +29,10 @@ export default function About() {
       <Seo title="About" description="The story of SUBASH STUDIO — from a single room in Mylapore to three branches across Tamil Nadu." />
 
       <section className="relative h-[62vh] min-h-[420px] flex items-center justify-center overflow-hidden">
-        <img src="/images/about.png" alt="The SUBASH STUDIO team at work" className="absolute inset-0 w-full h-full object-cover" />
+        <picture>
+          <source srcSet="/images/about.webp" type="image/webp" />
+          <img src="/images/about.png" alt="The SUBASH STUDIO team at work" fetchPriority="high" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
+        </picture>
         <div className="absolute inset-0 bg-ink/60" />
         <div className="relative text-center px-6">
           <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }} className="eyebrow text-gold-light mb-5">
@@ -44,7 +47,7 @@ export default function About() {
       <section className="max-w-7xl mx-auto px-6 lg:px-10 py-28 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <Reveal>
           <div className="rounded-md overflow-hidden shadow-soft aspect-[4/5]">
-            <img src="/images/storefront.jpg" alt="Founder of SUBASH STUDIO reviewing photographs" className="w-full h-full object-cover" />
+            <img src="/images/storefront.jpg" alt="Founder of SUBASH STUDIO reviewing photographs" loading="lazy" decoding="async" className="w-full h-full object-cover" />
           </div>
         </Reveal>
         <div>

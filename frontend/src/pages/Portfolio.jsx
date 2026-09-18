@@ -94,17 +94,22 @@ export default function Portfolio() {
 
         {/* YOUR OWN HERO IMAGE */}
 
-        <img
-          src="/images/portfolio/portfolio.png"
-          alt="SUBASH STUDIO Portfolio"
-          className="
-            absolute
-            inset-0
-            w-full
-            h-full
-            object-cover
-          "
-        />
+        <picture>
+          <source srcSet="/images/portfolio/portfolio.webp" type="image/webp" />
+          <img
+            src="/images/portfolio/portfolio.png"
+            alt="SUBASH STUDIO Portfolio"
+            fetchPriority="high"
+            decoding="async"
+            className="
+              absolute
+              inset-0
+              w-full
+              h-full
+              object-cover
+            "
+          />
+        </picture>
 
 
         {/* Dark Gradient */}
