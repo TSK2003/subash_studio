@@ -16,12 +16,14 @@ export function centralizedErrorHandler(err, req, res, next) {
     message = "An unexpected server error occurred. Please try again later.";
   }
 
-  // Log error on server
-  console.error(`[Error] ${req.method} ${req.originalUrl}:`, err);
+  // Log error on server with request correlation ID
+  console.error(`[Error][${req?.id || "N/A"}] ${req.method} ${req.originalUrl}:`, err);
 
   res.status(statusCode).json({
     success: false,
     error: message,
+    requestId: req?.id || null,
     ...(ENV.NODE_ENV === "development" && { stack: err.stack }),
   });
 }
+

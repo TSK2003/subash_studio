@@ -1,14 +1,14 @@
-name: CI
+name: CI & Hardening Pipeline
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, 'fix/**', 'release/**']
   pull_request:
     branches: [main, master]
 
 jobs:
   validate:
-    name: Build & Validate
+    name: Build, Lint & Automated Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: |
             frontend/package.json
@@ -36,17 +36,21 @@ jobs:
         working-directory: ./frontend
         run: npm run lint
 
-      - name: Build Frontend
+      - name: Build Frontend (Production Rollup & Code Splitting)
         working-directory: ./frontend
         run: npm run build
 
       - name: Validate Prisma Schema
         working-directory: ./backend
-        run: npx prisma validate
+        run: npx prisma validate --schema=prisma/schema.prisma
 
       - name: Generate Prisma Client
         working-directory: ./backend
-        run: npx prisma generate
+        run: npx prisma generate --schema=prisma/schema.prisma
+
+      - name: Run Backend Automated Test Suite
+        working-directory: ./backend
+        run: npm test
 
       - name: Validate Backend Syntax
         working-directory: ./backend

@@ -4,6 +4,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import path from "node:path";
 import fs from "node:fs";
+import crypto from "node:crypto";
 
 import ENV from "./config/env.js";
 import apiRoutes from "./routes/index.js";
@@ -14,6 +15,14 @@ const app = express();
 
 // Trust reverse proxies (AWS CloudFront / ALB / EC2 Nginx)
 app.set("trust proxy", 1);
+
+// Correlation ID & Request Tracking (AWS CloudWatch Observability)
+app.use((req, res, next) => {
+  const requestId = req.headers["x-request-id"] || crypto.randomUUID();
+  req.id = requestId;
+  res.setHeader("X-Request-Id", requestId);
+  next();
+});
 
 // Security Headers with custom CSP that preserves all photography and media requirements
 app.use(
