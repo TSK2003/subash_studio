@@ -3,9 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "prisma": {
-    "schema": "prisma/schema.prisma"
-  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "node src/server.js",
