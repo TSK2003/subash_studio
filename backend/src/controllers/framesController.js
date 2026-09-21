@@ -194,17 +194,11 @@ export async function createOrder(req, res, next) {
 
     res.status(201).json(order);
   } catch (err) {
-    console.error("[FramesController] Order creation error:", err.message);
-    if (
-      err.message.includes("validation") ||
-      err.message.includes("recognized") ||
-      err.message.includes("must contain") ||
-      err.message.includes("unavailable") ||
-      err.message.includes("Invalid")
-    ) {
-      return res.status(400).json({ error: err.message, message: err.message });
-    }
-    next(err);
+    console.error("[FramesController] Order creation error:", err.message || err);
+    return res.status(400).json({
+      error: err.message || "Failed to create frame order.",
+      message: err.message || "Failed to create frame order.",
+    });
   }
 }
 

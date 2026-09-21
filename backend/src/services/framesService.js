@@ -292,8 +292,11 @@ export async function getOrderById(id) {
 
 export async function createOrder(data) {
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const id =
-    data.id || `SS-FR-${today}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+  let id = data.id && typeof data.id === "string" ? data.id.trim() : null;
+  // If no ID or if this order ID already exists in PostgreSQL, generate a fresh collision-free ID
+  if (!id || (await prisma.frameOrder.findUnique({ where: { id } }))) {
+    id = `SS-FR-${today}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+  }
 
   const customerName = (data.customerName || data.name || "Client").trim();
   const phone = (data.phone || "").trim();
@@ -395,7 +398,8 @@ export async function createOrder(data) {
     const quantity = Math.max(1, parseInt(raw.quantity, 10) || 1);
     const totalAmount = unitPrice * quantity;
 
-    const itemId = raw.id || `${id}-item-${itemIndex}`;
+    // Guaranteed collision-free unique ID scoped to this specific order
+    const itemId = `${id}-item-${itemIndex}-${crypto.randomBytes(3).toString("hex")}`;
     const orientation = raw.orientation || "portrait";
     const photoUrl = (raw.photoUrl || "").trim();
     const photoName = (raw.photoName || "photo.jpg").trim();

@@ -602,6 +602,8 @@ export default function OrderFrames() {
     } catch (err) {
       console.error("[Order Checkout Error]:", err);
       const errMsg =
+        err.data?.error ||
+        err.data?.message ||
         err.response?.data?.error ||
         err.response?.data?.message ||
         err.message ||
