@@ -3,12 +3,16 @@ import ENV from "./config/env.js";
 import prisma from "./config/prisma.js";
 import { seedInitialDataIfNeeded } from "./services/seedService.js";
 import { backfillRecentNotificationsIfEmpty } from "./services/notificationService.js";
+import { ensureDatabaseTablesExist } from "./services/dbInitService.js";
 
 async function startServer() {
   try {
     // Check database connection
     await prisma.$connect();
     console.log("✓ Connected to PostgreSQL database via Prisma");
+
+    // Automatically ensure auxiliary schema tables exist in PostgreSQL
+    await ensureDatabaseTablesExist();
 
     // Automatically seed default admin and catalog if empty
     await seedInitialDataIfNeeded();

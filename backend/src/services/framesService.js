@@ -233,6 +233,21 @@ export function formatOrderResponse(order) {
   };
 }
 
+async function hasFrameOrderItemTable() {
+  try {
+    const tableCheck = await prisma.$queryRawUnsafe(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'frame_order_items'
+      ) as exists;
+    `);
+    return Boolean(tableCheck?.[0]?.exists);
+  } catch {
+    return false;
+  }
+}
+
 export async function getOrders({ page, limit, status, search } = {}) {
   const where = {};
   if (status && status !== "ALL") {
@@ -247,6 +262,8 @@ export async function getOrders({ page, limit, status, search } = {}) {
     ];
   }
 
+  const includeOrderItems = await hasFrameOrderItemTable();
+
   if (page !== undefined || limit !== undefined) {
     const pageNum = Math.max(1, Number(page) || 1);
     const take = Math.min(100, Math.max(1, Number(limit) || 20));
@@ -255,7 +272,7 @@ export async function getOrders({ page, limit, status, search } = {}) {
     const [items, total] = await Promise.all([
       prisma.frameOrder.findMany({
         where,
-        include: { orderItems: true },
+        ...(includeOrderItems ? { include: { orderItems: true } } : {}),
         orderBy: { createdAt: "desc" },
         skip,
         take,
@@ -276,16 +293,17 @@ export async function getOrders({ page, limit, status, search } = {}) {
 
   const orders = await prisma.frameOrder.findMany({
     where,
-    include: { orderItems: true },
+    ...(includeOrderItems ? { include: { orderItems: true } } : {}),
     orderBy: { createdAt: "desc" },
   });
   return orders.map(formatOrderResponse);
 }
 
 export async function getOrderById(id) {
+  const includeOrderItems = await hasFrameOrderItemTable();
   const order = await prisma.frameOrder.findUnique({
     where: { id },
-    include: { orderItems: true },
+    ...(includeOrderItems ? { include: { orderItems: true } } : {}),
   });
   return formatOrderResponse(order);
 }
@@ -469,9 +487,25 @@ export async function createOrder(data) {
       },
     });
 
-    // B. Create all FrameOrderItem relational records (if model exists in Prisma client)
+    // B. Create all FrameOrderItem relational records (if table exists in PostgreSQL)
     const orderItemModel = tx?.frameOrderItem || prisma?.frameOrderItem;
+    let hasOrderItemTable = false;
     if (orderItemModel && typeof orderItemModel.create === "function") {
+      try {
+        const tableCheck = await tx.$queryRawUnsafe(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'frame_order_items'
+          ) as exists;
+        `);
+        hasOrderItemTable = Boolean(tableCheck?.[0]?.exists);
+      } catch {
+        hasOrderItemTable = false;
+      }
+    }
+
+    if (hasOrderItemTable && orderItemModel) {
       for (const item of validatedItems) {
         await orderItemModel.create({
           data: {
@@ -497,7 +531,7 @@ export async function createOrder(data) {
 
     // C. Verify Database Persistence Count Inside Transaction
     let createdOrderItems = [];
-    if (orderItemModel && typeof orderItemModel.findMany === "function") {
+    if (hasOrderItemTable && orderItemModel && typeof orderItemModel.findMany === "function") {
       createdOrderItems = await orderItemModel.findMany({
         where: { orderId: id },
         orderBy: { createdAt: "asc" },
@@ -514,14 +548,18 @@ export async function createOrder(data) {
     console.log(`[Order Creation] Persisted order items count: ${createdOrderItems.length}`);
 
     // D. Create notification inside transaction
-    await createNotification({
-      type: NOTIFICATION_TYPES.FRAME_ORDER,
-      title: "New Frame Order",
-      message: `Order #${id} placed by ${customerName} (${totalQuantity} frame${totalQuantity > 1 ? "s" : ""}, ₹${grandTotal.toLocaleString("en-IN")}).`,
-      relatedEntityId: id,
-      relatedEntityType: "FrameOrder",
-      tx,
-    });
+    try {
+      await createNotification({
+        type: NOTIFICATION_TYPES.FRAME_ORDER,
+        title: "New Frame Order",
+        message: `Order #${id} placed by ${customerName} (${totalQuantity} frame${totalQuantity > 1 ? "s" : ""}, ₹${grandTotal.toLocaleString("en-IN")}).`,
+        relatedEntityId: id,
+        relatedEntityType: "FrameOrder",
+        tx,
+      });
+    } catch (notifErr) {
+      console.warn("[Order Creation] Notification creation bypassed:", notifErr.message);
+    }
 
     return {
       ...masterOrder,

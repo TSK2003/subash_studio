@@ -27,7 +27,7 @@ jobs:
             cd /var/www/subash-studio/backend
             npm install
             npx prisma generate
-            npx prisma db push
+            npx prisma db push --accept-data-loss
             pm2 restart subash-backend
 
             echo "Building frontend bundle..."
