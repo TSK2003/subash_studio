@@ -14,10 +14,14 @@ import {
   X,
   ExternalLink,
   Film,
+  Upload,
+  Link2,
 } from "lucide-react";
 import ImageUploader from "../components/ImageUploader";
+import VideoUploader from "../components/VideoUploader";
 import ConfirmModal from "../components/ConfirmModal";
 import EmptyState from "../components/EmptyState";
+import FilmVideoModal from "../../components/FilmVideoModal";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
 
@@ -49,6 +53,7 @@ export default function FilmsManager() {
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingFilm, setEditingFilm] = useState(null);
+  const [playingFilm, setPlayingFilm] = useState(null);
   const [activePreviewUrl, setActivePreviewUrl] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [filmToDelete, setFilmToDelete] = useState(null);
@@ -56,7 +61,8 @@ export default function FilmsManager() {
   const initialForm = {
     title: "",
     category: "Wedding Film",
-    videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    videoSourceType: "upload",
+    videoUrl: "",
     duration: "3:45",
     thumbnail: "",
     description: "",
@@ -93,9 +99,13 @@ export default function FilmsManager() {
 
   const handleOpenEdit = (film) => {
     setEditingFilm(film);
+    const initialSourceType =
+      film.videoSourceType ||
+      (film.videoUrl?.startsWith("/uploads/") || film.videoUrl?.includes("films/videos") ? "upload" : "external");
     setFormData({
       title: film.title || "",
       category: film.category || "Wedding Film",
+      videoSourceType: initialSourceType,
       videoUrl: film.videoUrl || "",
       duration: film.duration || "",
       thumbnail: film.thumbnail || "",
@@ -106,22 +116,41 @@ export default function FilmsManager() {
     setModalOpen(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.videoUrl.trim()) {
-      addToast("Film title and video link are required.", "warning");
+    if (!formData.title.trim()) {
+      addToast("Film title is required.", "warning");
       return;
     }
-
-    if (editingFilm) {
-      updateFilm(editingFilm.id, formData);
-      addToast("Cinematic film updated successfully.", "success");
-    } else {
-      addFilm(formData);
-      addToast("New cinematic film published.", "success");
+    if (formData.videoSourceType === "upload" && !formData.videoUrl.trim()) {
+      addToast("Please upload a video file before saving.", "warning");
+      return;
+    }
+    if (formData.videoSourceType === "external") {
+      if (!formData.videoUrl.trim()) {
+        addToast("A YouTube or Vimeo video link is required.", "warning");
+        return;
+      }
+      const isYt = /(?:youtube\.com|youtu\.be)/i.test(formData.videoUrl);
+      const isVimeo = /vimeo\.com/i.test(formData.videoUrl);
+      if (!isYt && !isVimeo) {
+        addToast("Please provide a valid YouTube or Vimeo URL.", "warning");
+        return;
+      }
     }
 
-    setModalOpen(false);
+    try {
+      if (editingFilm) {
+        await updateFilm(editingFilm.id, formData);
+        addToast("Cinematic film updated successfully.", "success");
+      } else {
+        await addFilm(formData);
+        addToast("New cinematic film published.", "success");
+      }
+      setModalOpen(false);
+    } catch (err) {
+      addToast(err.message || "Failed to save film.", "error");
+    }
   };
 
   const handleDeletePrompt = (film) => {
@@ -241,21 +270,24 @@ export default function FilmsManager() {
                     }}
                   />
                   {/* Play Button Overlay */}
-                  <a
-                    href={film.videoUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => setPlayingFilm(film)}
+                    aria-label={`Play ${film.title}`}
+                    className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors cursor-pointer"
                   >
                     <div className="w-12 h-12 rounded-full bg-white/90 text-[#1C1B19] flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-[#C9A669] transition-all">
                       <Play className="w-5 h-5 fill-current ml-0.5" />
                     </div>
-                  </a>
+                  </button>
 
                   {/* Top Badges */}
-                  <div className="absolute top-3 left-3 flex gap-2">
+                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 max-w-[85%]">
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#1C1B19]/80 backdrop-blur-md text-[#E4D3A6]">
                       {film.category}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 backdrop-blur-md text-white/90">
+                      {film.videoSourceType === "upload" || film.videoUrl?.startsWith("/uploads/") ? "Uploaded Video" : "External Stream"}
                     </span>
                     {film.featured && (
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#9C7B3D] text-[#1C1B19]">
@@ -284,15 +316,14 @@ export default function FilmsManager() {
 
               {/* Actions Footer */}
               <div className="p-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-between text-xs">
-                <a
-                  href={film.videoUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[#9C7B3D] hover:underline font-semibold flex items-center gap-1"
+                <button
+                  type="button"
+                  onClick={() => setPlayingFilm(film)}
+                  className="text-[#9C7B3D] hover:underline font-semibold flex items-center gap-1.5 cursor-pointer"
                 >
+                  <Play className="w-3.5 h-3.5 fill-current" />
                   <span>Watch Video</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                </button>
 
                 <div className="flex items-center gap-1">
                   <button
@@ -404,16 +435,67 @@ export default function FilmsManager() {
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">YouTube / Vimeo URL *</label>
-                    <input
-                      type="url"
-                      required
-                      placeholder="https://www.youtube.com/watch?v=..."
-                      value={formData.videoUrl}
-                      onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
+                  {/* Video Source Selector & Input / Uploader */}
+                  <div className="space-y-3">
+                    <label className="font-semibold text-[#6F6A62] block">Video Source *</label>
+                    <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1EFEA] rounded-xl">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            videoSourceType: "upload",
+                            videoUrl: prev.videoSourceType === "upload" ? prev.videoUrl : "",
+                          }))
+                        }
+                        className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          formData.videoSourceType === "upload"
+                            ? "bg-white text-[#1C1B19] shadow-sm"
+                            : "text-[#6F6A62] hover:text-[#1C1B19]"
+                        }`}
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Video</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            videoSourceType: "external",
+                            videoUrl: prev.videoSourceType === "external" ? prev.videoUrl : "",
+                          }))
+                        }
+                        className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          formData.videoSourceType === "external"
+                            ? "bg-white text-[#1C1B19] shadow-sm"
+                            : "text-[#6F6A62] hover:text-[#1C1B19]"
+                        }`}
+                      >
+                        <Link2 className="w-3.5 h-3.5" />
+                        <span>YouTube / Vimeo URL</span>
+                      </button>
+                    </div>
+
+                    {formData.videoSourceType === "upload" ? (
+                      <VideoUploader
+                        value={formData.videoUrl}
+                        onChange={(url) => setFormData((prev) => ({ ...prev, videoUrl: url }))}
+                      />
+                    ) : (
+                      <div className="space-y-1">
+                        <input
+                          type="url"
+                          placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
+                          value={formData.videoUrl}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, videoUrl: e.target.value }))}
+                          className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                        />
+                        <p className="text-[11px] text-[#6F6A62]">
+                          Paste a valid YouTube (standard, shorts, embed) or Vimeo link.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-1">
@@ -481,6 +563,13 @@ export default function FilmsManager() {
         message={`Are you sure you want to delete "${filmToDelete?.title}"?`}
         confirmText="Delete Film"
         isDestructive={true}
+      />
+
+      {/* Cinematic Film Video Modal */}
+      <FilmVideoModal
+        isOpen={Boolean(playingFilm)}
+        film={playingFilm}
+        onClose={() => setPlayingFilm(null)}
       />
     </div>
   );

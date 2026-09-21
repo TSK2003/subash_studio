@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
 import { Menu, X, ChevronDown, Camera, Frame } from "lucide-react";
+import { useAdminData } from "../admin/context/AdminDataContext";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
@@ -16,6 +17,12 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
+  const { websiteContent } = useAdminData();
+  const contactData = websiteContent?.contact || {};
+  const instagramHref = contactData.instagram || "https://www.instagram.com/subash_studio/";
+  const whatsappRaw = contactData.whatsapp || "+91 93457 06609";
+  const whatsappHref = whatsappRaw.startsWith("http") ? whatsappRaw : `https://wa.me/${whatsappRaw.replace(/\D/g, "")}`;
+
   const location = useLocation();
   const [visible] = useState(true);
   const [scrolled, setScrolled] = useState(false);
@@ -319,8 +326,8 @@ export default function Navbar() {
                 );
               })}
               <div className="flex items-center gap-5 pt-2">
-                <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="text-ink/60"><FaWhatsapp size={20} /></a>
-                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-ink/60"><FaInstagram size={20} /></a>
+                <a href={whatsappHref} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="text-ink/60 hover:text-gold transition-colors"><FaWhatsapp size={20} /></a>
+                <a href={instagramHref} target="_blank" rel="noreferrer" aria-label="Instagram" className="text-ink/60 hover:text-gold transition-colors"><FaInstagram size={20} /></a>
               </div>
               <Link to="/contact" onClick={() => setMenuOpen(false)} className="mt-2 px-5 py-3 bg-ink text-bg-soft text-center text-[12px] tracking-[0.14em] uppercase font-bold rounded-full">
                 BOOK A SHOOT

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Frame,
@@ -68,6 +69,7 @@ export default function FramesManager() {
 
   // Drawer / Modal states
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedItemIndex, setSelectedItemIndex] = useState(0);
   const [woodModal, setWoodModal] = useState({ open: false, mode: "add", data: null });
   const [designModal, setDesignModal] = useState({ open: false, mode: "add", data: null });
   const [ratioModal, setRatioModal] = useState({ open: false, mode: "add", data: null });
@@ -77,12 +79,26 @@ export default function FramesManager() {
   const [downloadStatus, setDownloadStatus] = useState("idle"); // "idle" | "loading" | "success"
   const [downloadOriginalStatus, setDownloadOriginalStatus] = useState("idle"); // "idle" | "loading" | "success"
 
+  // Active item in multi-item order
+  const activeFrameItem =
+    selectedOrder && selectedOrder.items && selectedOrder.items[selectedItemIndex]
+      ? {
+          ...selectedOrder,
+          ...selectedOrder.items[selectedItemIndex],
+          id: selectedOrder.id,
+          customerName: selectedOrder.customerName,
+          phone: selectedOrder.phone,
+          whatsapp: selectedOrder.whatsapp,
+          email: selectedOrder.email,
+        }
+      : selectedOrder;
+
   const handleDownloadFrame = async () => {
-    if (!selectedOrder || downloadStatus === "loading") return;
+    if (!activeFrameItem || downloadStatus === "loading") return;
     try {
       setDownloadStatus("loading");
       const filename = await exportFrameImage(
-        selectedOrder,
+        activeFrameItem,
         frameWoodTypes,
         frameDesigns
       );
@@ -99,10 +115,10 @@ export default function FramesManager() {
   };
 
   const handleDownloadOriginal = async () => {
-    if (!selectedOrder || downloadOriginalStatus === "loading") return;
+    if (!activeFrameItem || downloadOriginalStatus === "loading") return;
     try {
       setDownloadOriginalStatus("loading");
-      const filename = await downloadOriginalFrameOrderImage(selectedOrder);
+      const filename = await downloadOriginalFrameOrderImage(activeFrameItem);
       setDownloadOriginalStatus("success");
       addToast(`Original photo downloaded: ${filename}`, "success", 3000);
       setTimeout(() => {
@@ -300,54 +316,90 @@ export default function FramesManager() {
                       </td>
                     </tr>
                   ) : (
-                    filteredOrders.map((order) => (
-                      <tr key={order.id} className="hover:bg-[#FAF8F5] transition-colors">
-                        <td className="py-3.5 px-4 font-mono font-bold text-[#1C1B19]">
-                          {order.id}
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <div className="font-bold text-[#1C1B19]">{order.customerName}</div>
-                          <div className="text-[11px] text-[#6F6A62]">{order.phone}</div>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <div className="font-semibold text-[#1C1B19]">{order.woodType}</div>
-                          <div className="text-[11px] text-[#8C6D32]">{order.frameDesign}</div>
-                        </td>
-                        <td className="py-3.5 px-4 text-[#2B2B2B] font-medium">
-                          {order.frameRatio}
-                        </td>
-                        <td className="py-3.5 px-4 font-bold text-[#8C6D32]">
-                          {formatRupee(order.totalAmount)}
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <span
-                            className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              order.status === "New"
-                                ? "bg-amber-100 text-amber-800"
-                                : order.status === "Confirmed"
-                                ? "bg-blue-100 text-blue-800"
-                                : order.status === "In Production" || order.status === "Processing"
-                                ? "bg-purple-100 text-purple-800"
-                                : order.status === "Ready"
-                                ? "bg-teal-100 text-teal-800"
-                                : order.status === "Delivered"
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {order.status}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedOrder(order)}
-                              className="p-1.5 rounded-lg border border-[#E7E0D2] hover:bg-[#F8F6F2] text-[#1C1B19] transition-colors"
-                              title="View Details"
+                    filteredOrders.map((order) => {
+                      const itemCount =
+                        order.items && order.items.length > 0
+                          ? order.items.length
+                          : 1;
+                      const isMultiItem = itemCount > 1;
+
+                      return (
+                        <tr key={order.id} className="hover:bg-[#FAF8F5] transition-colors">
+                          <td className="py-3.5 px-4 font-mono font-bold text-[#1C1B19]">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span>{order.id}</span>
+                              {isMultiItem && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EAE3D2] text-[#8C6D32] border border-[#DCD3C0]">
+                                  {itemCount} Frames
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="font-bold text-[#1C1B19]">{order.customerName}</div>
+                            <div className="text-[11px] text-[#6F6A62]">{order.phone}</div>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            {isMultiItem ? (
+                              <div>
+                                <div className="font-semibold text-[#1C1B19]">
+                                  {order.items[0]?.woodType} &amp; {itemCount - 1} more
+                                </div>
+                                <div className="text-[11px] text-[#8C6D32] line-clamp-1">
+                                  {order.items.map((it) => it.woodType).join(", ")}
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                <div className="font-semibold text-[#1C1B19]">{order.woodType}</div>
+                                <div className="text-[11px] text-[#8C6D32]">{order.frameDesign}</div>
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-[#2B2B2B] font-medium">
+                            {isMultiItem ? (
+                              <span className="text-[#8C6D32] font-semibold">
+                                {itemCount} sizes
+                              </span>
+                            ) : (
+                              order.frameRatio
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 font-bold text-[#8C6D32]">
+                            {formatRupee(order.totalAmount)}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span
+                              className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                order.status === "New"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : order.status === "Confirmed"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : order.status === "In Production" || order.status === "Processing"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : order.status === "Ready"
+                                  ? "bg-teal-100 text-teal-800"
+                                  : order.status === "Delivered"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
                             >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedOrder(order);
+                                  setSelectedItemIndex(0);
+                                }}
+                                className="p-1.5 rounded-lg border border-[#E7E0D2] hover:bg-[#F8F6F2] text-[#1C1B19] transition-colors"
+                                title="View Details"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
                             <button
                               type="button"
                               onClick={() => {
@@ -363,9 +415,10 @@ export default function FramesManager() {
                           </div>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
+                    );
+                  })
+                )}
+              </tbody>
               </table>
             </div>
           </div>
@@ -614,285 +667,424 @@ export default function FramesManager() {
       )}
 
       {/* ORDER DETAILS MODAL / DRAWER */}
-      <AnimatePresence>
-        {selectedOrder && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 10 }}
-              className="bg-white rounded-xl p-5 sm:p-6 max-w-4xl lg:max-w-5xl w-full max-h-[92vh] overflow-y-auto modal-scrollbar space-y-5 shadow-2xl border border-[#E7E0D2]"
-            >
-              {/* Modal Top Header */}
-              <div className="flex items-center justify-between border-b border-[#E7E0D2] pb-4">
-                <div>
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#8C6D32]">
-                    Order Details &amp; Specifications
-                  </span>
-                  <div className="flex items-center gap-2.5 mt-0.5">
-                    <h3 className="font-mono text-xl sm:text-2xl font-bold text-[#1C1B19]">
-                      {selectedOrder.id}
-                    </h3>
-                    <span
-                      className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full uppercase tracking-wider ${
-                        selectedOrder.status === "Delivered"
-                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                          : selectedOrder.status === "Cancelled"
-                          ? "bg-rose-100 text-rose-800 border border-rose-300"
-                          : selectedOrder.status === "Ready"
-                          ? "bg-blue-100 text-blue-800 border border-blue-300"
-                          : selectedOrder.status === "In Production"
-                          ? "bg-amber-100 text-amber-800 border border-amber-300"
-                          : "bg-[#F4EFE6] text-[#8C6D32] border border-[#DCD3C0]"
-                      }`}
-                    >
-                      {selectedOrder.status || "New"}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedOrder(null)}
-                  className="p-2 rounded-full hover:bg-[#F8F6F2] text-[#6F6A62] hover:text-[#1C1B19] transition-colors"
-                  title="Close modal"
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {selectedOrder && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-8 bg-black/60 backdrop-blur-sm">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: 10 }}
+                  className="relative bg-white rounded-2xl max-w-4xl lg:max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-[#E7E0D2] overflow-hidden my-auto"
                 >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* 2-Column Responsive Layout (Stacked on mobile/tablet, 2-column on desktop) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-                {/* LEFT: FRAME PREVIEW (lg:col-span-5) */}
-                <div className="lg:col-span-5 w-full flex flex-col items-center">
-                  <FrameOrderPreview
-                    order={selectedOrder}
-                    woodTypes={frameWoodTypes}
-                    designs={frameDesigns}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* RIGHT: ORDER INFORMATION & ACTIONS (lg:col-span-7) */}
-                <div className="lg:col-span-7 space-y-4 sm:space-y-5">
-                  {/* Status Actions Control */}
-                  <div className="p-4 bg-[#FAF8F5] rounded-2xl border border-[#E7E0D2] space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-[#1C1B19] uppercase tracking-wider">
-                        Update Order Status
+                  {/* Modal Top Pinned Header */}
+                  <div className="flex items-center justify-between px-5 sm:px-6 md:px-8 py-4 sm:py-5 border-b border-[#E7E0D2] bg-white shrink-0 z-10">
+                    <div className="min-w-0 pr-4">
+                      <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-widest text-[#8C6D32]">
+                        Order Details &amp; Specifications
                       </span>
-                      <span className="text-xs text-[#6F6A62]">
-                        {selectedOrder.createdAt
-                          ? new Date(selectedOrder.createdAt).toLocaleDateString("en-GB", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            })
-                          : ""}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
+                        <h3 className="font-mono text-lg sm:text-2xl font-bold text-[#1C1B19] tracking-tight">
+                          {selectedOrder.id}
+                        </h3>
+                        <span
+                          className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full uppercase tracking-wider ${
+                            selectedOrder.status === "Delivered"
+                              ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                              : selectedOrder.status === "Cancelled"
+                              ? "bg-rose-100 text-rose-800 border border-rose-300"
+                              : selectedOrder.status === "Ready"
+                              ? "bg-blue-100 text-blue-800 border border-blue-300"
+                              : selectedOrder.status === "In Production"
+                              ? "bg-amber-100 text-amber-800 border border-amber-300"
+                              : "bg-[#F4EFE6] text-[#8C6D32] border border-[#DCD3C0]"
+                          }`}
+                        >
+                          {selectedOrder.status || "New"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {[
-                        { label: "Confirm", value: "Confirmed" },
-                        { label: "Processing", value: "In Production" },
-                        { label: "Ready", value: "Ready" },
-                        { label: "Delivered", value: "Delivered" },
-                        { label: "Cancel", value: "Cancelled" },
-                      ].map(({ label, value }) => {
-                        const isCurrent = selectedOrder.status === value;
-                        return (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => {
-                              updateFrameOrderStatus(selectedOrder.id, value);
-                              setSelectedOrder((prev) => ({ ...prev, status: value }));
-                            }}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-                              isCurrent
-                                ? "bg-[#1C1B19] text-[#F8F6F2] border-[#1C1B19] shadow-sm"
-                                : "bg-white text-[#2B2B2B] border-[#E7E0D2] hover:bg-[#F8F6F2]"
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOrder(null)}
+                      className="p-2 rounded-full hover:bg-[#FAF8F5] text-[#6F6A62] hover:text-[#1C1B19] transition-colors shrink-0 ml-auto"
+                      title="Close modal"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
 
-                  {/* Customer Details */}
-                  <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E7E0D2] space-y-3">
-                    <h4 className="font-bold text-xs uppercase tracking-wider text-[#8C6D32]">
-                      Customer Information
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <span className="text-[#6F6A62]">Full Name:</span>
-                        <div className="font-semibold text-sm text-[#1C1B19] mt-0.5">
-                          {selectedOrder.customerName}
+                  {/* Modal Scrollable Body */}
+                  <div className="overflow-y-auto flex-1 p-5 sm:p-6 md:p-8 space-y-6 modal-scrollbar">
+                    {/* Multi-Item Selector Tabs */}
+                    {selectedOrder.items && selectedOrder.items.length > 1 && (
+                      <div className="p-4 sm:p-5 bg-[#FAF8F5] rounded-xl border border-[#E7E0D2] space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-[#8C6D32] uppercase tracking-wider flex items-center gap-2">
+                            <Package className="w-4 h-4 shrink-0" />
+                            Order Items ({selectedOrder.items.length} Frames)
+                          </span>
+                          <span className="text-xs font-medium text-[#6F6A62] bg-white px-2.5 py-1 rounded-full border border-[#E7E0D2] shrink-0">
+                            Viewing Frame {selectedItemIndex + 1} of {selectedOrder.items.length}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 modal-scrollbar min-w-0">
+                          {selectedOrder.items.map((item, idx) => {
+                            const isSelected = selectedItemIndex === idx;
+                            return (
+                              <button
+                                key={item.id || idx}
+                                type="button"
+                                onClick={() => setSelectedItemIndex(idx)}
+                                className={`px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2.5 shrink-0 ${
+                                  isSelected
+                                    ? "bg-[#1C1B19] text-[#F8F6F2] shadow-sm"
+                                    : "bg-white text-[#2B2B2B] border border-[#E7E0D2] hover:bg-[#F3EFE8]"
+                                }`}
+                              >
+                                <span
+                                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                                    isSelected
+                                      ? "bg-[#C9A669] text-[#1C1B19]"
+                                      : "bg-[#EAE3D2] text-[#8C6D32]"
+                                  }`}
+                                >
+                                  {idx + 1}
+                                </span>
+                                <div className="text-left min-w-0">
+                                  <div className="font-bold leading-tight truncate">{item.woodType || "Timber Frame"}</div>
+                                  <div
+                                    className={`text-[10px] truncate ${
+                                      isSelected ? "text-[#DFCA9F]" : "text-[#6F6A62]"
+                                    }`}
+                                  >
+                                    {item.frameRatio} &bull; {item.frameDesign}
+                                  </div>
+                                </div>
+                                <span
+                                  className={`text-[11px] font-mono font-bold shrink-0 ml-1 ${
+                                    isSelected ? "text-[#C9A669]" : "text-[#8C6D32]"
+                                  }`}
+                                >
+                                  {formatRupee(item.totalAmount)}
+                                </span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
-                      <div>
-                        <span className="text-[#6F6A62]">Phone:</span>
-                        <div className="font-semibold font-mono text-[#1C1B19] mt-0.5">
-                          {selectedOrder.phone}
-                        </div>
+                    )}
+
+                    {/* 2-Column Responsive Layout (Stacked on mobile/tablet, 2-column on desktop) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                      {/* LEFT: FRAME PREVIEW (lg:col-span-5) */}
+                      <div className="lg:col-span-5 w-full flex flex-col space-y-3 min-w-0">
+                        <FrameOrderPreview
+                          order={activeFrameItem}
+                          woodTypes={frameWoodTypes}
+                          designs={frameDesigns}
+                          className="w-full"
+                        />
+                        {selectedOrder.items && selectedOrder.items.length > 1 && (
+                          <div className="text-xs text-center text-[#6F6A62] bg-[#FAF8F5] px-3.5 py-2 rounded-xl border border-[#E7E0D2] w-full break-words">
+                            Previewing <strong>Frame #{selectedItemIndex + 1}</strong>: {activeFrameItem.woodType} ({activeFrameItem.frameRatio}) &bull; {activeFrameItem.frameDesign}
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <span className="text-[#6F6A62]">WhatsApp:</span>
-                        <div className="font-semibold font-mono text-[#1C1B19] mt-0.5">
-                          {selectedOrder.whatsapp || selectedOrder.phone}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="text-[#6F6A62]">Email:</span>
-                        <div className="font-semibold text-[#1C1B19] mt-0.5 truncate">
-                          {selectedOrder.email || "N/A"}
-                        </div>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <span className="text-[#6F6A62]">Fulfillment:</span>
-                        <div className="font-semibold text-[#1C1B19] mt-0.5">
-                          {selectedOrder.deliveryType || "Home Delivery"}
-                        </div>
-                      </div>
-                      {selectedOrder.address && (
-                        <div className="sm:col-span-2">
-                          <span className="text-[#6F6A62]">Delivery Address:</span>
-                          <div className="text-[#2B2B2B] mt-0.5 leading-relaxed bg-white p-2.5 rounded-xl border border-[#E7E0D2]/70">
-                            {selectedOrder.address}
+
+                      {/* RIGHT: ORDER INFORMATION & ACTIONS (lg:col-span-7) */}
+                      <div className="lg:col-span-7 space-y-5 min-w-0">
+                        {/* Status Actions Control */}
+                        <div className="p-4 sm:p-5 bg-[#FAF8F5] rounded-xl border border-[#E7E0D2] space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[11px] font-bold text-[#1C1B19] uppercase tracking-wider">
+                              Update Order Status
+                            </span>
+                            <span className="text-xs text-[#6F6A62]">
+                              {selectedOrder.createdAt
+                                ? new Date(selectedOrder.createdAt).toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : ""}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {[
+                              { label: "Confirm", value: "Confirmed" },
+                              { label: "Processing", value: "In Production" },
+                              { label: "Ready", value: "Ready" },
+                              { label: "Delivered", value: "Delivered" },
+                              { label: "Cancel", value: "Cancelled" },
+                            ].map(({ label, value }) => {
+                              const isCurrent = selectedOrder.status === value;
+                              return (
+                                <button
+                                  key={value}
+                                  type="button"
+                                  onClick={() => {
+                                    updateFrameOrderStatus(selectedOrder.id, value);
+                                    setSelectedOrder((prev) => ({ ...prev, status: value }));
+                                  }}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                                    isCurrent
+                                      ? "bg-[#1C1B19] text-[#F8F6F2] border-[#1C1B19] shadow-sm"
+                                      : "bg-white text-[#2B2B2B] border-[#E7E0D2] hover:bg-[#F8F6F2]"
+                                  }`}
+                                >
+                                  {label}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
-                      )}
-                      {selectedOrder.notes && (
-                        <div className="sm:col-span-2">
-                          <span className="text-[#6F6A62]">Customer Notes:</span>
-                          <div className="text-[#2B2B2B] italic mt-0.5 bg-white p-2.5 rounded-xl border border-[#E7E0D2]/70">
-                            {selectedOrder.notes}
+
+                        {/* Customer Details */}
+                        <div className="p-4 sm:p-5 rounded-xl bg-[#FAF8F5] border border-[#E7E0D2] space-y-3">
+                          <h4 className="font-bold text-xs uppercase tracking-wider text-[#8C6D32]">
+                            Customer Information
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                            <div>
+                              <span className="text-[#6F6A62]">Full Name:</span>
+                              <div className="font-semibold text-sm text-[#1C1B19] mt-0.5 break-words">
+                                {selectedOrder.customerName}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[#6F6A62]">Phone:</span>
+                              <div className="font-semibold font-mono text-[#1C1B19] mt-0.5 break-words">
+                                {selectedOrder.phone}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[#6F6A62]">WhatsApp:</span>
+                              <div className="font-semibold font-mono text-[#1C1B19] mt-0.5 break-words">
+                                {selectedOrder.whatsapp || selectedOrder.phone}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[#6F6A62]">Email:</span>
+                              <div className="font-semibold text-[#1C1B19] mt-0.5 break-all">
+                                {selectedOrder.email || "N/A"}
+                              </div>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <span className="text-[#6F6A62]">Fulfillment:</span>
+                              <div className="font-semibold text-[#1C1B19] mt-0.5">
+                                {selectedOrder.deliveryType || "Home Delivery"}
+                              </div>
+                            </div>
+                            {selectedOrder.address && (
+                              <div className="sm:col-span-2">
+                                <span className="text-[#6F6A62]">Delivery Address:</span>
+                                <div className="text-[#2B2B2B] mt-1 leading-relaxed bg-white p-3 rounded-xl border border-[#E7E0D2]/80 break-words whitespace-pre-line">
+                                  {selectedOrder.address}
+                                </div>
+                              </div>
+                            )}
+                            {selectedOrder.notes && (
+                              <div className="sm:col-span-2">
+                                <span className="text-[#6F6A62]">Customer Notes:</span>
+                                <div className="text-[#2B2B2B] italic mt-1 bg-white p-3 rounded-xl border border-[#E7E0D2]/80 break-words whitespace-pre-line">
+                                  {selectedOrder.notes}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
-                      )}
+
+                        {/* Frame Specification & Pricing Breakdown */}
+                        <div className="p-4 sm:p-5 rounded-xl bg-[#FAF8F5] border border-[#E7E0D2] space-y-3.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="font-bold text-xs uppercase tracking-wider text-[#8C6D32]">
+                              {selectedOrder.items && selectedOrder.items.length > 1
+                                ? `Frame #${selectedItemIndex + 1} Specification & Pricing`
+                                : "Frame Specification & Pricing"}
+                            </h4>
+                            {selectedOrder.items && selectedOrder.items.length > 1 && (
+                              <span className="text-[11px] font-medium text-[#6F6A62] shrink-0">
+                                Qty: {activeFrameItem.quantity || 1} &bull; {activeFrameItem.orientation}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="space-y-2 text-xs">
+                            <div className="flex justify-between items-center py-1.5 border-b border-[#E7E0D2]/70">
+                              <span className="text-[#6F6A62]">Wood Timber ({activeFrameItem.woodType})</span>
+                              <span className="font-semibold font-mono text-[#1C1B19]">
+                                {formatRupee(activeFrameItem.woodPrice ?? 800)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center py-1.5 border-b border-[#E7E0D2]/70">
+                              <span className="text-[#6F6A62]">Frame Design ({activeFrameItem.frameDesign})</span>
+                              <span className="font-semibold font-mono text-[#1C1B19]">
+                                {formatRupee(activeFrameItem.designPrice ?? 0)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center py-1.5 border-b border-[#E7E0D2]/70">
+                              <span className="text-[#6F6A62]">Frame Ratio / Size ({activeFrameItem.frameRatio})</span>
+                              <span className="font-semibold font-mono text-[#1C1B19]">
+                                {formatRupee(activeFrameItem.ratioPrice ?? 1200)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center py-1.5 border-b border-[#E7E0D2]/70">
+                              <span className="text-[#6F6A62]">
+                                Item Total ({activeFrameItem.quantity || 1} unit{activeFrameItem.quantity > 1 ? "s" : ""})
+                              </span>
+                              <span className="font-bold font-mono text-[#1C1B19]">
+                                {formatRupee(activeFrameItem.totalAmount)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* If Multi-Item Order: Render itemized summary table */}
+                          {selectedOrder.items && selectedOrder.items.length > 1 && (
+                            <div className="pt-3 border-t border-[#E7E0D2] space-y-2">
+                              <div className="text-[10px] uppercase font-bold text-[#8C6D32] tracking-wider">
+                                All Frames in Order ({selectedOrder.items.length} items)
+                              </div>
+                              <div className="space-y-1.5 max-h-44 overflow-y-auto modal-scrollbar pr-1">
+                                {selectedOrder.items.map((it, idx) => {
+                                  const isRowActive = selectedItemIndex === idx;
+                                  return (
+                                    <div
+                                      key={it.id || idx}
+                                      onClick={() => setSelectedItemIndex(idx)}
+                                      className={`p-2.5 rounded-xl cursor-pointer flex items-center justify-between text-xs transition-colors ${
+                                        isRowActive
+                                          ? "bg-[#1C1B19] text-[#F8F6F2] shadow-sm"
+                                          : "bg-white text-[#2B2B2B] border border-[#E7E0D2] hover:bg-[#F3EFE8]"
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2 min-w-0 pr-2">
+                                        <span className="font-bold shrink-0">#{idx + 1}</span>
+                                        <span className="truncate">
+                                          {it.woodType} &bull; {it.frameDesign} &bull; {it.frameRatio} ({it.orientation})
+                                        </span>
+                                      </div>
+                                      <div className="text-right shrink-0 flex items-center gap-2">
+                                        <span className="text-[10px] opacity-75">Qty: {it.quantity || 1}</span>
+                                        <span className={`font-mono font-bold ${isRowActive ? "text-[#C9A669]" : "text-[#8C6D32]"}`}>
+                                          {formatRupee(it.totalAmount)}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="pt-2.5 flex justify-between items-center font-bold text-sm text-[#1C1B19] border-t border-[#E7E0D2]">
+                            <span className="uppercase tracking-wider">Order Grand Total:</span>
+                            <span className="text-lg text-[#8C6D32] font-mono font-bold">
+                              {formatRupee(selectedOrder.totalAmount)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons Section */}
+                        <div className="pt-4 border-t border-[#E7E0D2] space-y-3">
+                          {/* Download Actions: Composed Frame vs Original Customer Image */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <button
+                              type="button"
+                              onClick={handleDownloadFrame}
+                              disabled={downloadStatus === "loading"}
+                              className="w-full px-4 py-2.5 bg-[#FAF8F5] hover:bg-[#F4EFE6] text-[#1C1B19] border border-[#DCD3C0] rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                              title="Download complete framed artwork image"
+                            >
+                              {downloadStatus === "loading" ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 text-[#8C6D32] animate-spin shrink-0" />
+                                  <span>Preparing frame...</span>
+                                </>
+                              ) : downloadStatus === "success" ? (
+                                <>
+                                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                  <span>Downloaded</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Download className="w-4 h-4 text-[#8C6D32] shrink-0" />
+                                  <span>
+                                    Download Frame{" "}
+                                    {selectedOrder.items && selectedOrder.items.length > 1
+                                      ? `(#${selectedItemIndex + 1})`
+                                      : ""}
+                                  </span>
+                                </>
+                              )}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={handleDownloadOriginal}
+                              disabled={downloadOriginalStatus === "loading"}
+                              className="w-full px-4 py-2.5 bg-[#FAF8F5] hover:bg-[#F4EFE6] text-[#1C1B19] border border-[#DCD3C0] rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                              title="Download customer's original uploaded photograph"
+                            >
+                              {downloadOriginalStatus === "loading" ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 text-[#8C6D32] animate-spin shrink-0" />
+                                  <span>Preparing image...</span>
+                                </>
+                              ) : downloadOriginalStatus === "success" ? (
+                                <>
+                                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                  <span>Downloaded</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ImageDown className="w-4 h-4 text-[#8C6D32] shrink-0" />
+                                  <span>
+                                    Download Original{" "}
+                                    {selectedOrder.items && selectedOrder.items.length > 1
+                                      ? `(#${selectedItemIndex + 1})`
+                                      : ""}
+                                  </span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Document Actions: Print Receipt & Close */}
+                          <div className="flex items-center justify-between gap-3 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => window.print()}
+                              className="px-4 sm:px-5 py-2.5 bg-[#FAF8F5] hover:bg-[#F4EFE6] text-[#1C1B19] border border-[#DCD3C0] rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-sm flex items-center gap-2 active:scale-95"
+                            >
+                              <FileText className="w-4 h-4 text-[#8C6D32] shrink-0" />
+                              <span>Print Receipt</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedOrder(null);
+                                setSelectedItemIndex(0);
+                                setDownloadStatus("idle");
+                                setDownloadOriginalStatus("idle");
+                              }}
+                              className="px-6 py-2.5 bg-[#1C1B19] text-[#F8F6F2] rounded-xl text-xs font-bold tracking-wider uppercase hover:bg-[#322F2A] transition-colors active:scale-95 text-center"
+                            >
+                              Close
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Frame Specification & Pricing Breakdown */}
-                  <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E7E0D2] space-y-3">
-                    <h4 className="font-bold text-xs uppercase tracking-wider text-[#8C6D32]">
-                      Frame Specification &amp; Pricing
-                    </h4>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between items-center py-1 border-b border-[#E7E0D2]/60">
-                        <span className="text-[#6F6A62]">Wood Timber ({selectedOrder.woodType})</span>
-                        <span className="font-semibold font-mono text-[#1C1B19]">
-                          {formatRupee(selectedOrder.woodPrice ?? 800)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-1 border-b border-[#E7E0D2]/60">
-                        <span className="text-[#6F6A62]">Frame Design ({selectedOrder.frameDesign})</span>
-                        <span className="font-semibold font-mono text-[#1C1B19]">
-                          {formatRupee(selectedOrder.designPrice ?? 0)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-1 border-b border-[#E7E0D2]/60">
-                        <span className="text-[#6F6A62]">Frame Ratio / Size ({selectedOrder.frameRatio})</span>
-                        <span className="font-semibold font-mono text-[#1C1B19]">
-                          {formatRupee(selectedOrder.ratioPrice ?? 1200)}
-                        </span>
-                      </div>
-                      <div className="pt-2 flex justify-between items-center font-bold text-sm text-[#1C1B19]">
-                        <span className="uppercase tracking-wider">Total Amount:</span>
-                        <span className="text-base text-[#8C6D32] font-mono">
-                          {formatRupee(selectedOrder.totalAmount)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons Section */}
-                  <div className="pt-3 border-t border-[#E7E0D2] space-y-3">
-                    {/* Download Actions: Composed Frame vs Original Customer Image */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      <button
-                        type="button"
-                        onClick={handleDownloadFrame}
-                        disabled={downloadStatus === "loading"}
-                        className="w-full px-4 py-2.5 bg-[#FAF8F5] hover:bg-[#F4EFE6] text-[#1C1B19] border border-[#DCD3C0] rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
-                        title="Download complete framed artwork image (composed with timber, design profile, and matboard)"
-                      >
-                        {downloadStatus === "loading" ? (
-                          <>
-                            <Loader2 className="w-4 h-4 text-[#8C6D32] animate-spin" />
-                            <span>Preparing frame...</span>
-                          </>
-                        ) : downloadStatus === "success" ? (
-                          <>
-                            <Check className="w-4 h-4 text-emerald-600" />
-                            <span>Downloaded</span>
-                          </>
-                        ) : (
-                          <>
-                            <Download className="w-4 h-4 text-[#8C6D32]" />
-                            <span>Download Frame</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleDownloadOriginal}
-                        disabled={downloadOriginalStatus === "loading"}
-                        className="w-full px-4 py-2.5 bg-[#FAF8F5] hover:bg-[#F4EFE6] text-[#1C1B19] border border-[#DCD3C0] rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
-                        title="Download customer's original uploaded photograph (unframed for physical production)"
-                      >
-                        {downloadOriginalStatus === "loading" ? (
-                          <>
-                            <Loader2 className="w-4 h-4 text-[#8C6D32] animate-spin" />
-                            <span>Preparing image...</span>
-                          </>
-                        ) : downloadOriginalStatus === "success" ? (
-                          <>
-                            <Check className="w-4 h-4 text-emerald-600" />
-                            <span>Downloaded</span>
-                          </>
-                        ) : (
-                          <>
-                            <ImageDown className="w-4 h-4 text-[#8C6D32]" />
-                            <span>Download Original Image</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Document Actions: Print Receipt & Close */}
-                    <div className="flex items-center justify-between gap-3 pt-0.5">
-                      <button
-                        type="button"
-                        onClick={() => window.print()}
-                        className="px-4 sm:px-5 py-2.5 bg-[#FAF8F5] hover:bg-[#F4EFE6] text-[#1C1B19] border border-[#DCD3C0] rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-sm flex items-center gap-2 active:scale-95"
-                      >
-                        <FileText className="w-4 h-4 text-[#8C6D32]" />
-                        <span>Print Receipt</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedOrder(null);
-                          setDownloadStatus("idle");
-                          setDownloadOriginalStatus("idle");
-                        }}
-                        className="px-6 py-2.5 bg-[#1C1B19] text-[#F8F6F2] rounded-xl text-xs font-bold tracking-wider uppercase hover:bg-[#322F2A] transition-colors active:scale-95 text-center"
-                      >
-                        Close
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                </motion.div>
               </div>
-            </motion.div>
-          </div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
 
       {/* WOOD MODAL (ADD / EDIT) */}
       <AnimatePresence>

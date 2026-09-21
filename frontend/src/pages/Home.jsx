@@ -45,18 +45,44 @@ const selectedWorkItems = [
   },
 ];
 
+function parseStatValue(raw, defaultVal, defaultSuffix) {
+  if (raw === undefined || raw === null || raw === "") {
+    return { end: defaultVal, suffix: defaultSuffix };
+  }
+  const str = String(raw).trim();
+  const match = str.match(/^([\d,.]+)\s*(.*)$/);
+  if (match) {
+    const num = parseFloat(match[1].replace(/,/g, "")) || 0;
+    const suffix = match[2] || "";
+    return { end: num, suffix };
+  }
+  return { end: defaultVal, suffix: defaultSuffix };
+}
+
 export default function Home() {
-  const { portfolio, branches } = useAdminData();
+  const { portfolio, branches, websiteContent } = useAdminData();
 
   const dynamicStats = useMemo(() => {
-    const activeBranches = branches?.filter((b) => b.active !== false).length || 3;
+    const stats = websiteContent?.home?.stats;
     return [
-      { end: 12, suffix: "+", label: "Years Behind the Lens" },
-      { end: 1002, suffix: "+", label: "Happy Clients" },
-      { end: activeBranches, suffix: "", label: "Studio Branches" },
-      { end: 94, suffix: "%", label: "Client Satisfaction" },
+      {
+        ...parseStatValue(stats?.weddingsCaptured, 1200, "+"),
+        label: "Weddings Captured",
+      },
+      {
+        ...parseStatValue(stats?.yearsOfCraft, 18, "+"),
+        label: "Years of Craft",
+      },
+      {
+        ...parseStatValue(stats?.signatureFilms, 450, "+"),
+        label: "Signature Films",
+      },
+      {
+        ...parseStatValue(stats?.happyFamilies, 2800, "+"),
+        label: "Happy Families",
+      },
     ];
-  }, [branches]);
+  }, [websiteContent]);
 
   const workItems = useMemo(() => {
     if (portfolio && portfolio.length > 0) {

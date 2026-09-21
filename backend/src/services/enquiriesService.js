@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import prisma from "../config/prisma.js";
+import { createNotification, NOTIFICATION_TYPES } from "./notificationService.js";
 
 const VALID_STATUSES = ["NEW", "READ", "CONTACTED", "CLOSED"];
 
@@ -77,7 +78,7 @@ export async function createEnquiry(data) {
   const createdAt = data.createdAt ? new Date(data.createdAt) : now;
   const receivedDate = data.receivedDate || `${dateStr} ${timeStr}`;
 
-  return prisma.enquiry.create({
+  const newEnquiry = await prisma.enquiry.create({
     data: {
       id,
       clientName,
@@ -92,6 +93,17 @@ export async function createEnquiry(data) {
       createdAt,
     },
   });
+
+  // Server-side admin notification creation
+  await createNotification({
+    type: NOTIFICATION_TYPES.ENQUIRY,
+    title: "New Client Enquiry",
+    message: `${clientName} submitted an enquiry for ${interestedService}.`,
+    relatedEntityId: newEnquiry.id,
+    relatedEntityType: "Enquiry",
+  });
+
+  return newEnquiry;
 }
 
 export async function updateEnquiry(id, data) {

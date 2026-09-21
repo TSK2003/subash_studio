@@ -10,6 +10,7 @@ import {
   Sparkles,
   Clock,
   Share2,
+  Loader2,
 } from "lucide-react";
 import { FaInstagram, FaFacebookF, FaYoutube } from "react-icons/fa6";
 import ImageUploader from "../components/ImageUploader";
@@ -21,6 +22,7 @@ export default function WebsiteContent() {
   const { addToast } = useToast();
 
   const [activeTab, setActiveTab] = useState("home");
+  const [savingSection, setSavingSection] = useState(null);
 
   // Local editable copies
   const [homeForm, setHomeForm] = useState(websiteContent?.home || {});
@@ -34,22 +36,46 @@ export default function WebsiteContent() {
     if (websiteContent?.contact) setContactForm(websiteContent.contact);
   }, [websiteContent]);
 
-  const handleSaveHome = (e) => {
+  const handleSaveHome = async (e) => {
     e.preventDefault();
-    updateWebsiteContent("home", homeForm);
-    addToast("Homepage CMS content saved successfully.", "success");
+    try {
+      setSavingSection("home");
+      const updated = await updateWebsiteContent("home", homeForm);
+      if (updated) setHomeForm(updated);
+      addToast("Homepage CMS content saved successfully.", "success");
+    } catch (err) {
+      addToast(err?.message || "Failed to save Homepage content.", "error");
+    } finally {
+      setSavingSection(null);
+    }
   };
 
-  const handleSaveAbout = (e) => {
+  const handleSaveAbout = async (e) => {
     e.preventDefault();
-    updateWebsiteContent("about", aboutForm);
-    addToast("About Page content saved successfully.", "success");
+    try {
+      setSavingSection("about");
+      const updated = await updateWebsiteContent("about", aboutForm);
+      if (updated) setAboutForm(updated);
+      addToast("About Page content saved successfully.", "success");
+    } catch (err) {
+      addToast(err?.message || "Failed to save About content.", "error");
+    } finally {
+      setSavingSection(null);
+    }
   };
 
-  const handleSaveContact = (e) => {
+  const handleSaveContact = async (e) => {
     e.preventDefault();
-    updateWebsiteContent("contact", contactForm);
-    addToast("Contact & Social details updated.", "success");
+    try {
+      setSavingSection("contact");
+      const updated = await updateWebsiteContent("contact", contactForm);
+      if (updated) setContactForm(updated);
+      addToast("Contact & Social details updated successfully.", "success");
+    } catch (err) {
+      addToast(err?.message || "Failed to save Contact details.", "error");
+    } finally {
+      setSavingSection(null);
+    }
   };
 
   return (
@@ -121,10 +147,15 @@ export default function WebsiteContent() {
               </div>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95"
+                disabled={savingSection !== null}
+                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60"
               >
-                <Save className="w-4 h-4 text-[#E4D3A6]" />
-                <span>Save Homepage</span>
+                {savingSection === "home" ? (
+                  <Loader2 className="w-4 h-4 text-[#E4D3A6] animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 text-[#E4D3A6]" />
+                )}
+                <span>{savingSection === "home" ? "Saving..." : "Save Homepage"}</span>
               </button>
             </div>
 
@@ -255,10 +286,15 @@ export default function WebsiteContent() {
               </div>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95"
+                disabled={savingSection !== null}
+                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60"
               >
-                <Save className="w-4 h-4 text-[#E4D3A6]" />
-                <span>Save About Content</span>
+                {savingSection === "about" ? (
+                  <Loader2 className="w-4 h-4 text-[#E4D3A6] animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 text-[#E4D3A6]" />
+                )}
+                <span>{savingSection === "about" ? "Saving..." : "Save About Content"}</span>
               </button>
             </div>
 
@@ -335,10 +371,15 @@ export default function WebsiteContent() {
               </div>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95"
+                disabled={savingSection !== null}
+                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60"
               >
-                <Save className="w-4 h-4 text-[#E4D3A6]" />
-                <span>Save Contact Details</span>
+                {savingSection === "contact" ? (
+                  <Loader2 className="w-4 h-4 text-[#E4D3A6] animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 text-[#E4D3A6]" />
+                )}
+                <span>{savingSection === "contact" ? "Saving..." : "Save Contact Details"}</span>
               </button>
             </div>
 

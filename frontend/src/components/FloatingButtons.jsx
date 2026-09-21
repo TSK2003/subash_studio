@@ -1,14 +1,21 @@
 import { motion } from "framer-motion";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
+import { useAdminData } from "../admin/context/AdminDataContext";
 
 export default function FloatingButtons() {
+  const { websiteContent } = useAdminData();
+  const contactData = websiteContent?.contact || {};
+  const instagramHref = contactData.instagram || "https://www.instagram.com/subash_studio/";
+  const whatsappRaw = contactData.whatsapp || "+91 93457 06609";
+  const whatsappHref = whatsappRaw.startsWith("http") ? whatsappRaw : `https://wa.me/${whatsappRaw.replace(/\D/g, "")}`;
+
   return (
     <div
       data-no-print="true"
       className="fixed bottom-10 right-6 lg:bottom-14 lg:right-8 xl:right-10 z-30 flex flex-col gap-3.5 no-print print:hidden"
     >
       <motion.a
-        href="https://www.instagram.com/subash_studio/"
+        href={instagramHref}
         target="_blank"
         rel="noreferrer"
         aria-label="Instagram"
@@ -19,7 +26,7 @@ export default function FloatingButtons() {
         <FaInstagram size={19} />
       </motion.a>
       <motion.a
-        href="https://wa.me/+919345706609"
+        href={whatsappHref}
         target="_blank"
         rel="noreferrer"
         aria-label="WhatsApp"

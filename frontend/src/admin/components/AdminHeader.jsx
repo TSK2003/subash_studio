@@ -19,9 +19,50 @@ import { useAdminAuth } from "../context/AdminAuthContext";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
 
+function formatRelativeTime(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return String(dateString);
+  const now = new Date();
+  const diffSec = Math.floor((now - date) / 1000);
+  if (diffSec < 60) return "Just now";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function getNotificationIcon(type) {
+  switch (type) {
+    case "BOOKING":
+      return <Calendar className="w-3.5 h-3.5 text-[#9C7B3D] shrink-0" />;
+    case "FRAME_ORDER":
+      return <Sparkles className="w-3.5 h-3.5 text-[#9C7B3D] shrink-0" />;
+    case "ENQUIRY":
+    default:
+      return <MessageSquare className="w-3.5 h-3.5 text-[#9C7B3D] shrink-0" />;
+  }
+}
+
+function getNotificationRoute(notif) {
+  if (notif?.type === "BOOKING") return "/admin/bookings";
+  if (notif?.type === "FRAME_ORDER") return "/admin/frames";
+  return "/admin/enquiries";
+}
+
 export default function AdminHeader({ onMobileMenuClick }) {
   const { adminUser, logout } = useAdminAuth();
-  const { bookings, enquiries, frameOrders, resetAllDemoData } = useAdminData();
+  const {
+    resetAllDemoData,
+    notifications,
+    unreadNotificationCount,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+  } = useAdminData();
   const { addToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -49,24 +90,25 @@ export default function AdminHeader({ onMobileMenuClick }) {
 
   // Compute Page Title from location
   const getPageMeta = () => {
-    const path = location.pathname;
-    switch (path) {
+    switch (location.pathname) {
+      case "/admin":
+      case "/admin/":
       case "/admin/dashboard":
-        return { title: "Studio Dashboard", subtitle: "Real-time overview of bookings & activity" };
+        return { title: "Studio Dashboard", subtitle: "Real-time overview of bookings, enquiries & media" };
       case "/admin/bookings":
-        return { title: "Shoot Bookings", subtitle: "Manage client bookings, status & schedules" };
+        return { title: "Client Bookings", subtitle: "Manage photo shoot schedules and client inquiries" };
       case "/admin/enquiries":
-        return { title: "Client Enquiries", subtitle: "Direct client inquiries and consultation leads" };
-      case "/admin/frames":
-        return { title: "Frame Management", subtitle: "Manage timber frames, sizes & customer orders" };
+        return { title: "Lead Inquiries", subtitle: "Track and follow up on client contact messages" };
       case "/admin/gallery":
-        return { title: "Gallery Management", subtitle: "Organize client images, categories & featured photos" };
+        return { title: "Gallery Showcase", subtitle: "Curate public portfolio and client showcase photos" };
       case "/admin/portfolio":
-        return { title: "Portfolio Projects", subtitle: "Showcase curated studio wedding & couple stories" };
+        return { title: "Featured Stories", subtitle: "Manage highlight stories & wedding case studies" };
       case "/admin/services":
-        return { title: "Studio Services", subtitle: "Manage photography packages, descriptions & rates" };
+        return { title: "Studio Offerings", subtitle: "Configure photography packages, pricing & descriptions" };
       case "/admin/films":
-        return { title: "Cinematic Films", subtitle: "Curate 4K wedding films, teasers and trailers" };
+        return { title: "Cinematic Films", subtitle: "Manage featured wedding films, teasers and YouTube embeds" };
+      case "/admin/frames":
+        return { title: "Custom Frames & Orders", subtitle: "Configure wood types, designs, aspect ratios and customer orders" };
       case "/admin/branches":
         return { title: "Studio Branches", subtitle: "Manage Kalladaikurichi, Tirunelveli & Tenkasi locations" };
       case "/admin/testimonials":
@@ -82,11 +124,13 @@ export default function AdminHeader({ onMobileMenuClick }) {
 
   const pageMeta = getPageMeta();
 
-  // Active unread alerts derived from AdminDataContext
-  const unreadEnquiries = (enquiries || []).filter((e) => e.status === "New");
-  const newBookings = (bookings || []).filter((b) => b.status === "New");
-  const newOrders = (frameOrders || []).filter((o) => o.status === "New");
-  const totalNotifications = unreadEnquiries.length + newBookings.length + newOrders.length;
+  const handleNotificationClick = (notif) => {
+    if (!notif.isRead) {
+      markNotificationAsRead(notif.id);
+    }
+    setNotificationsOpen(false);
+    navigate(getNotificationRoute(notif));
+  };
 
   const handleResetData = () => {
     if (window.confirm("Reset all admin data back to initial demo seeds?")) {
@@ -171,9 +215,9 @@ export default function AdminHeader({ onMobileMenuClick }) {
             aria-label="View notifications"
           >
             <Bell className="w-4 h-4" />
-            {totalNotifications > 0 && (
+            {unreadNotificationCount > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#C9A669] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">
-                {totalNotifications}
+                {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
               </span>
             )}
           </button>
@@ -185,49 +229,76 @@ export default function AdminHeader({ onMobileMenuClick }) {
                   <h4 className="font-display font-semibold text-sm text-[#2B2B2B]">
                     Studio Activity
                   </h4>
-                  {totalNotifications > 0 && (
+                  {unreadNotificationCount > 0 && (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900">
-                      {totalNotifications} New Alert{totalNotifications > 1 ? "s" : ""}
+                      {unreadNotificationCount} New
                     </span>
                   )}
                 </div>
-                <Link
-                  to="/admin/enquiries"
-                  onClick={() => setNotificationsOpen(false)}
-                  className="text-xs text-[#9C7B3D] hover:underline font-medium"
-                >
-                  View All
-                </Link>
+                {unreadNotificationCount > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => markAllNotificationsAsRead()}
+                    className="text-xs text-[#9C7B3D] hover:underline font-medium cursor-pointer"
+                  >
+                    Mark all read
+                  </button>
+                ) : (
+                  <span className="text-[11px] text-[#8E867B]">All caught up</span>
+                )}
               </div>
 
               <div className="divide-y divide-[#F8F6F2] max-h-72 overflow-y-auto mt-2">
-                {unreadEnquiries.length > 0 ? (
-                  unreadEnquiries.map((enq) => (
+                {notifications && notifications.length > 0 ? (
+                  notifications.map((notif) => (
                     <div
-                      key={enq.id}
-                      onClick={() => {
-                        navigate("/admin/enquiries");
-                        setNotificationsOpen(false);
-                      }}
-                      className="py-2.5 px-2 hover:bg-[#FDFBF7] rounded-lg cursor-pointer transition-colors"
+                      key={notif.id}
+                      onClick={() => handleNotificationClick(notif)}
+                      className={`py-2.5 px-2.5 rounded-lg cursor-pointer transition-colors ${
+                        !notif.isRead
+                          ? "bg-[#FDFBF7] hover:bg-[#F8F4EA]"
+                          : "hover:bg-[#FDFBF7]"
+                      }`}
                     >
-                      <div className="flex items-start justify-between">
-                        <span className="font-medium text-xs text-[#2B2B2B] flex items-center gap-1.5">
-                          <MessageSquare className="w-3.5 h-3.5 text-[#9C7B3D]" />
-                          {enq.clientName || enq.name || "Anonymous"}
-                        </span>
-                        <span className="text-[10px] text-[#8E867B]">
-                          {enq.receivedDate || enq.createdAt || ""}
-                        </span>
+                      <div className="flex items-start gap-2.5">
+                        <div className="mt-0.5 shrink-0">
+                          {getNotificationIcon(notif.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span
+                              className={`text-xs truncate ${
+                                !notif.isRead
+                                  ? "font-bold text-[#2B2B2B]"
+                                  : "font-medium text-[#4A463F]"
+                              }`}
+                            >
+                              {notif.title}
+                            </span>
+                            <span className="text-[10px] text-[#8E867B] shrink-0">
+                              {formatRelativeTime(notif.createdAt)}
+                            </span>
+                          </div>
+                          <p
+                            className={`text-[11px] mt-0.5 line-clamp-2 leading-relaxed ${
+                              !notif.isRead ? "text-[#2B2B2B]" : "text-[#6F6A62]"
+                            }`}
+                          >
+                            {notif.message}
+                          </p>
+                        </div>
+                        {!notif.isRead && (
+                          <span
+                            className="w-2 h-2 rounded-full bg-[#C9A669] shrink-0 mt-1.5"
+                            title="Unread"
+                          />
+                        )}
                       </div>
-                      <p className="text-[11px] text-[#6F6A62] mt-1 line-clamp-1">
-                        {enq.message || enq.notes || enq.clientMessage || "New enquiry received."}
-                      </p>
                     </div>
                   ))
                 ) : (
                   <div className="py-6 text-center text-xs text-[#6F6A62]">
-                    No new enquiries at this time.
+                    No notifications at this time.
                   </div>
                 )}
               </div>

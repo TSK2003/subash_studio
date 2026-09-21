@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import prisma from "../config/prisma.js";
+import { createNotification, NOTIFICATION_TYPES } from "./notificationService.js";
 
 // ==========================================
 // 1. FRAME WOOD TYPES
@@ -199,6 +200,39 @@ function normalizeOrderStatus(status) {
   return VALID_ORDER_STATUSES.includes(upper) ? upper : "NEW";
 }
 
+export function formatOrderResponse(order) {
+  if (!order) return null;
+  const items =
+    order.orderItems && order.orderItems.length > 0
+      ? order.orderItems
+      : Array.isArray(order.items) && order.items.length > 0
+      ? order.items
+      : [
+          {
+            id: `${order.id}-item-1`,
+            orderId: order.id,
+            woodType: order.woodType,
+            woodPrice: order.woodPrice,
+            frameDesign: order.frameDesign,
+            designPrice: order.designPrice,
+            frameRatio: order.frameRatio,
+            ratioPrice: order.ratioPrice,
+            orientation: order.orientation || "portrait",
+            quantity: order.quantity || 1,
+            unitPrice: order.unitPrice,
+            totalAmount: order.totalAmount,
+            photoUrl: order.photoUrl || "",
+            photoName: order.photoName || "photo.jpg",
+            customizationParams: order.customizationParams || {},
+          },
+        ];
+
+  return {
+    ...order,
+    items,
+  };
+}
+
 export async function getOrders({ page, limit, status, search } = {}) {
   const where = {};
   if (status && status !== "ALL") {
@@ -221,6 +255,7 @@ export async function getOrders({ page, limit, status, search } = {}) {
     const [items, total] = await Promise.all([
       prisma.frameOrder.findMany({
         where,
+        include: { orderItems: true },
         orderBy: { createdAt: "desc" },
         skip,
         take,
@@ -229,7 +264,7 @@ export async function getOrders({ page, limit, status, search } = {}) {
     ]);
 
     return {
-      items,
+      items: items.map(formatOrderResponse),
       pagination: {
         total,
         page: pageNum,
@@ -239,16 +274,20 @@ export async function getOrders({ page, limit, status, search } = {}) {
     };
   }
 
-  return prisma.frameOrder.findMany({
+  const orders = await prisma.frameOrder.findMany({
     where,
+    include: { orderItems: true },
     orderBy: { createdAt: "desc" },
   });
+  return orders.map(formatOrderResponse);
 }
 
 export async function getOrderById(id) {
-  return prisma.frameOrder.findUnique({
+  const order = await prisma.frameOrder.findUnique({
     where: { id },
+    include: { orderItems: true },
   });
+  return formatOrderResponse(order);
 }
 
 export async function createOrder(data) {
@@ -264,39 +303,111 @@ export async function createOrder(data) {
   const address = (data.address || "").trim();
   const notes = data.notes ? data.notes.trim() : null;
 
-  // Historical snapshot pricing immutability
-  const woodType = data.woodType || "Teak";
-  const woodPrice = Number(data.woodPrice) || 0;
-  const frameDesign = data.frameDesign || "Classic";
-  const designPrice = Number(data.designPrice) || 0;
-  const frameRatio = data.frameRatio || "12x18";
-  const ratioPrice = Number(data.ratioPrice) || 0;
-  const orientation = data.orientation || "portrait";
-  const quantity = Math.max(1, Number(data.quantity) || 1);
-  const unitPrice = Number(data.unitPrice) || woodPrice + designPrice + ratioPrice;
-  const totalAmount = Number(data.totalAmount) || unitPrice * quantity;
+  // 1. Validate Submitted Items Count
+  let rawItems = [];
+  if (data.items !== undefined && data.items !== null) {
+    if (!Array.isArray(data.items)) {
+      throw new Error("Invalid order payload: 'items' must be an array.");
+    }
+    rawItems = data.items;
+  } else if (data.woodType || data.frameDesign || data.frameRatio) {
+    // Legacy single item format fallback
+    rawItems = [
+      {
+        woodType: data.woodType,
+        frameDesign: data.frameDesign,
+        frameRatio: data.frameRatio,
+        orientation: data.orientation,
+        quantity: data.quantity,
+        photoUrl: data.photoUrl,
+        photoName: data.photoName,
+        customizationParams: data.customizationParams,
+      },
+    ];
+  }
 
-  const photoUrl = (data.photoUrl || "").trim();
-  const photoName = (data.photoName || "photo.jpg").trim();
-  const customizationParams = data.customizationParams || {};
-  const items = data.items || null;
-  const status = normalizeOrderStatus(data.status);
+  if (rawItems.length === 0) {
+    throw new Error("Order must contain at least one item. No items were provided.");
+  }
 
-  return prisma.frameOrder.create({
-    data: {
-      id,
-      customerName,
-      phone,
-      whatsapp,
-      email,
-      deliveryType,
-      address,
-      notes,
-      woodType,
+  console.log(`[Order Creation] Incoming submitted items count: ${rawItems.length}`);
+
+  // 2. Authoritative Server-Side Validation and Catalog Lookup
+  const [woods, designs, ratios] = await Promise.all([
+    getWoodTypes(true),
+    getDesigns(true),
+    getRatios(true),
+  ]);
+
+  const validatedItems = [];
+
+  for (let i = 0; i < rawItems.length; i++) {
+    const raw = rawItems[i];
+    const itemIndex = i + 1;
+
+    // Resolve Wood
+    const woodQuery = (raw.woodType || raw.wood?.name || "").trim().toLowerCase();
+    const woodIdQuery = (raw.woodId || raw.wood?.id || "").trim();
+    const wood = woods.find(
+      (w) =>
+        (w.name || "").trim().toLowerCase() === woodQuery ||
+        (w.id || "").trim() === woodIdQuery
+    );
+    if (!wood) {
+      throw new Error(
+        `Item #${itemIndex} validation error: Wood species '${raw.woodType || raw.wood?.name || "unknown"}' is not recognized or unavailable in catalog.`
+      );
+    }
+
+    // Resolve Design
+    const designQuery = (raw.frameDesign || raw.design?.name || "").trim().toLowerCase();
+    const designIdQuery = (raw.designId || raw.design?.id || "").trim();
+    const design = designs.find(
+      (d) =>
+        (d.name || "").trim().toLowerCase() === designQuery ||
+        (d.id || "").trim() === designIdQuery
+    );
+    if (!design) {
+      throw new Error(
+        `Item #${itemIndex} validation error: Frame profile design '${raw.frameDesign || raw.design?.name || "unknown"}' is not recognized or unavailable in catalog.`
+      );
+    }
+
+    // Resolve Ratio / Size
+    const ratioQuery = (raw.frameRatio || raw.ratio?.name || "").trim().toLowerCase();
+    const ratioIdQuery = (raw.ratioId || raw.ratio?.id || "").trim();
+    const ratio = ratios.find(
+      (r) =>
+        (r.name || "").trim().toLowerCase() === ratioQuery ||
+        (r.id || "").trim() === ratioIdQuery
+    );
+    if (!ratio) {
+      throw new Error(
+        `Item #${itemIndex} validation error: Frame dimension size '${raw.frameRatio || raw.ratio?.name || "unknown"}' is not recognized or unavailable in catalog.`
+      );
+    }
+
+    // Authoritative Server-Calculated Price
+    const woodPrice = wood.basePrice;
+    const designPrice = design.additionalPrice;
+    const ratioPrice = ratio.price;
+    const unitPrice = woodPrice + designPrice + ratioPrice;
+    const quantity = Math.max(1, parseInt(raw.quantity, 10) || 1);
+    const totalAmount = unitPrice * quantity;
+
+    const itemId = raw.id || `${id}-item-${itemIndex}`;
+    const orientation = raw.orientation || "portrait";
+    const photoUrl = (raw.photoUrl || "").trim();
+    const photoName = (raw.photoName || "photo.jpg").trim();
+    const customizationParams = raw.customizationParams || {};
+
+    validatedItems.push({
+      id: itemId,
+      woodType: wood.name,
       woodPrice,
-      frameDesign,
+      frameDesign: design.name,
       designPrice,
-      frameRatio,
+      frameRatio: ratio.name,
       ratioPrice,
       orientation,
       quantity,
@@ -305,10 +416,118 @@ export async function createOrder(data) {
       photoUrl,
       photoName,
       customizationParams,
-      items,
-      status,
-    },
+    });
+  }
+
+  // Strict Validation: Validated Items must match Raw Submitted Items Count
+  if (validatedItems.length !== rawItems.length) {
+    throw new Error(
+      `Order validation integrity failure: submitted ${rawItems.length} items but validated ${validatedItems.length} items.`
+    );
+  }
+
+  console.log(`[Order Creation] Validated items count: ${validatedItems.length}`);
+
+  // Calculate Order Aggregates
+  const primaryItem = validatedItems[0];
+  const grandTotal = validatedItems.reduce((acc, it) => acc + it.totalAmount, 0);
+  const totalQuantity = validatedItems.reduce((acc, it) => acc + it.quantity, 0);
+  const status = normalizeOrderStatus(data.status);
+
+  // 3. Atomic Database Transaction
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    // A. Create the master FrameOrder
+    const masterOrder = await tx.frameOrder.create({
+      data: {
+        id,
+        customerName,
+        phone,
+        whatsapp,
+        email,
+        deliveryType,
+        address,
+        notes,
+        woodType: primaryItem.woodType,
+        woodPrice: primaryItem.woodPrice,
+        frameDesign: primaryItem.frameDesign,
+        designPrice: primaryItem.designPrice,
+        frameRatio: primaryItem.frameRatio,
+        ratioPrice: primaryItem.ratioPrice,
+        orientation: primaryItem.orientation,
+        quantity: totalQuantity,
+        unitPrice: primaryItem.unitPrice,
+        totalAmount: grandTotal,
+        photoUrl: primaryItem.photoUrl,
+        photoName: primaryItem.photoName,
+        customizationParams: primaryItem.customizationParams,
+        items: validatedItems,
+        status,
+      },
+    });
+
+    // B. Create all FrameOrderItem relational records
+    for (const item of validatedItems) {
+      await tx.frameOrderItem.create({
+        data: {
+          id: item.id,
+          orderId: id,
+          woodType: item.woodType,
+          woodPrice: item.woodPrice,
+          frameDesign: item.frameDesign,
+          designPrice: item.designPrice,
+          frameRatio: item.frameRatio,
+          ratioPrice: item.ratioPrice,
+          orientation: item.orientation,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalAmount: item.totalAmount,
+          photoUrl: item.photoUrl,
+          photoName: item.photoName,
+          customizationParams: item.customizationParams,
+        },
+      });
+    }
+
+    // C. Verify Database Persistence Count Inside Transaction
+    const createdOrderItems = await tx.frameOrderItem.findMany({
+      where: { orderId: id },
+      orderBy: { createdAt: "asc" },
+    });
+
+    console.log(`[Order Creation] Persisted order items count: ${createdOrderItems.length}`);
+
+    if (createdOrderItems.length !== rawItems.length) {
+      throw new Error(
+        `Database integrity failure: persisted ${createdOrderItems.length} items but submitted ${rawItems.length} items.`
+      );
+    }
+
+    // D. Create notification inside transaction
+    await createNotification({
+      type: NOTIFICATION_TYPES.FRAME_ORDER,
+      title: "New Frame Order",
+      message: `Order #${id} placed by ${customerName} (${totalQuantity} frame${totalQuantity > 1 ? "s" : ""}, ₹${grandTotal.toLocaleString("en-IN")}).`,
+      relatedEntityId: id,
+      relatedEntityType: "FrameOrder",
+      tx,
+    });
+
+    return {
+      ...masterOrder,
+      orderItems: createdOrderItems,
+    };
   });
+
+  // 4. Validate Response Items Integrity
+  const finalOrder = formatOrderResponse(transactionResult);
+  if (!finalOrder.items || finalOrder.items.length !== rawItems.length) {
+    throw new Error(
+      `API response integrity failure: created order has ${finalOrder.items?.length || 0} items instead of ${rawItems.length}.`
+    );
+  }
+
+  console.log(`[Order Creation] Final returned order items count: ${finalOrder.items.length}`);
+  return finalOrder;
 }
 
 export async function updateOrderStatus(id, status) {

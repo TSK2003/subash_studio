@@ -166,8 +166,9 @@ model Film {
   id          String   @id
   title       String
   category    String
-  videoUrl    String
-  duration    String   @default("Highlight")
+  videoUrl        String
+  videoSourceType String   @default("external")
+  duration        String   @default("Highlight")
   thumbnail   String   @db.Text
   description String?  @db.Text
   featured    Boolean  @default(false)
@@ -306,6 +307,7 @@ model FrameOrder {
   photoName           String
   customizationParams Json
   items               Json?
+  orderItems          FrameOrderItem[]
   status              FrameOrderStatus @default(NEW)
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
@@ -313,6 +315,31 @@ model FrameOrder {
   @@index([status])
   @@index([createdAt])
   @@map("frame_orders")
+}
+
+/// Individual customized frame items belonging to a customer FrameOrder
+model FrameOrderItem {
+  id                  String     @id
+  orderId             String
+  order               FrameOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  woodType            String
+  woodPrice           Int
+  frameDesign         String
+  designPrice         Int
+  frameRatio          String
+  ratioPrice          Int
+  orientation         String     @default("portrait")
+  quantity            Int        @default(1)
+  unitPrice           Int
+  totalAmount         Int
+  photoUrl            String     @db.Text
+  photoName           String
+  customizationParams Json?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  @@index([orderId])
+  @@map("frame_order_items")
 }
 
 /// Editorial website copy for Home, About, and Contact
@@ -332,3 +359,23 @@ model StudioSettings {
 
   @@map("studio_settings")
 }
+
+/// System notifications for studio admins (bookings, enquiries, frame orders)
+model Notification {
+  id                String   @id @default(uuid())
+  type              String   // "BOOKING" | "ENQUIRY" | "FRAME_ORDER"
+  title             String
+  message           String
+  relatedEntityId   String?  @map("related_entity_id")
+  relatedEntityType String?  @map("related_entity_type")
+  isRead            Boolean  @default(false) @map("is_read")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([type])
+  @@index([relatedEntityType, relatedEntityId])
+  @@map("notifications")
+}
+

@@ -92,6 +92,72 @@ async function request(endpoint, options = {}) {
   return data;
 }
 
+export function uploadWithProgress(endpoint, formData, { onProgress, signal } = {}) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const url = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
+
+    xhr.open("POST", url, true);
+    xhr.withCredentials = true;
+
+    const token = currentToken || getAuthToken() || (typeof localStorage !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null);
+    if (token) {
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    }
+
+    if (signal) {
+      signal.addEventListener("abort", () => {
+        xhr.abort();
+        reject(new Error("Upload aborted by user."));
+      });
+    }
+
+    if (xhr.upload && typeof onProgress === "function") {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          onProgress({
+            loaded: event.loaded,
+            total: event.total,
+            percent,
+          });
+        }
+      };
+    }
+
+    xhr.onload = () => {
+      let data = null;
+      try {
+        data = JSON.parse(xhr.responseText);
+      } catch (e) {
+        data = xhr.responseText;
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(data);
+      } else {
+        const errorMsg =
+          (data && typeof data === "object" && (data.error || data.message)) ||
+          `Upload failed with status ${xhr.status}`;
+        const err = new Error(errorMsg);
+        err.status = xhr.status;
+        err.data = data;
+        reject(err);
+      }
+    };
+
+    xhr.onerror = () => {
+      reject(new Error("Network error during upload. Please check your connection."));
+    };
+
+    xhr.onabort = () => {
+      reject(new Error("Upload cancelled."));
+    };
+
+    xhr.send(formData);
+  });
+}
+
 export const api = {
   get: (endpoint, options) => request(endpoint, { method: "GET", ...options }),
   post: (endpoint, body, options) => request(endpoint, { method: "POST", body, ...options }),
@@ -104,6 +170,8 @@ export const api = {
       body: formData,
       ...options,
     }),
+  uploadWithProgress,
 };
 
 export default api;
+

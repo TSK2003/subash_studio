@@ -2,6 +2,7 @@ import app from "./app.js";
 import ENV from "./config/env.js";
 import prisma from "./config/prisma.js";
 import { seedInitialDataIfNeeded } from "./services/seedService.js";
+import { backfillRecentNotificationsIfEmpty } from "./services/notificationService.js";
 
 async function startServer() {
   try {
@@ -11,6 +12,8 @@ async function startServer() {
 
     // Automatically seed default admin and catalog if empty
     await seedInitialDataIfNeeded();
+    await backfillRecentNotificationsIfEmpty();
+
 
     const server = app.listen(ENV.PORT, () => {
       console.log(`✓ Subash Studio API listening on http://localhost:${ENV.PORT}`);

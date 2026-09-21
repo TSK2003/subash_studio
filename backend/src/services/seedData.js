@@ -416,9 +416,9 @@ export const initialTestimonials = [
 
 export const initialWebsiteContent = {
   home: {
-    heroHeading: "Fine Photography & Cinematic Films",
+    heroHeading: "Subash Photography",
     heroTagline: "Preserving timeless heritage, profound emotions, and authentic human celebrations across generations.",
-    heroCtaText: "Explore Portfolio",
+    heroCtaText: "BOOK A SHOOT",
     stats: {
       weddingsCaptured: "1,200+",
       yearsOfCraft: "18+",
@@ -427,17 +427,17 @@ export const initialWebsiteContent = {
     },
   },
   about: {
-    heading: "The Art of Timeless Memory",
-    studioStory: "Founded with a deep reverence for authentic emotion and South Indian cultural grandeur, SUBASH STUDIO has evolved into one of the region's most sought-after photography ateliers.",
-    establishedYear: "2008",
-    philosophy: "We believe wedding photography is not merely documenting an event — it is preserving an heirloom of love, sacred rituals, and joyful tears that will be cherished a hundred years from now.",
+    heading: "A studio built on one belief: light doesn't lie.",
+    studioStory: "SUBASH STUDIO began with a single photographer, a rented lens and a wedding he almost turned down out of nerves. Over a decade on, that same instinct — to shoot what's real rather than what's expected — still shapes every frame we deliver. Today our team works across studios in Kalladaikurichi and Tirunelveli, Tamil Nadu.",
+    establishedYear: "1993",
+    philosophy: "",
   },
   contact: {
     phone: "+91 93457 06609",
     whatsapp: "+91 93457 06609",
-    email: "subashstudio009@gmail.com",
-    instagram: "https://instagram.com/subashstudio",
-    facebook: "https://facebook.com/subashstudio",
+    email: "hello@subashstudio.com",
+    instagram: "https://www.instagram.com/subash_studio/",
+    facebook: "https://facebook.com",
     youtube: "https://youtube.com/@subashstudio",
     hours: "Mon – Sun: 8:00 AM – 9:00 PM",
   },

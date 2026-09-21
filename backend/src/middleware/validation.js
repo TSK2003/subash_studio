@@ -156,6 +156,7 @@ export function validateCreateFrameOrder(req, res, next) {
     quantity,
     totalAmount,
     photoUrl,
+    items,
     status,
   } = req.body || {};
 
@@ -194,12 +195,33 @@ export function validateCreateFrameOrder(req, res, next) {
     }
   }
 
-  const qty = Number(quantity);
-  if (isNaN(qty) || qty < 1 || qty > 100) {
-    return res.status(400).json({
-      success: false,
-      error: "Quantity must be a valid number between 1 and 100.",
-    });
+  // Multi-item vs Single-item support
+  if (items !== undefined && items !== null) {
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Order must contain at least one frame item.",
+      });
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      const itQty = Number(it.quantity ?? 1);
+      if (isNaN(itQty) || itQty < 1 || itQty > 100) {
+        return res.status(400).json({
+          success: false,
+          error: `Item #${i + 1}: Quantity must be a valid number between 1 and 100.`,
+        });
+      }
+    }
+  } else {
+    const qty = Number(quantity ?? 1);
+    if (isNaN(qty) || qty < 1 || qty > 100) {
+      return res.status(400).json({
+        success: false,
+        error: "Quantity must be a valid number between 1 and 100.",
+      });
+    }
   }
 
   if (totalAmount !== undefined) {
@@ -210,14 +232,6 @@ export function validateCreateFrameOrder(req, res, next) {
         error: "Order total amount must be a non-negative number.",
       });
     }
-  }
-
-  const cleanPhotoUrl = (photoUrl || "").trim();
-  if (!cleanPhotoUrl) {
-    return res.status(400).json({
-      success: false,
-      error: "Please attach a customized photo for framing.",
-    });
   }
 
   if (status) {

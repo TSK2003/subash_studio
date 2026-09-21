@@ -156,6 +156,16 @@ export function normalizeFilm(film = {}) {
   const thumbnail = film.thumbnail || film.posterImage || film.poster || film.image || "";
   const posterImage = film.posterImage || film.thumbnail || film.poster || film.image || "";
   const poster = film.poster || film.thumbnail || film.posterImage || film.image || "";
+  let videoSourceType = film.videoSourceType;
+  if (!videoSourceType) {
+    if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be") || videoUrl.includes("vimeo.com")) {
+      videoSourceType = "external";
+    } else if (videoUrl.startsWith("/uploads/") || videoUrl.includes("films/videos") || /\.(mp4|webm|mov)(\?.*)?$/i.test(videoUrl)) {
+      videoSourceType = "upload";
+    } else {
+      videoSourceType = "external";
+    }
+  }
   return {
     ...film,
     id: film.id || `FLM-${Math.floor(100 + Math.random() * 900)}`,
@@ -164,6 +174,7 @@ export function normalizeFilm(film = {}) {
     type,
     videoUrl,
     youtubeUrl,
+    videoSourceType,
     duration: film.duration || "Highlight",
     thumbnail,
     posterImage,
@@ -223,6 +234,21 @@ export function normalizeTestimonial(tst = {}) {
   };
 }
 
+export function normalizeNotification(notif = {}) {
+  if (!notif) return notif;
+  return {
+    ...notif,
+    id: notif.id || `notif-${Date.now()}`,
+    type: notif.type || "ENQUIRY",
+    title: notif.title || "Studio Activity",
+    message: notif.message || "",
+    relatedEntityId: notif.relatedEntityId || null,
+    relatedEntityType: notif.relatedEntityType || null,
+    isRead: Boolean(notif.isRead),
+    createdAt: notif.createdAt || new Date().toISOString(),
+  };
+}
+
 export function AdminDataProvider({ children }) {
   const [bookings, setBookings] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
@@ -243,6 +269,8 @@ export function AdminDataProvider({ children }) {
   const [frameDesigns, setFrameDesigns] = useState([]);
   const [frameRatios, setFrameRatios] = useState([]);
   const [frameOrders, setFrameOrders] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -291,6 +319,8 @@ export function AdminDataProvider({ children }) {
             api.get("/api/testimonials/google-meta"),
             api.get("/api/settings"),
             api.get("/api/frames/orders"),
+            api.get("/api/notifications"),
+            api.get("/api/notifications/unread-count"),
           ]
         : [];
 
@@ -332,8 +362,8 @@ export function AdminDataProvider({ children }) {
         setFrameRatios(ratios.value);
       }
 
-      if (adminMode && adminResults.length === 5) {
-        const [bks, enqs, gMeta, stg, orders] = adminResults;
+      if (adminMode && adminResults.length >= 5) {
+        const [bks, enqs, gMeta, stg, orders, notifs, unreadNotifs] = adminResults;
         if (bks && bks.status === "fulfilled" && Array.isArray(bks.value)) {
           setBookings(bks.value.map(normalizeBooking));
         }
@@ -348,6 +378,12 @@ export function AdminDataProvider({ children }) {
         }
         if (orders && orders.status === "fulfilled" && Array.isArray(orders.value)) {
           setFrameOrders(orders.value);
+        }
+        if (notifs && notifs.status === "fulfilled" && notifs.value?.items) {
+          setNotifications(notifs.value.items.map(normalizeNotification));
+        }
+        if (unreadNotifs && unreadNotifs.status === "fulfilled" && typeof unreadNotifs.value?.count === "number") {
+          setUnreadNotificationCount(unreadNotifs.value.count);
         }
       }
     } catch (err) {
@@ -606,6 +642,7 @@ export function AdminDataProvider({ children }) {
       ...prev,
       [section]: updated,
     }));
+    return updated;
   }, []);
 
   // 10. Settings
@@ -709,6 +746,63 @@ export function AdminDataProvider({ children }) {
     await api.delete(`/api/frames/orders/${id}`);
     setFrameOrders((prev) => prev.filter((item) => item.id !== id));
   }, []);
+
+  // Notifications Handlers & Cross-tab Synchronization
+  const refreshNotifications = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const [notifs, unread] = await Promise.allSettled([
+        api.get("/api/notifications"),
+        api.get("/api/notifications/unread-count"),
+      ]);
+      if (notifs.status === "fulfilled" && notifs.value?.items) {
+        setNotifications(notifs.value.items.map(normalizeNotification));
+      }
+      if (unread.status === "fulfilled" && typeof unread.value?.count === "number") {
+        setUnreadNotificationCount(unread.value.count);
+      }
+    } catch {
+      // Graceful fallback without breaking dashboard
+    }
+  }, [isAuthenticated]);
+
+  const markNotificationAsRead = useCallback(async (id) => {
+    if (!id) return;
+    // Optimistic UI update
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+    setUnreadNotificationCount((prev) => Math.max(0, prev - 1));
+
+    try {
+      await api.patch(`/api/notifications/${id}/read`);
+    } catch (err) {
+      console.error("Failed to mark notification as read in database:", err);
+      refreshNotifications();
+    }
+  }, [refreshNotifications]);
+
+  const markAllNotificationsAsRead = useCallback(async () => {
+    // Optimistic UI update
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setUnreadNotificationCount(0);
+
+    try {
+      await api.patch("/api/notifications/read-all");
+    } catch (err) {
+      console.error("Failed to mark all notifications as read in database:", err);
+      refreshNotifications();
+    }
+  }, [refreshNotifications]);
+
+  // Periodic polling for notifications (every 30s when authenticated)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(() => {
+      refreshNotifications();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, refreshNotifications]);
 
   const resetAllDemoData = useCallback(() => {
     refreshData();
@@ -824,6 +918,13 @@ export function AdminDataProvider({ children }) {
         updateFrameOrderStatus,
         updateFrameOrder,
         deleteFrameOrder,
+
+        // Notifications
+        notifications,
+        unreadNotificationCount,
+        markNotificationAsRead,
+        markAllNotificationsAsRead,
+        refreshNotifications,
 
         resetAllDemoData,
       }}

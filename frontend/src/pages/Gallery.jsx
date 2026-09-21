@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import LightGallery from "lightgallery/react";
 
 import lgZoom from "lightgallery/plugins/zoom";
@@ -18,6 +19,13 @@ import { useAdminData } from "../admin/context/AdminDataContext";
 export default function Gallery() {
   const { gallery } = useAdminData();
   const [active, setActive] = useState("All");
+  const lightGalleryRef = useRef(null);
+
+  const onInit = useCallback((detail) => {
+    if (detail) {
+      lightGalleryRef.current = detail.instance;
+    }
+  }, []);
 
   const images = useMemo(() => {
     if (gallery && gallery.length > 0) {
@@ -46,6 +54,14 @@ export default function Gallery() {
     }
     return images.filter((image) => image.category === active);
   }, [active, images]);
+
+  useEffect(() => {
+    lightGalleryRef.current?.refresh();
+    const timer = setTimeout(() => {
+      lightGalleryRef.current?.refresh();
+    }, 550);
+    return () => clearTimeout(timer);
+  }, [filtered]);
 
 
   return (
@@ -140,6 +156,7 @@ export default function Gallery() {
       <section className="max-w-7xl mx-auto px-6 lg:px-10 py-20">
 
         <LightGallery
+          onInit={onInit}
           plugins={[
             lgZoom,
             lgThumbnail,
@@ -155,104 +172,119 @@ export default function Gallery() {
           "
         >
 
-          {filtered.map((image) => (
+          <AnimatePresence mode="popLayout">
 
-            <a
-              key={image.id}
+            {filtered.map((image, index) => (
 
-              href={image.src}
-
-              className="
-                group
-                relative
-                block
-                w-full
-                break-inside-avoid
-                rounded-md
-                overflow-hidden
-                shadow-card
-                cursor-zoom-in
-                mb-5
-              "
-
-              data-sub-html={`
-                <div>
-                  <p class="lg-caption">
-                    ${image.category}
-                  </p>
-                  <p>
-                    ${image.title}
-                  </p>
-                </div>
-              `}
-            >
-
-              {/* =================================================
-                  MAIN IMAGE
-              ================================================= */}
-
-              <img
-                src={image.src}
-                alt={`${image.title} - SUBASH STUDIO`}
-                loading="lazy"
-
+              <motion.a
+                layout
+                key={image.id}
+                href={image.src}
+                initial={{
+                  opacity: 0,
+                  y: 25,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.96,
+                }}
+                transition={{
+                  duration: 0.5,
+                  delay: (index % 6) * 0.05,
+                }}
                 className="
+                  group
+                  relative
+                  block
                   w-full
-                  h-auto
-                  object-cover
-                  transition-transform
-                  duration-700
-                  group-hover:scale-105
+                  break-inside-avoid
+                  rounded-md
+                  overflow-hidden
+                  shadow-card
+                  cursor-zoom-in
+                  mb-5
                 "
-              />
-
-
-              {/* =================================================
-                  HOVER OVERLAY
-              ================================================= */}
-
-              <div
-                className="
-                  absolute
-                  inset-0
-                  bg-ink/0
-                  group-hover:bg-ink/25
-                  transition-all
-                  duration-500
-                "
-              />
-
-
-              {/* =================================================
-                  CATEGORY LABEL
-              ================================================= */}
-
-              <span
-                className="
-                  absolute
-                  bottom-3
-                  left-3
-                  text-[11px]
-                  tracking-[0.1em]
-                  uppercase
-                  text-bg-soft
-                  opacity-0
-                  group-hover:opacity-100
-                  transition-opacity
-                  duration-300
-                  bg-ink/60
-                  backdrop-blur-sm
-                  px-3
-                  py-1.5
-                  rounded-full
-                "
+                data-sub-html={`
+                  <div>
+                    <p class="lg-caption">
+                      ${image.category}
+                    </p>
+                    <p>
+                      ${image.title}
+                    </p>
+                  </div>
+                `}
               >
-                {image.category}
-              </span>
 
-            </a>
+                {/* =================================================
+                    MAIN IMAGE
+                ================================================= */}
 
-          ))}
+                <img
+                  src={image.src}
+                  alt={`${image.title} - SUBASH STUDIO`}
+                  loading="lazy"
+                  className="
+                    w-full
+                    h-auto
+                    object-cover
+                    transition-transform
+                    duration-700
+                    group-hover:scale-105
+                  "
+                />
+
+                {/* =================================================
+                    HOVER OVERLAY
+                ================================================= */}
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-ink/0
+                    group-hover:bg-ink/25
+                    transition-all
+                    duration-500
+                  "
+                />
+
+                {/* =================================================
+                    CATEGORY LABEL
+                ================================================= */}
+
+                <span
+                  className="
+                    absolute
+                    bottom-3
+                    left-3
+                    text-[11px]
+                    tracking-[0.1em]
+                    uppercase
+                    text-bg-soft
+                    opacity-0
+                    group-hover:opacity-100
+                    transition-opacity
+                    duration-300
+                    bg-ink/60
+                    backdrop-blur-sm
+                    px-3
+                    py-1.5
+                    rounded-full
+                  "
+                >
+                  {image.category}
+                </span>
+
+              </motion.a>
+
+            ))}
+
+          </AnimatePresence>
 
         </LightGallery>
 

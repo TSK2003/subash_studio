@@ -470,13 +470,13 @@ export default function OrderFrames() {
   };
 
   // Final Order Submission
-  const handleSubmitOrder = (e) => {
+  const handleSubmitOrder = async (e) => {
     e.preventDefault();
     if (!validateForm() || isSubmitting) return;
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
       const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
       const rand = Math.floor(100 + Math.random() * 900);
       const generatedOrderId = `SS-FR-${today}-${rand}`;
@@ -511,8 +511,26 @@ export default function OrderFrames() {
         },
       };
 
-      const finalTotal = cartItems.length > 0 ? cartGrandTotal : pricing.totalAmount;
-      const orderItems = cartItems.length > 0 ? cartItems : [primaryItem];
+      // Stage 1: Cart Items Length
+      const cartCount = cartItems.length;
+      console.log(`[Order Checkout] Cart items count: ${cartCount}`);
+
+      const orderItems = cartCount > 0 ? [...cartItems] : [primaryItem];
+
+      // Stage 2: Frontend Checkout Payload Items Length
+      const payloadItemCount = orderItems.length;
+      console.log(
+        `[Order Checkout] Frontend checkout payload items count: ${payloadItemCount}`
+      );
+
+      // Data integrity verification: cart items must never be silently reduced
+      if (cartCount > 0 && payloadItemCount !== cartCount) {
+        throw new Error(
+          `Cart data integrity failure: cart contains ${cartCount} items but payload has ${payloadItemCount} items.`
+        );
+      }
+
+      const finalTotal = cartCount > 0 ? cartGrandTotal : pricing.totalAmount;
 
       const orderPayload = {
         id: generatedOrderId,
@@ -523,11 +541,23 @@ export default function OrderFrames() {
         deliveryType: customerForm.deliveryType,
         address: fullAddress,
         notes: customerForm.notes.trim(),
-        woodType: primaryItem.woodType || primaryItem.wood?.name || selectedWood?.name || "Selected Wood",
+        woodType:
+          primaryItem.woodType ||
+          primaryItem.wood?.name ||
+          selectedWood?.name ||
+          "Selected Wood",
         woodPrice: primaryItem.woodPrice ?? pricing.woodPrice,
-        frameDesign: primaryItem.frameDesign || primaryItem.design?.name || selectedDesign?.name || "Selected Design",
+        frameDesign:
+          primaryItem.frameDesign ||
+          primaryItem.design?.name ||
+          selectedDesign?.name ||
+          "Selected Design",
         designPrice: primaryItem.designPrice ?? pricing.designPrice,
-        frameRatio: primaryItem.frameRatio || primaryItem.ratio?.name || selectedRatio?.name || "Selected Size",
+        frameRatio:
+          primaryItem.frameRatio ||
+          primaryItem.ratio?.name ||
+          selectedRatio?.name ||
+          "Selected Size",
         ratioPrice: primaryItem.ratioPrice ?? pricing.ratioPrice,
         orientation: primaryItem.orientation || orientation,
         quantity: orderItems.reduce((sum, it) => sum + (it.quantity || 1), 0),
@@ -547,16 +577,39 @@ export default function OrderFrames() {
         createdAt: new Date().toISOString(),
       };
 
-      addFrameOrder(orderPayload);
-      setPlacedOrder(orderPayload);
+      const createdOrder = await addFrameOrder(orderPayload);
+
+      // API Response Item Count Verification:
+      if (
+        !createdOrder ||
+        !createdOrder.items ||
+        createdOrder.items.length !== payloadItemCount
+      ) {
+        throw new Error(
+          `Order submission failed: Expected ${payloadItemCount} persisted items, but server returned ${
+            createdOrder?.items?.length || 0
+          } items.`
+        );
+      }
+
+      setPlacedOrder(createdOrder);
       setCartItems([]);
       try {
         localStorage.removeItem("subash_frame_cart");
       } catch {}
-      setIsSubmitting(false);
       setCurrentStep(4);
       window.scrollTo({ top: 80, behavior: "smooth" });
-    }, 700);
+    } catch (err) {
+      console.error("[Order Checkout Error]:", err);
+      const errMsg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to place frame order. Please check all frame selections.";
+      alert(errMsg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Reset order to customize another frame

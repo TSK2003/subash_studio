@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowDown } from "lucide-react";
+import { useAdminData } from "../../admin/context/AdminDataContext";
 
 /**
  * HomeHero
@@ -21,6 +22,30 @@ import { ArrowRight, ArrowDown } from "lucide-react";
  * - Fully responsive from 375px mobile up to 1920px widescreen desktop
  */
 export default function HomeHero() {
+  const { websiteContent } = useAdminData();
+  const homeData = websiteContent?.home || {};
+
+  const rawHeading = (homeData.heroHeading || "Subash Photography").trim();
+  let line1 = rawHeading;
+  let line2 = "";
+
+  if (rawHeading.includes("\n")) {
+    const parts = rawHeading.split("\n");
+    line1 = parts[0].trim();
+    line2 = parts.slice(1).join(" ").trim();
+  } else if (rawHeading.includes("&")) {
+    const parts = rawHeading.split("&");
+    line1 = parts[0].trim() + " &";
+    line2 = parts.slice(1).join("&").trim();
+  } else {
+    const words = rawHeading.split(/\s+/);
+    if (words.length > 1) {
+      const splitIndex = Math.ceil(words.length / 2);
+      line1 = words.slice(0, splitIndex).join(" ");
+      line2 = words.slice(splitIndex).join(" ");
+    }
+  }
+
   const handleScrollDown = () => {
     const nextSection = document.getElementById("home-stats-section");
     if (nextSection) {
@@ -129,14 +154,16 @@ export default function HomeHero() {
                 className="block text-[#1C1B19] font-bold"
                 style={{ fontSize: "clamp(2.4rem, 5.2vw, 5.6rem)" }}
               >
-                Subash
+                {line1}
               </span>
-              <span
-                className="block text-[#B38F4D] font-normal italic mt-1 sm:mt-1.5 lg:whitespace-nowrap"
-                style={{ fontSize: "clamp(2.4rem, 5.2vw, 5.6rem)" }}
-              >
-                Photography
-              </span>
+              {line2 && (
+                <span
+                  className="block text-[#B38F4D] font-normal italic mt-1 sm:mt-1.5 lg:whitespace-nowrap"
+                  style={{ fontSize: "clamp(2.4rem, 5.2vw, 5.6rem)" }}
+                >
+                  {line2}
+                </span>
+              )}
             </motion.h1>
 
             {/* Editorial Gold Ornament: ── ◆ ── */}
@@ -166,9 +193,7 @@ export default function HomeHero() {
               transition={{ duration: 0.65, delay: 0.22, ease: [0.25, 1, 0.5, 1] }}
               className="text-[#6F6A62] text-[15px] sm:text-[16px] xl:text-[17px] leading-[1.65] max-w-[490px] xl:max-w-[530px] font-normal"
             >
-              Preserving timeless heritage, profound emotions, and authentic{" "}
-              <br className="hidden sm:inline" />
-              human celebrations across generations.
+              {homeData.heroTagline || "Preserving timeless heritage, profound emotions, and authentic human celebrations across generations."}
             </motion.p>
 
             {/* Action Buttons: BOOK A SHOOT & EXPLORE OUR WORK */}
@@ -178,15 +203,15 @@ export default function HomeHero() {
               transition={{ duration: 0.7, delay: 0.28, ease: [0.25, 1, 0.5, 1] }}
               className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 lg:gap-5 mt-6 sm:mt-7 xl:mt-8 w-full sm:w-fit sm:mx-auto lg:mx-0"
             >
-              {/* Primary: BOOK A SHOOT (~210px-225px x 52px-58px) */}
+              {/* Primary: BOOK A SHOOT / CMS CTA (~210px-225px x 52px-58px) */}
               <Link
                 to="/contact"
-                className="group w-full sm:w-[210px] xl:w-[220px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#B38F4D] hover:bg-[#9C7B3D] text-white rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-[0_8px_20px_-4px_rgba(179,143,77,0.38)] hover:shadow-lg hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0"
+                className="group w-full sm:w-[210px] xl:w-[220px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#B38F4D] hover:bg-[#9C7B3D] text-white rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-[0_8px_20px_-4px_rgba(179,143,77,0.38)] hover:shadow-lg hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0 px-4 text-center"
               >
-                <span>BOOK A SHOOT</span>
+                <span className="truncate">{homeData.heroCtaText || "BOOK A SHOOT"}</span>
                 <ArrowRight
                   size={14}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
+                  className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
                 />
               </Link>
 

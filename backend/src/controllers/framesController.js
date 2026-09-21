@@ -171,9 +171,39 @@ export async function getOrderById(req, res, next) {
 
 export async function createOrder(req, res, next) {
   try {
+    const submittedItemCount = Array.isArray(req.body.items)
+      ? req.body.items.length
+      : 1;
+
+    console.log(
+      `[FramesController] POST /api/frames/orders received. Submitted item count: ${submittedItemCount}`
+    );
+
     const order = await framesService.createOrder(req.body);
+
+    // Multi-item order data integrity check:
+    // If the submitted item count and persisted item count differ, treat the operation as a failure
+    if (!order.items || order.items.length !== submittedItemCount) {
+      console.error(
+        `[FramesController] Multi-item integrity error: submitted ${submittedItemCount} items, but returned ${order.items?.length || 0} items.`
+      );
+      return res.status(500).json({
+        error: `Multi-item order data integrity violation: submitted ${submittedItemCount} items but persisted ${order.items?.length || 0} items.`,
+      });
+    }
+
     res.status(201).json(order);
   } catch (err) {
+    console.error("[FramesController] Order creation error:", err.message);
+    if (
+      err.message.includes("validation") ||
+      err.message.includes("recognized") ||
+      err.message.includes("must contain") ||
+      err.message.includes("unavailable") ||
+      err.message.includes("Invalid")
+    ) {
+      return res.status(400).json({ error: err.message, message: err.message });
+    }
     next(err);
   }
 }

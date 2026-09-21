@@ -24,6 +24,6 @@ export async function updateContent(req, res, next) {
     const updated = await contentService.updateContent(req.params.section, req.body);
     res.json(updated.data);
   } catch (err) {
-    next(err);
+    res.status(400).json({ error: err.message || "Failed to update content" });
   }
 }

@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import prisma from "../config/prisma.js";
+import { createNotification, NOTIFICATION_TYPES } from "./notificationService.js";
 
 const VALID_STATUSES = ["NEW", "CONTACTED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
 
@@ -74,7 +75,7 @@ export async function createBooking(data) {
   const status = normalizeStatus(data.status);
   const createdAt = data.createdAt ? new Date(data.createdAt) : new Date();
 
-  return prisma.booking.create({
+  const newBooking = await prisma.booking.create({
     data: {
       id,
       customerName,
@@ -95,6 +96,17 @@ export async function createBooking(data) {
       createdAt,
     },
   });
+
+  // Server-side admin notification creation
+  await createNotification({
+    type: NOTIFICATION_TYPES.BOOKING,
+    title: "New Shoot Booking",
+    message: `${customerName} booked ${requiredService} for ${eventDate || "upcoming date"}.`,
+    relatedEntityId: newBooking.id,
+    relatedEntityType: "Booking",
+  });
+
+  return newBooking;
 }
 
 export async function updateBooking(id, data) {

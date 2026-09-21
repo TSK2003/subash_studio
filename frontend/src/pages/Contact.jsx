@@ -45,7 +45,14 @@ const STUDIO_LOCATIONS = [
 ];
 
 export default function Contact() {
-  const { addEnquiry, services: adminServices, branches } = useAdminData();
+  const { addEnquiry, services: adminServices, branches, websiteContent } = useAdminData();
+  const contactData = websiteContent?.contact || {};
+  const primaryPhone = contactData.phone || "+91 93457 06609";
+  const phoneHref = "tel:" + primaryPhone.replace(/[^\d+]/g, "");
+  const studioEmail = contactData.email || "hello@subashstudio.com";
+  const whatsappRaw = contactData.whatsapp || "+91 93457 06609";
+  const whatsappHref = whatsappRaw.startsWith("http") ? whatsappRaw : `https://wa.me/${whatsappRaw.replace(/\D/g, "")}`;
+  const instagramHref = contactData.instagram || "https://www.instagram.com/subash_studio/";
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedBranchId, setSelectedBranchId] = useState("kalladaikurichi");
@@ -256,11 +263,11 @@ export default function Contact() {
           <div className="bg-ink text-bg-soft rounded-md p-8 md:p-10">
             <p className="eyebrow text-gold-light mb-6">Reach Us Directly</p>
             <div className="space-y-4 text-sm">
-              <a href="tel:+919345706609" className="flex items-center gap-3.5 hover:text-gold transition-colors">
-                <Phone size={17} className="text-gold shrink-0" /> +91 93457 06609
+              <a href={phoneHref} className="flex items-center gap-3.5 hover:text-gold transition-colors">
+                <Phone size={17} className="text-gold shrink-0" /> {primaryPhone}
               </a>
-              <a href="mailto:hello@subashstudio.com" className="flex items-center gap-3.5 hover:text-gold transition-colors">
-                <Mail size={17} className="text-gold shrink-0" /> hello@subashstudio.com
+              <a href={`mailto:${studioEmail}`} className="flex items-center gap-3.5 hover:text-gold transition-colors">
+                <Mail size={17} className="text-gold shrink-0" /> {studioEmail}
               </a>
 
               <div className="pt-3 border-t border-bg-soft/10 space-y-3">
@@ -301,7 +308,7 @@ export default function Contact() {
             <div className="flex items-center justify-between pt-5 border-t border-bg-soft/10 mt-6">
               <div className="flex items-center gap-3">
                 <a
-                  href="https://wa.me/+919345706609"
+                  href={whatsappHref}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="WhatsApp"
@@ -310,7 +317,7 @@ export default function Contact() {
                   <FaWhatsapp size={17} />
                 </a>
                 <a
-                  href="https://www.instagram.com/subash_studio/"
+                  href={instagramHref}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram"

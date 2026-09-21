@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Play, X } from "lucide-react";
+import { Play } from "lucide-react";
 import Seo from "../components/Seo";
 import Reveal from "../components/Reveal";
 import SectionHeading from "../components/SectionHeading";
+import FilmVideoModal from "../components/FilmVideoModal";
 import { img } from "../data/images";
 import { films as defaultFilms } from "../data/films";
 import { useAdminData } from "../admin/context/AdminDataContext";
@@ -19,9 +19,12 @@ export default function Films() {
     ...f,
     title: f.title || "Subash Studio Film",
     type: f.type || f.category || "Wedding Film",
+    category: f.category || f.type || "Wedding Film",
     duration: f.duration || "Highlight",
     poster: f.posterImage || f.thumbnail || f.image || (f.seed ? img(f.seed, 900, 506) : "/images/films.png"),
+    thumbnail: f.thumbnail || f.posterImage || f.image || (f.seed ? img(f.seed, 900, 506) : "/images/films.png"),
     videoUrl: f.videoUrl || f.youtubeUrl || "",
+    videoSourceType: f.videoSourceType,
   }));
 
   return (
@@ -49,8 +52,9 @@ export default function Films() {
           {filmsList.map((f, i) => (
             <Reveal key={f.id} delay={(i % 4) * 0.08}>
               <button
+                type="button"
                 onClick={() => setActive(f)}
-                className="group relative block w-full aspect-video rounded-md overflow-hidden shadow-card"
+                className="group relative block w-full aspect-video rounded-md overflow-hidden shadow-card cursor-pointer text-left"
               >
                 <img src={f.poster} alt={f.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-ink/45 group-hover:bg-ink/55 transition-colors duration-400" />
@@ -69,42 +73,13 @@ export default function Films() {
         </div>
       </section>
 
-      <AnimatePresence>
-        {active && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-ink/95 flex items-center justify-center px-4"
-            onClick={() => setActive(null)}
-          >
-            <button onClick={() => setActive(null)} className="absolute top-6 right-6 text-bg-soft/80 hover:text-gold transition-colors" aria-label="Close">
-              <X size={28} />
-            </button>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-3xl"
-            >
-              <div className="aspect-video rounded-md overflow-hidden shadow-2xl bg-ink flex items-center justify-center relative">
-                <img src={active.poster} alt={active.title} className="w-full h-full object-cover opacity-60" />
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6">
-                  <span className="w-16 h-16 rounded-full bg-bg-soft/90 flex items-center justify-center">
-                    <Play size={22} className="text-ink ml-1" fill="currentColor" />
-                  </span>
-                  <p className="text-bg-soft/70 text-xs tracking-[0.1em] uppercase">Showreel preview — full film available on request</p>
-                </div>
-              </div>
-              <div className="text-center mt-6">
-                <p className="font-display text-2xl text-bg-soft">{active.title}</p>
-                <p className="text-bg-soft/60 text-sm mt-1">{active.type} · {active.duration}</p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Cinematic Internal Video Modal */}
+      <FilmVideoModal
+        isOpen={Boolean(active)}
+        film={active}
+        onClose={() => setActive(null)}
+      />
     </>
   );
 }
+

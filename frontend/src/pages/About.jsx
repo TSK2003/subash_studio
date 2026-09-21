@@ -36,7 +36,7 @@ export default function About() {
         <div className="absolute inset-0 bg-ink/60" />
         <div className="relative text-center px-6">
           <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }} className="eyebrow text-gold-light mb-5">
-            Since 1993
+            {aboutData.establishedYear ? `Since ${aboutData.establishedYear}` : "Since 1993"}
           </motion.p>
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.9 }} className="font-display font-medium text-5xl sm:text-6xl text-bg-soft">
             About SUBASH STUDIO
@@ -82,7 +82,7 @@ export default function About() {
       </section>
 
       <section className="max-w-7xl mx-auto px-6 lg:px-10 py-28">
-        <SectionHeading eyebrow="What Guides Us" title="Three ideas we never compromise on." align="center" />
+        <SectionHeading eyebrow="What Guides Us" title="Three ideas we never compromise on." desc={aboutData.philosophy || undefined} align="center" />
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           {values.map((v, i) => (
             <Reveal key={v.title} delay={i * 0.1}>

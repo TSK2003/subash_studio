@@ -1,8 +1,8 @@
+import { Link } from "react-router-dom";
 import { MapPin, Phone, Clock, ExternalLink } from "lucide-react";
 import Seo from "../components/Seo";
 import Reveal from "../components/Reveal";
 import SectionHeading from "../components/SectionHeading";
-import { branches as defaultBranches } from "../data/branches";
 import { useAdminData } from "../admin/context/AdminDataContext";
 
 const getImageColumnWidthClass = (city = "") => {
@@ -62,7 +62,7 @@ function BranchCard({ branch, index }) {
       <div className="flex-1 p-6 sm:p-8 md:p-10 lg:py-10 lg:px-12 xl:px-14 flex flex-col justify-center">
         <p className="eyebrow mb-3">{branch.tag}</p>
 
-        <h3 className="font-display text-3xl text-ink mb-4">{branch.city}</h3>
+        <h3 className="font-display text-3xl text-ink mb-4">{branch.name || branch.city}</h3>
 
         <p className="text-sm text-ink-soft leading-relaxed mb-7">
           {branch.desc}
@@ -107,13 +107,13 @@ function BranchCard({ branch, index }) {
 }
 
 export default function Branches() {
-  const { branches: adminBranches } = useAdminData();
+  const { branches: adminBranches, loading, error } = useAdminData();
 
-  const branchesList = (adminBranches && adminBranches.length > 0
-    ? adminBranches.filter((b) => b.active !== false)
-    : defaultBranches
-  ).map((b) => ({
+  const activeBranches = (adminBranches || []).filter((b) => b.active !== false);
+
+  const branchesList = activeBranches.map((b) => ({
     ...b,
+    name: b.name || `${b.city || "Studio"} Studio`,
     city: b.city || b.name || "Studio Branch",
     tag: b.tag || b.name || "Studio",
     desc: b.desc || b.description || b.address || "",
@@ -129,11 +129,12 @@ export default function Branches() {
           : "/images/gallery/branches/kalladaikurichi.jpg")),
     mapsUrl: b.mapsUrl || (b.city?.toLowerCase().includes("tirunelveli") ? "https://maps.app.goo.gl/hh7A1jwk1hhb8svr9" : "https://maps.google.com/?q=Subash+Studio+" + encodeURIComponent(b.city || "")),
   }));
+
   return (
     <>
       <Seo
         title="Branches"
-        description="Visit SUBASH STUDIO across Chennai, Coimbatore and Madurai."
+        description="Visit SUBASH STUDIO across Kalladaikurichi, Tirunelveli, and Tenkasi."
       />
 
       {/* =========================
@@ -151,11 +152,60 @@ export default function Branches() {
           BRANCHES
       ========================== */}
       <section className="max-w-7xl mx-auto px-6 lg:px-10 pb-28 space-y-10">
-        {branchesList.map((b, i) => (
-          <Reveal key={b.city} delay={i * 0.08}>
-            <BranchCard branch={b} index={i} />
-          </Reveal>
-        ))}
+        {loading && (!adminBranches || adminBranches.length === 0) ? (
+          <div className="space-y-8 animate-pulse">
+            {[1, 2].map((i) => (
+              <div
+                key={`branches-skeleton-${i}`}
+                className="bg-card border border-line/60 rounded-md p-8 flex flex-col lg:flex-row gap-8 items-center"
+              >
+                <div className="w-full lg:w-[38%] h-64 bg-gray-200/50 rounded"></div>
+                <div className="flex-1 space-y-4 w-full">
+                  <div className="h-4 bg-gray-200/60 rounded w-24"></div>
+                  <div className="h-8 bg-gray-200/70 rounded w-48"></div>
+                  <div className="h-4 bg-gray-200/50 rounded w-full"></div>
+                  <div className="h-4 bg-gray-200/50 rounded w-2/3"></div>
+                  <div className="space-y-2 pt-4">
+                    <div className="h-3 bg-gray-200/50 rounded w-1/2"></div>
+                    <div className="h-3 bg-gray-200/50 rounded w-1/3"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error && (!adminBranches || adminBranches.length === 0) ? (
+          <div className="text-center py-20 max-w-xl mx-auto px-6 bg-card border border-line/60 rounded-md p-10">
+            <p className="font-display text-2xl text-ink mb-2">Unable to Load Studio Locations</p>
+            <p className="text-sm text-ink-soft mb-6">
+              We encountered an issue connecting to the database. Please call our team directly or try again later.
+            </p>
+            <a
+              href="tel:+919345706609"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white rounded-full text-xs font-semibold tracking-wider uppercase hover:bg-gold-dark transition-colors"
+            >
+              Call Studio +91 93457 06609
+            </a>
+          </div>
+        ) : branchesList.length === 0 ? (
+          <div className="text-center py-20 max-w-xl mx-auto px-6 bg-card border border-line/60 rounded-md p-10">
+            <p className="font-display text-2xl text-ink mb-2">No Active Studio Locations</p>
+            <p className="text-sm text-ink-soft mb-6">
+              Our studio locations are currently being updated. Please reach out to our concierge team directly for bookings and appointments.
+            </p>
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white rounded-full text-xs font-semibold tracking-wider uppercase hover:bg-gold-dark transition-colors"
+            >
+              Contact Studio Team
+            </Link>
+          </div>
+        ) : (
+          branchesList.map((b, i) => (
+            <Reveal key={b.id || b.city || i} delay={i * 0.08}>
+              <BranchCard branch={b} index={i} />
+            </Reveal>
+          ))
+        )}
       </section>
     </>
   );
