@@ -8,6 +8,7 @@
     "dev": "node src/server.js",
     "start:dev": "node src/server.js",
     "build": "prisma generate --schema=prisma/schema.prisma",
+    "postinstall": "prisma generate --schema=prisma/schema.prisma",
     "lint": "node -e \"console.log('Backend syntax clean')\"",
     "test": "node -e \"console.log('All tests completed')\"",
     "prisma:validate": "prisma validate --schema=prisma/schema.prisma",

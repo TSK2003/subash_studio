@@ -25,9 +25,15 @@ export async function createNotification({
       Object.values(NOTIFICATION_TYPES).find((t) => t === type) ||
       NOTIFICATION_TYPES.ENQUIRY;
 
+    const notifModel = db?.notification || prisma?.notification;
+    if (!notifModel || typeof notifModel.create !== "function") {
+      console.warn("[NotificationService] Notification model is not available in Prisma client.");
+      return null;
+    }
+
     // Idempotency: Prevent duplicate notifications for the same entity event
     if (relatedEntityId && relatedEntityType) {
-      const existing = await db.notification.findFirst({
+      const existing = await notifModel.findFirst({
         where: {
           type: safeType,
           relatedEntityId: String(relatedEntityId),
@@ -40,7 +46,7 @@ export async function createNotification({
       }
     }
 
-    const notification = await db.notification.create({
+    const notification = await notifModel.create({
       data: {
         type: safeType,
         title: title ? String(title).trim() : "New Studio Alert",

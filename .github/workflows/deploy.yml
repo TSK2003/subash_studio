@@ -26,6 +26,7 @@ jobs:
             echo "Updating backend dependencies & database schema..."
             cd /var/www/subash-studio/backend
             npm install
+            npx prisma generate
             npx prisma db push
             pm2 restart subash-backend
 
