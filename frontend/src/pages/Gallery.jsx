@@ -17,7 +17,7 @@ import {
 import { useAdminData } from "../admin/context/AdminDataContext";
 
 export default function Gallery() {
-  const { gallery } = useAdminData();
+  const { gallery, loading } = useAdminData();
   const [active, setActive] = useState("All");
   const lightGalleryRef = useRef(null);
 
@@ -37,8 +37,11 @@ export default function Gallery() {
           title: item.title || item.caption || item.category || "Subash Studio",
         }));
     }
-    return defaultGalleryImages;
-  }, [gallery]);
+    if (loading) {
+      return defaultGalleryImages;
+    }
+    return [];
+  }, [gallery, loading]);
 
   const categories = useMemo(() => {
     if (gallery && gallery.length > 0) {

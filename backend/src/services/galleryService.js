@@ -8,10 +8,14 @@ export async function getAllGallery(options = {}) {
   const category = isObject ? options.category : null;
   const page = isObject ? options.page : undefined;
   const limit = isObject ? options.limit : undefined;
+  const featuredOnly = isObject ? Boolean(options.featuredOnly || options.featured) : false;
 
   const where = {};
   if (!includeUnpublished) {
     where.published = true;
+  }
+  if (featuredOnly) {
+    where.featured = true;
   }
   if (category && category !== "ALL" && category !== "all") {
     where.category = category;
@@ -97,5 +101,25 @@ export async function updateGalleryItem(id, data) {
 export async function deleteGalleryItem(id) {
   return prisma.galleryItem.delete({
     where: { id },
+  });
+}
+
+export async function toggleGalleryFeatured(id) {
+  const item = await prisma.galleryItem.findUnique({ where: { id } });
+  if (!item) throw new Error("Gallery item not found.");
+
+  return prisma.galleryItem.update({
+    where: { id },
+    data: { featured: !item.featured },
+  });
+}
+
+export async function toggleGalleryPublished(id) {
+  const item = await prisma.galleryItem.findUnique({ where: { id } });
+  if (!item) throw new Error("Gallery item not found.");
+
+  return prisma.galleryItem.update({
+    where: { id },
+    data: { published: !item.published },
   });
 }

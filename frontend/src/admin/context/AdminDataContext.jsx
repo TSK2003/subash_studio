@@ -99,6 +99,8 @@ export function normalizePortfolioItem(item = {}) {
   const subtitle = item.subtitle || item.client || "";
   const description = item.description || item.excerpt || "";
   const excerpt = item.excerpt || item.description || "";
+  const isFeatured = Boolean(item.featured ?? item.featuredOnHome);
+  const isPublished = item.published !== false;
   return {
     ...item,
     id: item.id || `PORT-${Math.floor(100 + Math.random() * 900)}`,
@@ -112,8 +114,9 @@ export function normalizePortfolioItem(item = {}) {
     location: item.location || "",
     description,
     excerpt,
-    featured: item.featured ?? false,
-    published: item.published !== false,
+    featured: isFeatured,
+    featuredOnHome: isFeatured,
+    published: isPublished,
   };
 }
 
@@ -254,6 +257,7 @@ export function AdminDataProvider({ children }) {
   const [enquiries, setEnquiries] = useState([]);
   const [gallery, setGallery] = useState([]);
   const [portfolio, setPortfolio] = useState([]);
+  const [featuredPortfolio, setFeaturedPortfolio] = useState([]);
   const [services, setServices] = useState([]);
   const [films, setFilms] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -302,6 +306,7 @@ export function AdminDataProvider({ children }) {
       const publicRequests = [
         api.get(adminMode ? "/api/gallery?all=true" : "/api/gallery"),
         api.get(adminMode ? "/api/portfolio?all=true" : "/api/portfolio"),
+        api.get("/api/portfolio?featured=true"),
         api.get("/api/services"),
         api.get(adminMode ? "/api/films?all=true" : "/api/films"),
         api.get(adminMode ? "/api/branches?all=true" : "/api/branches"),
@@ -329,13 +334,16 @@ export function AdminDataProvider({ children }) {
         Promise.allSettled(adminRequests),
       ]);
 
-      const [gal, port, srv, flm, br, tst, cnt, woods, designs, ratios] = publicResults;
+      const [gal, port, featPort, srv, flm, br, tst, cnt, woods, designs, ratios] = publicResults;
 
       if (gal && gal.status === "fulfilled" && Array.isArray(gal.value)) {
         setGallery(gal.value.map(normalizeGalleryItem));
       }
       if (port && port.status === "fulfilled" && Array.isArray(port.value)) {
         setPortfolio(port.value.map(normalizePortfolioItem));
+      }
+      if (featPort && featPort.status === "fulfilled" && Array.isArray(featPort.value)) {
+        setFeaturedPortfolio(featPort.value.map(normalizePortfolioItem));
       }
       if (srv && srv.status === "fulfilled" && Array.isArray(srv.value)) {
         setServices(srv.value.map(normalizeService));
@@ -469,12 +477,14 @@ export function AdminDataProvider({ children }) {
     const updated = await api.patch(`/api/gallery/${id}/toggle-featured`);
     const normalized = normalizeGalleryItem(updated);
     setGallery((prev) => prev.map((item) => (item.id === id ? normalized : item)));
+    return normalized;
   }, []);
 
   const toggleGalleryPublished = useCallback(async (id) => {
     const updated = await api.patch(`/api/gallery/${id}/toggle-published`);
     const normalized = normalizeGalleryItem(updated);
     setGallery((prev) => prev.map((item) => (item.id === id ? normalized : item)));
+    return normalized;
   }, []);
 
   // 4. Portfolio
@@ -482,6 +492,9 @@ export function AdminDataProvider({ children }) {
     const created = await api.post("/api/portfolio", item);
     const normalized = normalizePortfolioItem(created);
     setPortfolio((prev) => [normalized, ...prev]);
+    if (normalized.featured && normalized.published) {
+      setFeaturedPortfolio((prev) => [normalized, ...prev]);
+    }
     return normalized;
   }, []);
 
@@ -489,18 +502,51 @@ export function AdminDataProvider({ children }) {
     const updated = await api.put(`/api/portfolio/${id}`, updatedFields);
     const normalized = normalizePortfolioItem(updated);
     setPortfolio((prev) => prev.map((item) => (item.id === id ? normalized : item)));
+    if (normalized.featured && normalized.published) {
+      setFeaturedPortfolio((prev) => {
+        const exists = prev.some((it) => it.id === id);
+        return exists ? prev.map((it) => (it.id === id ? normalized : it)) : [normalized, ...prev];
+      });
+    } else {
+      setFeaturedPortfolio((prev) => prev.filter((it) => it.id !== id));
+    }
     return normalized;
   }, []);
 
   const deletePortfolio = useCallback(async (id) => {
     await api.delete(`/api/portfolio/${id}`);
     setPortfolio((prev) => prev.filter((item) => item.id !== id));
+    setFeaturedPortfolio((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
   const togglePortfolioFeatured = useCallback(async (id) => {
     const updated = await api.patch(`/api/portfolio/${id}/toggle-featured`);
     const normalized = normalizePortfolioItem(updated);
     setPortfolio((prev) => prev.map((item) => (item.id === id ? normalized : item)));
+    if (normalized.featured && normalized.published) {
+      setFeaturedPortfolio((prev) => {
+        const exists = prev.some((it) => it.id === id);
+        return exists ? prev.map((it) => (it.id === id ? normalized : it)) : [normalized, ...prev];
+      });
+    } else {
+      setFeaturedPortfolio((prev) => prev.filter((it) => it.id !== id));
+    }
+    return normalized;
+  }, []);
+
+  const togglePortfolioPublished = useCallback(async (id) => {
+    const updated = await api.patch(`/api/portfolio/${id}/toggle-published`);
+    const normalized = normalizePortfolioItem(updated);
+    setPortfolio((prev) => prev.map((item) => (item.id === id ? normalized : item)));
+    if (normalized.featured && normalized.published) {
+      setFeaturedPortfolio((prev) => {
+        const exists = prev.some((it) => it.id === id);
+        return exists ? prev.map((it) => (it.id === id ? normalized : it)) : [normalized, ...prev];
+      });
+    } else {
+      setFeaturedPortfolio((prev) => prev.filter((it) => it.id !== id));
+    }
+    return normalized;
   }, []);
 
   // 5. Services
@@ -841,6 +887,7 @@ export function AdminDataProvider({ children }) {
 
         // Portfolio
         portfolio,
+        featuredPortfolio,
         addPortfolio,
         addPortfolioItem: addPortfolio,
         updatePortfolio,
@@ -848,6 +895,7 @@ export function AdminDataProvider({ children }) {
         deletePortfolio,
         deletePortfolioItem: deletePortfolio,
         togglePortfolioFeatured,
+        togglePortfolioPublished,
 
         // Services
         services,

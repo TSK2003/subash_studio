@@ -351,9 +351,21 @@ export default function GalleryManager() {
                     {/* Featured Star Toggle */}
                     <button
                       type="button"
-                      onClick={() => {
-                        toggleGalleryFeatured(img.id);
-                        addToast(`Toggled featured for "${img.title}".`, "success");
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const updated = await toggleGalleryFeatured(img.id);
+                          const isFeat = updated?.featured ?? !img.featured;
+                          addToast(
+                            `"${img.title}" is now ${isFeat ? "Featured" : "Unfeatured"}.`,
+                            "success"
+                          );
+                        } catch (err) {
+                          addToast(
+                            err.response?.data?.error || err.message || "Failed to toggle featured status.",
+                            "error"
+                          );
+                        }
                       }}
                       className={`flex items-center gap-1 text-[11px] font-medium transition-colors ${
                         img.featured
@@ -372,12 +384,21 @@ export default function GalleryManager() {
                     {/* Publish / Unpublish Toggle */}
                     <button
                       type="button"
-                      onClick={() => {
-                        toggleGalleryPublished(img.id);
-                        addToast(
-                          `Image is now ${!img.published ? "Published" : "Draft"}.`,
-                          "info"
-                        );
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        try {
+                          const updated = await toggleGalleryPublished(img.id);
+                          const isPub = updated?.published ?? !img.published;
+                          addToast(
+                            `"${img.title}" is now ${isPub ? "Published" : "Draft"}.`,
+                            "info"
+                          );
+                        } catch (err) {
+                          addToast(
+                            err.response?.data?.error || err.message || "Failed to toggle published status.",
+                            "error"
+                          );
+                        }
                       }}
                       className={`flex items-center gap-1 text-[11px] font-medium transition-colors ${
                         img.published

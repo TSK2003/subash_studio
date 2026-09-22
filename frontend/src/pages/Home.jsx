@@ -60,7 +60,7 @@ function parseStatValue(raw, defaultVal, defaultSuffix) {
 }
 
 export default function Home() {
-  const { portfolio, branches, websiteContent } = useAdminData();
+  const { portfolio, featuredPortfolio, branches, websiteContent, loading } = useAdminData();
 
   const dynamicStats = useMemo(() => {
     const stats = websiteContent?.home?.stats;
@@ -85,16 +85,27 @@ export default function Home() {
   }, [websiteContent]);
 
   const workItems = useMemo(() => {
-    if (portfolio && portfolio.length > 0) {
-      return portfolio.slice(0, 6).map((item) => ({
+    // Prefer server-queried featured portfolio items (where published=true AND featured=true)
+    const activeFeatured = (featuredPortfolio && featuredPortfolio.length > 0)
+      ? featuredPortfolio
+      : (portfolio || []).filter((item) => Boolean(item.featured || item.featuredOnHome) && item.published !== false);
+
+    if (activeFeatured.length > 0) {
+      return activeFeatured.slice(0, 6).map((item) => ({
         id: item.id || item.title,
         title: item.title,
         category: (item.category || "PORTFOLIO").toUpperCase(),
-        image: item.image || item.coverImage || item.imageUrl || "/images/portfolio/wedding-01.jpg",
+        image: item.coverImage || item.image || item.imageUrl || "/images/portfolio/wedding-01.jpg",
       }));
     }
-    return selectedWorkItems;
-  }, [portfolio]);
+
+    // Fallback only during initial load before database responds
+    if (loading) {
+      return selectedWorkItems;
+    }
+
+    return [];
+  }, [featuredPortfolio, portfolio, loading]);
   return (
     <div className="relative pt-[84px]">
       <Seo

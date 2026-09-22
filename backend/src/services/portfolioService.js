@@ -1,17 +1,51 @@
 import prisma from "../config/prisma.js";
 
-export async function getAllPortfolio(includeUnpublished = false) {
-  const where = includeUnpublished ? {} : { published: true };
-  return prisma.portfolioProject.findMany({
+function formatPortfolioProject(item) {
+  if (!item) return item;
+  return {
+    ...item,
+    featured: Boolean(item.featured),
+    featuredOnHome: Boolean(item.featured),
+    published: item.published !== false,
+  };
+}
+
+export async function getAllPortfolio(options = false) {
+  const isObject = typeof options === "object" && options !== null;
+  const includeUnpublished = isObject
+    ? Boolean(options.includeUnpublished || options.all)
+    : Boolean(options);
+  const featuredOnly = isObject
+    ? Boolean(options.featuredOnly || options.featured || options.featuredOnHome || options.home)
+    : false;
+  const category = isObject ? options.category : null;
+  const limit = isObject && options.limit ? parseInt(options.limit, 10) : undefined;
+
+  const where = {};
+  if (!includeUnpublished) {
+    where.published = true;
+  }
+  if (featuredOnly) {
+    where.featured = true;
+  }
+  if (category && category !== "ALL" && category !== "all") {
+    where.category = category;
+  }
+
+  const items = await prisma.portfolioProject.findMany({
     where,
     orderBy: { createdAt: "desc" },
+    ...(limit ? { take: limit } : {}),
   });
+
+  return items.map(formatPortfolioProject);
 }
 
 export async function getPortfolioById(id) {
-  return prisma.portfolioProject.findUnique({
+  const item = await prisma.portfolioProject.findUnique({
     where: { id },
   });
+  return formatPortfolioProject(item);
 }
 
 export async function createPortfolioProject(data) {
@@ -24,10 +58,11 @@ export async function createPortfolioProject(data) {
   const location = data.location || null;
   const description = (data.description || data.excerpt || "").trim();
   const images = Array.isArray(data.images) ? data.images : [];
-  const featured = Boolean(data.featured);
+  const rawFeatured = data.featuredOnHome !== undefined ? data.featuredOnHome : data.featured;
+  const featured = Boolean(rawFeatured);
   const published = data.published !== false;
 
-  return prisma.portfolioProject.create({
+  const created = await prisma.portfolioProject.create({
     data: {
       id,
       title,
@@ -42,6 +77,8 @@ export async function createPortfolioProject(data) {
       published,
     },
   });
+
+  return formatPortfolioProject(created);
 }
 
 export async function updatePortfolioProject(id, data) {
@@ -59,13 +96,19 @@ export async function updatePortfolioProject(id, data) {
     updatePayload.description = (data.description || data.excerpt || "").trim();
   }
   if (data.images !== undefined) updatePayload.images = Array.isArray(data.images) ? data.images : [];
-  if (data.featured !== undefined) updatePayload.featured = Boolean(data.featured);
+
+  const rawFeatured = data.featuredOnHome !== undefined ? data.featuredOnHome : data.featured;
+  if (rawFeatured !== undefined) {
+    updatePayload.featured = Boolean(rawFeatured);
+  }
   if (data.published !== undefined) updatePayload.published = Boolean(data.published);
 
-  return prisma.portfolioProject.update({
+  const updated = await prisma.portfolioProject.update({
     where: { id },
     data: updatePayload,
   });
+
+  return formatPortfolioProject(updated);
 }
 
 export async function deletePortfolioProject(id) {
@@ -78,18 +121,22 @@ export async function togglePortfolioFeatured(id) {
   const item = await prisma.portfolioProject.findUnique({ where: { id } });
   if (!item) throw new Error("Portfolio project not found.");
 
-  return prisma.portfolioProject.update({
+  const updated = await prisma.portfolioProject.update({
     where: { id },
     data: { featured: !item.featured },
   });
+
+  return formatPortfolioProject(updated);
 }
 
 export async function togglePortfolioPublished(id) {
   const item = await prisma.portfolioProject.findUnique({ where: { id } });
   if (!item) throw new Error("Portfolio project not found.");
 
-  return prisma.portfolioProject.update({
+  const updated = await prisma.portfolioProject.update({
     where: { id },
     data: { published: !item.published },
   });
+
+  return formatPortfolioProject(updated);
 }

@@ -3,7 +3,17 @@ import * as portfolioService from "../services/portfolioService.js";
 export async function getAllPortfolio(req, res, next) {
   try {
     const includeUnpublished = req.query.all === "true" || Boolean(req.user);
-    const portfolio = await portfolioService.getAllPortfolio(includeUnpublished);
+    const featuredOnly =
+      req.query.featured === "true" ||
+      req.query.featuredOnHome === "true" ||
+      req.query.home === "true";
+
+    const portfolio = await portfolioService.getAllPortfolio({
+      includeUnpublished,
+      featuredOnly,
+      category: req.query.category,
+      limit: req.query.limit,
+    });
     res.json(portfolio);
   } catch (err) {
     next(err);
