@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Reveal from "../components/Reveal";
 import SectionHeading from "../components/SectionHeading";
+import ServiceDetailModal from "../components/ServiceDetailModal";
 import { services as defaultServices } from "../data/services";
 import { useAdminData } from "../admin/context/AdminDataContext";
 
 export default function Services() {
   const { services: adminServices } = useAdminData();
+  const [selectedService, setSelectedService] = useState(null);
 
   const servicesList = (adminServices && adminServices.length > 0
     ? adminServices.filter((s) => s.status !== "Inactive")
@@ -142,8 +145,9 @@ export default function Services() {
 
                   <div className="flex items-center gap-4 mt-7">
 
-                    <Link
-                      to="/portfolio"
+                    <button
+                      type="button"
+                      onClick={() => setSelectedService(service)}
                       className="
                         text-xs
                         font-semibold
@@ -153,10 +157,11 @@ export default function Services() {
                         hover:text-[#A27B35]
                         transition-colors
                         duration-300
+                        cursor-pointer
                       "
                     >
                       Learn More
-                    </Link>
+                    </button>
 
 
                     <span
@@ -222,6 +227,15 @@ export default function Services() {
           </Link>
         </div>
       </section>
+
+      {/* ========================================
+          SERVICE DETAILS MODAL
+      ======================================== */}
+      <ServiceDetailModal
+        isOpen={Boolean(selectedService)}
+        service={selectedService}
+        onClose={() => setSelectedService(null)}
+      />
 
     </main>
   );
