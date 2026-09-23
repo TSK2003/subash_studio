@@ -205,7 +205,7 @@ export default function HomeHero() {
             >
               {/* Primary: BOOK A SHOOT / CMS CTA (~210px-225px x 52px-58px) */}
               <Link
-                to="/contact"
+                to="/portfolio"
                 className="group w-full sm:w-[210px] xl:w-[220px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#B38F4D] hover:bg-[#9C7B3D] text-white rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-[0_8px_20px_-4px_rgba(179,143,77,0.38)] hover:shadow-lg hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0 px-4 text-center"
               >
                 <span className="truncate">{homeData.heroCtaText || "BOOK A SHOOT"}</span>
@@ -217,7 +217,7 @@ export default function HomeHero() {
 
               {/* Secondary: EXPLORE OUR WORK (~230px-245px x 52px-58px) */}
               <Link
-                to="/portfolio"
+                to="/gallery"
                 className="group w-full sm:w-[230px] xl:w-[240px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#FAF7F2]/80 hover:bg-[#1C1B19] border border-[#B38F4D]/70 hover:border-[#1C1B19] text-[#1C1B19] hover:text-[#F8F6F2] rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0"
               >
                 <span>EXPLORE OUR WORK</span>
