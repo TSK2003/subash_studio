@@ -15,16 +15,32 @@ export async function getWoodTypes(includeInactive = false) {
 }
 
 export async function createWoodType(data) {
+  if (!data || !data.name || !data.name.trim()) {
+    throw new Error("Wood type name is required.");
+  }
+  const rawPrice = Number(data.basePrice);
+  if (isNaN(rawPrice) || rawPrice < 0) {
+    throw new Error("Base price must be a valid non-negative number.");
+  }
   const id = data.id || `wood-${Date.now()}`;
+  const defaultGrain = "Natural Timber Grain";
+  const defaultImage = "/images/frames/teak-wood.jpg";
+  const active =
+    data.active !== undefined
+      ? Boolean(data.active)
+      : data.inStock !== undefined
+      ? data.inStock === true || data.inStock === "true"
+      : true;
+
   return prisma.frameWoodType.create({
     data: {
       id,
       name: data.name.trim(),
-      basePrice: Number(data.basePrice) || 0,
+      basePrice: rawPrice,
       description: (data.description || "").trim(),
-      grain: (data.grain || "").trim(),
-      image: (data.image || "").trim(),
-      active: data.active !== false,
+      grain: (data.grain || data.description || defaultGrain).trim(),
+      image: (data.image || defaultImage).trim(),
+      active,
     },
   });
 }
@@ -32,11 +48,21 @@ export async function createWoodType(data) {
 export async function updateWoodType(id, data) {
   const updatePayload = {};
   if (data.name !== undefined) updatePayload.name = data.name.trim();
-  if (data.basePrice !== undefined) updatePayload.basePrice = Number(data.basePrice) || 0;
+  if (data.basePrice !== undefined) {
+    const rawPrice = Number(data.basePrice);
+    if (isNaN(rawPrice) || rawPrice < 0) {
+      throw new Error("Base price must be a valid non-negative number.");
+    }
+    updatePayload.basePrice = rawPrice;
+  }
   if (data.description !== undefined) updatePayload.description = data.description.trim();
   if (data.grain !== undefined) updatePayload.grain = data.grain.trim();
   if (data.image !== undefined) updatePayload.image = data.image.trim();
-  if (data.active !== undefined) updatePayload.active = Boolean(data.active);
+  if (data.active !== undefined) {
+    updatePayload.active = Boolean(data.active);
+  } else if (data.inStock !== undefined) {
+    updatePayload.active = data.inStock === true || data.inStock === "true";
+  }
 
   return prisma.frameWoodType.update({
     where: { id },
@@ -133,6 +159,15 @@ export async function getRatios(includeInactive = false) {
 }
 
 export async function createRatio(data) {
+  if (!data || !data.name || !data.name.trim()) {
+    throw new Error("Ratio / Size name is required.");
+  }
+  const rawPrice = Number(data.price);
+  if (isNaN(rawPrice) || rawPrice < 0) {
+    throw new Error("Price must be a valid non-negative number.");
+  }
+  const validOrientation = (data.orientation || "portrait").toString().toLowerCase().trim();
+  const orientation = validOrientation === "landscape" ? "landscape" : "portrait";
   const id = data.id || `ratio-${Date.now()}`;
   return prisma.frameRatio.create({
     data: {
@@ -140,8 +175,9 @@ export async function createRatio(data) {
       name: data.name.trim(),
       label: (data.label || data.name).trim(),
       dimensions: (data.dimensions || "").trim(),
-      price: Number(data.price) || 0,
-      aspect: data.aspect || "landscape",
+      price: rawPrice,
+      aspect: data.aspect || "2:3",
+      orientation,
       popular: Boolean(data.popular),
       active: data.active !== false,
     },
@@ -153,8 +189,18 @@ export async function updateRatio(id, data) {
   if (data.name !== undefined) updatePayload.name = data.name.trim();
   if (data.label !== undefined) updatePayload.label = data.label.trim();
   if (data.dimensions !== undefined) updatePayload.dimensions = data.dimensions.trim();
-  if (data.price !== undefined) updatePayload.price = Number(data.price) || 0;
+  if (data.price !== undefined) {
+    const rawPrice = Number(data.price);
+    if (isNaN(rawPrice) || rawPrice < 0) {
+      throw new Error("Price must be a valid non-negative number.");
+    }
+    updatePayload.price = rawPrice;
+  }
   if (data.aspect !== undefined) updatePayload.aspect = data.aspect;
+  if (data.orientation !== undefined) {
+    const validOrientation = data.orientation.toString().toLowerCase().trim();
+    updatePayload.orientation = validOrientation === "landscape" ? "landscape" : "portrait";
+  }
   if (data.popular !== undefined) updatePayload.popular = Boolean(data.popular);
   if (data.active !== undefined) updatePayload.active = Boolean(data.active);
 

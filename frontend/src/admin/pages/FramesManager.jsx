@@ -620,6 +620,9 @@ export default function FramesManager() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <h4 className="font-display font-bold text-lg text-[#1C1B19]">{ratio.name}</h4>
+                      <span className="px-2 py-0.5 rounded-full bg-[#FAF8F5] text-[#8C6D32] border border-[#E7E0D2] text-[10px] font-bold capitalize">
+                        {ratio.orientation || "portrait"}
+                      </span>
                       {ratio.popular && (
                         <span className="px-2 py-0.5 rounded-full bg-[#C9A669]/20 text-[#8C6D32] text-[10px] font-bold">
                           Popular
@@ -1094,11 +1097,11 @@ export default function FramesManager() {
             mode={woodModal.mode}
             initialData={woodModal.data}
             onClose={() => setWoodModal({ open: false, mode: "add", data: null })}
-            onSave={(payload) => {
+            onSave={async (payload) => {
               if (woodModal.mode === "add") {
-                addFrameWoodType(payload);
+                return await addFrameWoodType(payload);
               } else {
-                updateFrameWoodType(woodModal.data.id, payload);
+                return await updateFrameWoodType(woodModal.data.id, payload);
               }
             }}
           />
@@ -1113,11 +1116,11 @@ export default function FramesManager() {
             mode={designModal.mode}
             initialData={designModal.data}
             onClose={() => setDesignModal({ open: false, mode: "add", data: null })}
-            onSave={(payload) => {
+            onSave={async (payload) => {
               if (designModal.mode === "add") {
-                addFrameDesign(payload);
+                return await addFrameDesign(payload);
               } else {
-                updateFrameDesign(designModal.data.id, payload);
+                return await updateFrameDesign(designModal.data.id, payload);
               }
             }}
           />
@@ -1132,11 +1135,11 @@ export default function FramesManager() {
             mode={ratioModal.mode}
             initialData={ratioModal.data}
             onClose={() => setRatioModal({ open: false, mode: "add", data: null })}
-            onSave={(payload) => {
+            onSave={async (payload) => {
               if (ratioModal.mode === "add") {
-                addFrameRatio(payload);
+                return await addFrameRatio(payload);
               } else {
-                updateFrameRatio(ratioModal.data.id, payload);
+                return await updateFrameRatio(ratioModal.data.id, payload);
               }
             }}
           />
@@ -1156,29 +1159,57 @@ export default function FramesManager() {
 function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
   const [image, setImage] = useState("");
   const [imageError, setImageError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       setImage(initialData?.image || (mode === "add" ? "" : "/images/frames/teak-wood.jpg"));
       setImageError("");
+      setSaveError("");
+      setIsSaving(false);
     }
   }, [isOpen, mode, initialData]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaveError("");
     const form = e.target;
+    const name = form.name.value.trim();
+    if (!name) {
+      setSaveError("Wood name is required.");
+      return;
+    }
     const finalImage = image || "/images/frames/teak-wood.jpg";
+    const inStock = form.inStock ? form.inStock.value === "true" : true;
     const payload = {
-      name: form.name.value.trim(),
+      name,
       basePrice: parseFloat(form.basePrice.value) || 0,
-      grain: form.grain.value.trim(),
+      grain: (form.grain?.value || "").trim() || "Natural Timber Grain",
       description: form.description.value.trim(),
       image: finalImage,
+      active: inStock,
     };
-    onSave(payload);
-    onClose();
+
+    setIsSaving(true);
+    try {
+      await onSave(payload);
+      onClose();
+    } catch (err) {
+      console.error("Failed to save wood:", err);
+      setSaveError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.data?.message ||
+        err.data?.error ||
+        err.message ||
+        "Failed to save wood type."
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -1205,12 +1236,19 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="overflow-y-auto flex-1 p-5 space-y-3.5 text-xs modal-scrollbar">
+            {saveError && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                <span>{saveError}</span>
+              </div>
+            )}
+
             <div>
               <label className="font-bold text-[#1C1B19] block mb-1">Wood Name</label>
               <input
                 name="name"
                 defaultValue={initialData?.name || ""}
-                placeholder="e.g. Teak Wood, Rose Wood..."
+                placeholder="e.g. Teak Wood, Rose Wood, Oak Wood..."
                 required
                 className="w-full p-2.5 rounded-xl border border-[#E7E0D2] text-xs focus:ring-2 focus:ring-[#C9A669] outline-none"
               />
@@ -1233,7 +1271,7 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
               <label className="font-bold text-[#1C1B19] block mb-1">Stock Status</label>
               <select
                 name="inStock"
-                defaultValue={initialData ? (initialData.inStock ? "true" : "false") : "true"}
+                defaultValue={initialData ? (initialData.active !== false ? "true" : "false") : "true"}
                 className="w-full p-2.5 rounded-xl border border-[#E7E0D2] text-xs focus:ring-2 focus:ring-[#C9A669] outline-none"
               >
                 <option value="true">In Stock</option>
@@ -1242,7 +1280,17 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
             </div>
 
             <div>
-              <label className="font-bold text-[#1C1B19] block mb-1">Grain & Craft Description</label>
+              <label className="font-bold text-[#1C1B19] block mb-1">Wood Grain / Texture</label>
+              <input
+                name="grain"
+                defaultValue={initialData?.grain || ""}
+                placeholder="e.g. Distinguished golden-brown grain, Clean Scandinavian grain..."
+                className="w-full p-2.5 rounded-xl border border-[#E7E0D2] text-xs focus:ring-2 focus:ring-[#C9A669] outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="font-bold text-[#1C1B19] block mb-1">Grain &amp; Craft Description</label>
               <textarea
                 name="description"
                 rows={2}
@@ -1273,15 +1321,17 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-[#E7E0D2] text-[#2B2B2B] rounded-xl font-medium hover:bg-[#F8F6F2] transition-colors"
+              disabled={isSaving}
+              className="px-4 py-2 border border-[#E7E0D2] text-[#2B2B2B] rounded-xl font-medium hover:bg-[#F8F6F2] transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#1C1B19] text-[#F8F6F2] font-bold rounded-xl shadow hover:bg-[#322F2A] transition-colors"
+              disabled={isSaving}
+              className="px-5 py-2 bg-[#1C1B19] text-[#F8F6F2] font-bold rounded-xl shadow hover:bg-[#322F2A] transition-colors disabled:opacity-50 flex items-center gap-1.5"
             >
-              Save Wood
+              {isSaving ? "Saving..." : "Save Wood"}
             </button>
           </div>
         </form>
@@ -1435,20 +1485,59 @@ function FrameDesignModal({ isOpen, mode, initialData, onClose, onSave }) {
 }
 
 function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      setSaveError("");
+      setIsSaving(false);
+    }
+  }, [isOpen, mode, initialData]);
+
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaveError("");
     const form = e.target;
+    const name = form.name.value.trim();
+    if (!name) {
+      setSaveError("Ratio / Size name is required.");
+      return;
+    }
+    const rawPrice = parseFloat(form.price.value);
+    if (isNaN(rawPrice) || rawPrice < 0) {
+      setSaveError("Price must be a valid non-negative number.");
+      return;
+    }
+
     const payload = {
-      name: form.name.value.trim(),
-      label: form.label.value.trim(),
-      price: parseFloat(form.price.value) || 0,
+      name,
+      label: form.label.value.trim() || name,
+      orientation: form.orientation.value,
+      price: rawPrice,
       dimensions: form.dimensions.value.trim(),
       popular: form.popular.checked,
     };
-    onSave(payload);
-    onClose();
+
+    setIsSaving(true);
+    try {
+      await onSave(payload);
+      onClose();
+    } catch (err) {
+      console.error("Failed to save ratio:", err);
+      setSaveError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.data?.message ||
+        err.data?.error ||
+        err.message ||
+        "Failed to save frame ratio."
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -1475,6 +1564,13 @@ function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="overflow-y-auto flex-1 p-5 space-y-3.5 text-xs modal-scrollbar">
+            {saveError && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                <span>{saveError}</span>
+              </div>
+            )}
+
             <div>
               <label className="font-bold text-[#1C1B19] block mb-1">
                 Ratio / Size (e.g. 10 × 12)
@@ -1496,6 +1592,19 @@ function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
                 placeholder="e.g. 10 × 12 inches (Statement Wall)"
                 className="w-full p-2.5 rounded-xl border border-[#E7E0D2] text-xs focus:ring-2 focus:ring-[#C9A669] outline-none"
               />
+            </div>
+
+            <div>
+              <label className="font-bold text-[#1C1B19] block mb-1">Orientation</label>
+              <select
+                name="orientation"
+                defaultValue={initialData?.orientation || "portrait"}
+                required
+                className="w-full p-2.5 rounded-xl border border-[#E7E0D2] text-xs focus:ring-2 focus:ring-[#C9A669] outline-none capitalize"
+              >
+                <option value="portrait">Portrait (Vertical)</option>
+                <option value="landscape">Landscape (Horizontal)</option>
+              </select>
             </div>
 
             <div>
@@ -1539,15 +1648,17 @@ function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-[#E7E0D2] text-[#2B2B2B] rounded-xl font-medium hover:bg-[#F8F6F2] transition-colors"
+              disabled={isSaving}
+              className="px-4 py-2 border border-[#E7E0D2] text-[#2B2B2B] rounded-xl font-medium hover:bg-[#F8F6F2] transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#1C1B19] text-[#F8F6F2] font-bold rounded-xl shadow hover:bg-[#322F2A] transition-colors"
+              disabled={isSaving}
+              className="px-5 py-2 bg-[#1C1B19] text-[#F8F6F2] font-bold rounded-xl shadow hover:bg-[#322F2A] transition-colors disabled:opacity-50 flex items-center gap-1.5"
             >
-              Save Size
+              {isSaving ? "Saving..." : "Save Size"}
             </button>
           </div>
         </form>

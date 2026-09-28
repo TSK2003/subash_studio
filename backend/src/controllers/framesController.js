@@ -18,7 +18,10 @@ export async function createWoodType(req, res, next) {
     const wood = await framesService.createWoodType(req.body);
     res.status(201).json(wood);
   } catch (err) {
-    next(err);
+    if (err.code === "P2002") {
+      return res.status(400).json({ error: "A wood type with this name already exists.", message: "A wood type with this name already exists." });
+    }
+    return res.status(400).json({ error: err.message || "Failed to create wood type.", message: err.message || "Failed to create wood type." });
   }
 }
 
@@ -27,7 +30,10 @@ export async function updateWoodType(req, res, next) {
     const wood = await framesService.updateWoodType(req.params.id, req.body);
     res.json(wood);
   } catch (err) {
-    next(err);
+    if (err.code === "P2002") {
+      return res.status(400).json({ error: "A wood type with this name already exists.", message: "A wood type with this name already exists." });
+    }
+    return res.status(400).json({ error: err.message || "Failed to update wood type.", message: err.message || "Failed to update wood type." });
   }
 }
 
@@ -116,7 +122,10 @@ export async function createRatio(req, res, next) {
     const ratio = await framesService.createRatio(req.body);
     res.status(201).json(ratio);
   } catch (err) {
-    next(err);
+    if (err.code === "P2002") {
+      return res.status(400).json({ error: "A frame ratio with this name already exists.", message: "A frame ratio with this name already exists." });
+    }
+    return res.status(400).json({ error: err.message || "Failed to create frame ratio.", message: err.message || "Failed to create frame ratio." });
   }
 }
 
@@ -125,7 +134,10 @@ export async function updateRatio(req, res, next) {
     const ratio = await framesService.updateRatio(req.params.id, req.body);
     res.json(ratio);
   } catch (err) {
-    next(err);
+    if (err.code === "P2002") {
+      return res.status(400).json({ error: "A frame ratio with this name already exists.", message: "A frame ratio with this name already exists." });
+    }
+    return res.status(400).json({ error: err.message || "Failed to update frame ratio.", message: err.message || "Failed to update frame ratio." });
   }
 }
 
