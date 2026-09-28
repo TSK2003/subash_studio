@@ -338,7 +338,7 @@ export default function ServiceDetailModal({ isOpen, service, onClose }) {
 
                 {/* Primary CTA: Existing Book Now Flow */}
                 <Link
-                  to="/contact"
+                  to={`/contact?service=${encodeURIComponent(service.name || service.title || "")}`}
                   onClick={onClose}
                   className="order-1 sm:order-2 group px-7 py-3 bg-[#B38F4D] hover:bg-[#9C7B3D] text-white rounded-full text-xs font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-[0_8px_20px_-4px_rgba(179,143,77,0.38)] hover:shadow-lg hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 text-center cursor-pointer"
                 >

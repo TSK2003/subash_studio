@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Send, Check, ExternalLink, Navigation } from "lucide-react";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
@@ -59,6 +60,12 @@ export default function Contact() {
   const [phoneValue, setPhoneValue] = useState("");
   const [phoneError, setPhoneError] = useState("");
 
+  const [searchParams] = useSearchParams();
+  const serviceQuery = searchParams.get("service");
+
+  const [selectedService, setSelectedService] = useState("");
+  const lastAppliedQueryRef = useRef(null);
+
   const studioLocations = useMemo(() => {
     return STUDIO_LOCATIONS.map((baseLoc) => {
       const match = (branches || []).find((b) => {
@@ -91,6 +98,26 @@ export default function Contact() {
 
   const servicesList = adminServices && adminServices.length > 0 ? adminServices : defaultServices;
   const currentBranch = studioLocations.find((loc) => loc.id === selectedBranchId) || studioLocations[0];
+
+  // Resolve service query parameter against available services
+  const matchedService = useMemo(() => {
+    if (!serviceQuery || !serviceQuery.trim()) return "";
+    const query = serviceQuery.trim().toLowerCase();
+    const found = servicesList.find((s) => {
+      const nameMatch = (s.name || s.title || "").toLowerCase() === query;
+      const slugMatch = (s.slug || "").toLowerCase() === query.replace(/\s+/g, "-");
+      return nameMatch || slugMatch;
+    });
+    return found ? (found.name || found.slug) : "";
+  }, [serviceQuery, servicesList]);
+
+  // Synchronize pre-selected service when matched and user hasn't overridden
+  useEffect(() => {
+    if (matchedService && lastAppliedQueryRef.current !== serviceQuery) {
+      setSelectedService(matchedService);
+      lastAppliedQueryRef.current = serviceQuery;
+    }
+  }, [matchedService, serviceQuery]);
 
   const handlePhoneChange = (e) => {
     const raw = e.target.value;
@@ -230,9 +257,18 @@ export default function Contact() {
                 <Field label="Email" name="email" type="email" placeholder="you@example.com" required className="md:col-span-2" />
                 <div className="flex flex-col gap-2">
                   <label className="text-xs tracking-[0.08em] uppercase text-ink-soft font-semibold">Service</label>
-                  <select name="service" className="bg-bg-soft border border-line rounded-sm px-4 py-3 text-sm text-ink focus:outline-none focus:border-gold transition-colors" defaultValue="">
+                  <select
+                    name="service"
+                    value={selectedService}
+                    onChange={(e) => setSelectedService(e.target.value)}
+                    className="bg-bg-soft border border-line rounded-sm px-4 py-3 text-sm text-ink focus:outline-none focus:border-gold transition-colors"
+                  >
                     <option value="" disabled>Select a service</option>
-                    {servicesList.map((s) => <option key={s.slug || s.id || s.name} value={s.name || s.slug}>{s.name || s.title}</option>)}
+                    {servicesList.map((s) => (
+                      <option key={s.slug || s.id || s.name} value={s.name || s.slug}>
+                        {s.name || s.title}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <Field label="Event Date" name="date" type="date" />

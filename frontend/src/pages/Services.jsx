@@ -174,7 +174,7 @@ export default function Services() {
 
 
                     <Link
-                      to="/contact"
+                      to={`/contact?service=${encodeURIComponent(service.name || service.title || "")}`}
                       className="
                         text-xs
                         font-semibold
