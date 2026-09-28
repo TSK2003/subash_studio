@@ -17,6 +17,7 @@ const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const Films = lazy(() => import("./pages/Films"));
 const Branches = lazy(() => import("./pages/Branches"));
+const Reviews = lazy(() => import("./pages/Reviews"));
 const Contact = lazy(() => import("./pages/Contact"));
 const OrderFrames = lazy(() => import("./pages/OrderFrames"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -86,6 +87,7 @@ function PublicWebsiteLayout() {
                 <Route path="/gallery" element={<PageWrapper><Gallery /></PageWrapper>} />
                 <Route path="/films" element={<PageWrapper><Films /></PageWrapper>} />
                 <Route path="/branches" element={<PageWrapper><Branches /></PageWrapper>} />
+                <Route path="/reviews" element={<PageWrapper><Reviews /></PageWrapper>} />
                 <Route path="/contact" element={<PageWrapper><Contact /></PageWrapper>} />
                 <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
               </Routes>

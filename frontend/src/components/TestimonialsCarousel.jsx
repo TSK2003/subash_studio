@@ -343,7 +343,7 @@ export default function TestimonialsCarousel() {
 
           <Reveal delay={0.2} className="self-start md:self-end">
             <Link
-              to="/contact"
+              to="/reviews"
               className="group inline-flex items-center gap-2 text-xs sm:text-[13px] font-bold tracking-[0.14em] uppercase text-[#1C1B19] hover:text-[#B38F4D] transition-colors whitespace-nowrap"
             >
               <span>VIEW ALL REVIEWS</span>
