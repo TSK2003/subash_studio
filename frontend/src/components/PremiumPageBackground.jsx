@@ -34,7 +34,10 @@ export default function PremiumPageBackground({
   const isAdminDashboard =
     variant === "admin" ||
     (pathname.startsWith(ADMIN_BASE_PATH) && pathname !== ADMIN_ROUTES.LOGIN);
-  const isAdminLogin = variant === "login" || pathname === ADMIN_ROUTES.LOGIN;
+  const isAdminLogin =
+    variant === "login" ||
+    pathname === ADMIN_ROUTES.LOGIN ||
+    pathname === "/login";
 
   // Calibrated opacities so the background art is CLEARLY visible
   // while keeping content/cards readable
