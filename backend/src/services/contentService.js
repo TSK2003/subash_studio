@@ -17,14 +17,30 @@ function validateSectionData(section, data) {
 
   if (section === "home") {
     if (data.heroHeading !== undefined) {
-      result.heroHeading = sanitizeString(data.heroHeading, 300);
+      if (typeof data.heroHeading !== "string") {
+        throw new Error("Hero Main Headline must be a string.");
+      }
+      if (data.heroHeading.length > 20) {
+        throw new Error(
+          `Hero Main Headline cannot exceed 20 characters (received ${data.heroHeading.length} characters).`
+        );
+      }
+      result.heroHeading = data.heroHeading.replace(/<[^>]*>?/gm, "");
     }
+
     if (data.heroTagline !== undefined) {
-      result.heroTagline = sanitizeString(data.heroTagline, 500);
+      if (typeof data.heroTagline !== "string") {
+        throw new Error("Hero Subtitle / Tagline must be a string.");
+      }
+      if (data.heroTagline.length > 150) {
+        throw new Error(
+          `Hero Subtitle / Tagline cannot exceed 150 characters (received ${data.heroTagline.length} characters).`
+        );
+      }
+      result.heroTagline = data.heroTagline.replace(/<[^>]*>?/gm, "");
     }
-    if (data.heroCtaText !== undefined) {
-      result.heroCtaText = sanitizeString(data.heroCtaText, 100);
-    }
+
+    result.heroCtaText = "BOOK A SHOOT";
     if (data.stats && typeof data.stats === "object") {
       result.stats = {
         weddingsCaptured: sanitizeString(data.stats.weddingsCaptured || "", 50),

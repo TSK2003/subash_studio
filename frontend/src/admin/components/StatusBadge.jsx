@@ -1,5 +1,5 @@
 export default function StatusBadge({ status, size = "md" }) {
-  const normalized = (status || "").toLowerCase();
+  const normalized = (status || "").toLowerCase().replace(/[_-]/g, " ");
 
   const sizeClasses = {
     sm: "px-2 py-0.5 text-xs font-medium",
@@ -29,9 +29,11 @@ export default function StatusBadge({ status, size = "md" }) {
       styles = "bg-emerald-50 text-emerald-800 border-emerald-200";
       break;
     case "cancelled":
-    case "inactive":
     case "closed":
       styles = "bg-rose-50 text-rose-700 border-rose-200";
+      break;
+    case "inactive":
+      styles = "bg-[#F2EFE9] text-[#6E685F] border-[#DFDAD0]";
       break;
     case "read":
     case "draft":
@@ -41,12 +43,24 @@ export default function StatusBadge({ status, size = "md" }) {
       styles = "bg-[#F8F6F2] text-[#2B2B2B] border-[#E7E0D2]";
   }
 
+  const displayLabel =
+    normalized === "in progress"
+      ? "In Progress"
+      : typeof status === "string" && status.includes("_")
+      ? status
+          .split("_")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(" ")
+      : typeof status === "string" && status === status.toUpperCase() && status.length > 3
+      ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+      : status;
+
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border ${sizeClasses} ${styles} transition-colors tracking-wide`}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80 shrink-0" />
-      {status}
+      {displayLabel}
     </span>
   );
 }

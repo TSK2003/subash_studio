@@ -275,6 +275,7 @@ model FrameRatio {
   dimensions String
   price      Int
   aspect     String
+  orientation String   @default("portrait")
   popular    Boolean  @default(false)
   active     Boolean  @default(true)
   createdAt  DateTime @default(now())
@@ -377,5 +378,20 @@ model Notification {
   @@index([type])
   @@index([relatedEntityType, relatedEntityId])
   @@map("notifications")
+}
+
+/// Dynamic categories for Portfolio and Gallery showcases
+model Category {
+  id        String   @id
+  name      String
+  slug      String
+  type      String   @default("PORTFOLIO") // "PORTFOLIO" | "GALLERY"
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, type])
+  @@index([type, active])
+  @@map("categories")
 }
 

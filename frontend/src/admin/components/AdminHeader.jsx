@@ -3,21 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   Bell,
-  Search,
   ExternalLink,
-  ChevronDown,
-  User,
-  Settings as SettingsIcon,
-  LogOut,
-  RefreshCw,
   Plus,
   Calendar,
   MessageSquare,
   Sparkles,
 } from "lucide-react";
-import { useAdminAuth } from "../context/AdminAuthContext";
 import { useAdminData } from "../context/AdminDataContext";
-import { useToast } from "../context/ToastContext";
 
 function formatRelativeTime(dateString) {
   if (!dateString) return "";
@@ -36,6 +28,8 @@ function formatRelativeTime(dateString) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+import { ADMIN_ROUTES } from "../constants/adminRoutes";
+
 function getNotificationIcon(type) {
   switch (type) {
     case "BOOKING":
@@ -49,37 +43,27 @@ function getNotificationIcon(type) {
 }
 
 function getNotificationRoute(notif) {
-  if (notif?.type === "BOOKING") return "/admin/bookings";
-  if (notif?.type === "FRAME_ORDER") return "/admin/frames";
-  return "/admin/enquiries";
+  if (notif?.type === "BOOKING") return ADMIN_ROUTES.BOOKINGS;
+  if (notif?.type === "FRAME_ORDER") return ADMIN_ROUTES.FRAMES;
+  return ADMIN_ROUTES.ENQUIRIES;
 }
 
 export default function AdminHeader({ onMobileMenuClick }) {
-  const { adminUser, logout } = useAdminAuth();
   const {
-    resetAllDemoData,
     notifications,
     unreadNotificationCount,
     markNotificationAsRead,
     markAllNotificationsAsRead,
   } = useAdminData();
-  const { addToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const profileRef = useRef(null);
   const notifRef = useRef(null);
 
-  // Close menus on click outside
+  // Close notifications menu on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
-        setProfileMenuOpen(false);
-      }
       if (notifRef.current && !notifRef.current.contains(e.target)) {
         setNotificationsOpen(false);
       }
@@ -91,31 +75,31 @@ export default function AdminHeader({ onMobileMenuClick }) {
   // Compute Page Title from location
   const getPageMeta = () => {
     switch (location.pathname) {
-      case "/admin":
-      case "/admin/":
-      case "/admin/dashboard":
+      case ADMIN_ROUTES.BASE:
+      case `${ADMIN_ROUTES.BASE}/`:
+      case ADMIN_ROUTES.DASHBOARD:
         return { title: "Studio Dashboard", subtitle: "Real-time overview of bookings, enquiries & media" };
-      case "/admin/bookings":
+      case ADMIN_ROUTES.BOOKINGS:
         return { title: "Client Bookings", subtitle: "Manage photo shoot schedules and client inquiries" };
-      case "/admin/enquiries":
+      case ADMIN_ROUTES.ENQUIRIES:
         return { title: "Lead Inquiries", subtitle: "Track and follow up on client contact messages" };
-      case "/admin/gallery":
+      case ADMIN_ROUTES.GALLERY:
         return { title: "Gallery Showcase", subtitle: "Curate public portfolio and client showcase photos" };
-      case "/admin/portfolio":
+      case ADMIN_ROUTES.PORTFOLIO:
         return { title: "Featured Stories", subtitle: "Manage highlight stories & wedding case studies" };
-      case "/admin/services":
+      case ADMIN_ROUTES.SERVICES:
         return { title: "Studio Offerings", subtitle: "Configure photography packages, pricing & descriptions" };
-      case "/admin/films":
+      case ADMIN_ROUTES.FILMS:
         return { title: "Cinematic Films", subtitle: "Manage featured wedding films, teasers and YouTube embeds" };
-      case "/admin/frames":
+      case ADMIN_ROUTES.FRAMES:
         return { title: "Custom Frames & Orders", subtitle: "Configure wood types, designs, aspect ratios and customer orders" };
-      case "/admin/branches":
+      case ADMIN_ROUTES.BRANCHES:
         return { title: "Studio Branches", subtitle: "Manage Kalladaikurichi, Tirunelveli & Tenkasi locations" };
-      case "/admin/testimonials":
+      case ADMIN_ROUTES.TESTIMONIALS:
         return { title: "Client Testimonials", subtitle: "Review and feature client reviews & star ratings" };
-      case "/admin/content":
+      case ADMIN_ROUTES.CONTENT:
         return { title: "Website Content CMS", subtitle: "Update public website hero text, about story & contact" };
-      case "/admin/settings":
+      case ADMIN_ROUTES.SETTINGS:
         return { title: "Admin & Studio Settings", subtitle: "Configure account security, preferences and studio details" };
       default:
         return { title: "Admin Portal", subtitle: "SUBASH STUDIO Management" };
@@ -132,24 +116,8 @@ export default function AdminHeader({ onMobileMenuClick }) {
     navigate(getNotificationRoute(notif));
   };
 
-  const handleResetData = () => {
-    if (window.confirm("Reset all admin data back to initial demo seeds?")) {
-      resetAllDemoData();
-      addToast("Demo data successfully reset to initial state.", "info");
-      setProfileMenuOpen(false);
-    }
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/admin/bookings?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
-
   return (
-    <header className="h-20 bg-white/90 backdrop-blur-md border-b border-[#E7E0D2] sticky top-0 z-20 px-3 sm:px-6 lg:px-8 flex items-center justify-between transition-all min-w-0">
+    <header className="h-16 bg-white/90 backdrop-blur-md border-b border-[#E7E0D2] sticky top-0 z-20 px-3 sm:px-6 lg:px-8 flex items-center justify-between transition-all min-w-0">
       {/* Left Title & Mobile Trigger */}
       <div className="flex items-center gap-2 sm:gap-4 min-w-0 mr-2">
         <button
@@ -172,26 +140,14 @@ export default function AdminHeader({ onMobileMenuClick }) {
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-        {/* Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="hidden md:flex relative items-center">
-          <Search className="w-4 h-4 absolute left-3 text-[#6F6A62] pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-32 lg:w-40 xl:w-60 pl-9 pr-3 py-2 bg-[#F8F6F2] border border-[#E7E0D2] rounded-lg text-xs text-[#2B2B2B] placeholder:text-[#8E867B] focus:outline-none focus:border-[#C9A669] focus:bg-white transition-all"
-          />
-        </form>
-
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Quick Add Booking */}
         <Link
-          to="/admin/bookings?new=true"
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0"
+          to={`${ADMIN_ROUTES.BOOKINGS}?new=true`}
+          className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0"
         >
           <Plus className="w-4 h-4 text-[#E4D3A6]" />
-          <span className="hidden md:inline">New Booking</span>
+          <span>New Booking</span>
         </Link>
 
         {/* Live Site Link */}
@@ -199,11 +155,11 @@ export default function AdminHeader({ onMobileMenuClick }) {
           href="/"
           target="_blank"
           rel="noreferrer"
-          className="p-2 sm:p-2.5 rounded-lg border border-[#E7E0D2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] transition-colors hidden sm:flex items-center gap-1.5 text-xs font-medium shrink-0"
+          className="p-2 sm:px-3 sm:py-2 rounded-lg border border-[#E7E0D2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] transition-colors flex items-center gap-1.5 text-xs font-medium shrink-0"
           title="Open Public Website"
         >
           <ExternalLink className="w-4 h-4 text-[#9C7B3D]" />
-          <span className="hidden xl:inline">Live Site</span>
+          <span className="hidden sm:inline">Live Site</span>
         </a>
 
         {/* Notification Bell */}
@@ -211,7 +167,7 @@ export default function AdminHeader({ onMobileMenuClick }) {
           <button
             type="button"
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative p-2.5 rounded-lg border border-[#E7E0D2] text-[#2B2B2B] hover:bg-[#F8F6F2] transition-colors"
+            className="relative p-2.5 rounded-lg border border-[#E7E0D2] text-[#2B2B2B] hover:bg-[#F8F6F2] transition-colors cursor-pointer"
             aria-label="View notifications"
           >
             <Bell className="w-4 h-4" />
@@ -301,90 +257,6 @@ export default function AdminHeader({ onMobileMenuClick }) {
                     No notifications at this time.
                   </div>
                 )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Profile Dropdown */}
-        <div className="relative" ref={profileRef}>
-          <button
-            type="button"
-            onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-            className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg border border-[#E7E0D2] hover:bg-[#F8F6F2] transition-colors"
-          >
-            <div className="w-8 h-8 rounded-md bg-[#2B2B2B] text-[#E4D3A6] flex items-center justify-center font-display font-semibold text-xs overflow-hidden">
-              {adminUser?.avatar ? (
-                <img
-                  src={adminUser.avatar}
-                  alt={adminUser.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                adminUser?.name?.charAt(0) || "S"
-              )}
-            </div>
-            <div className="hidden xl:block text-left">
-              <p className="text-xs font-semibold text-[#2B2B2B] leading-none">
-                {adminUser?.name || "Admin"}
-              </p>
-              <p className="text-[10px] text-[#8E867B] mt-0.5 leading-none">
-                {adminUser?.role || "Director"}
-              </p>
-            </div>
-            <ChevronDown className="w-3.5 h-3.5 text-[#6F6A62]" />
-          </button>
-
-          {profileMenuOpen && (
-            <div className="absolute right-0 mt-3 w-56 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-xl border border-[#E7E0D2] p-2 z-50 animate-fadeIn">
-              <div className="px-3 py-2 border-b border-[#E7E0D2]/60 mb-1">
-                <p className="text-xs font-bold text-[#2B2B2B]">
-                  {adminUser?.name || "Subash Admin"}
-                </p>
-                <p className="text-[11px] text-[#6F6A62] truncate">
-                  {adminUser?.email || "subashstudio009@gmail.com"}
-                </p>
-              </div>
-
-              <Link
-                to="/admin/settings"
-                onClick={() => setProfileMenuOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 text-xs text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-lg transition-colors font-medium"
-              >
-                <User className="w-4 h-4 text-[#9C7B3D]" />
-                <span>Admin Profile</span>
-              </Link>
-
-              <Link
-                to="/admin/settings"
-                onClick={() => setProfileMenuOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 text-xs text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-lg transition-colors font-medium"
-              >
-                <SettingsIcon className="w-4 h-4 text-[#9C7B3D]" />
-                <span>Studio Settings</span>
-              </Link>
-
-              <button
-                type="button"
-                onClick={handleResetData}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-lg transition-colors font-medium text-left"
-              >
-                <RefreshCw className="w-4 h-4 text-amber-600" />
-                <span>Reset Demo Data</span>
-              </button>
-
-              <div className="pt-1 border-t border-[#E7E0D2]/60 mt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-lg transition-colors font-medium text-left"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Log Out</span>
-                </button>
               </div>
             </div>
           )}

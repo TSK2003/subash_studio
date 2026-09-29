@@ -14,6 +14,7 @@ import contentRoutes from "./contentRoutes.js";
 import settingsRoutes from "./settingsRoutes.js";
 import uploadRoutes from "./uploadRoutes.js";
 import notificationRoutes from "./notificationRoutes.js";
+import realtimeRoutes from "./realtimeRoutes.js";
 
 const router = Router();
 
@@ -43,6 +44,7 @@ router.use("/content", contentRoutes);
 router.use("/settings", settingsRoutes);
 router.use("/uploads", uploadRoutes);
 router.use("/notifications", notificationRoutes);
+router.use("/realtime", realtimeRoutes);
 
 export default router;
 

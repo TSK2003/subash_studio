@@ -1,8 +1,14 @@
 import { Router } from "express";
 import * as portfolioController from "../controllers/portfolioController.js";
+import * as categoriesController from "../controllers/categoriesController.js";
 import { authenticateAdmin } from "../middleware/auth.js";
 
 const router = Router();
+
+// Category management
+router.get("/categories", categoriesController.getPortfolioCategories);
+router.post("/categories", authenticateAdmin, categoriesController.createPortfolioCategory);
+router.patch("/categories/:id/toggle-status", authenticateAdmin, categoriesController.togglePortfolioCategoryStatus);
 
 // Public
 router.get("/", portfolioController.getAllPortfolio);

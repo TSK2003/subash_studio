@@ -17,7 +17,7 @@ import {
 import { useAdminData } from "../admin/context/AdminDataContext";
 
 export default function Gallery() {
-  const { gallery, loading } = useAdminData();
+  const { gallery, galleryCategories, loading } = useAdminData();
   const [active, setActive] = useState("All");
   const lightGalleryRef = useRef(null);
 
@@ -27,10 +27,33 @@ export default function Gallery() {
     }
   }, []);
 
+  // Active category names from database
+  const activeCategories = useMemo(() => {
+    if (galleryCategories && galleryCategories.length > 0) {
+      return galleryCategories.filter((c) => c.active !== false).map((c) => c.name);
+    }
+    return null;
+  }, [galleryCategories]);
+
+  // Set of active category names for fast case-insensitive lookup
+  const activeCategorySet = useMemo(() => {
+    if (activeCategories) {
+      return new Set(activeCategories.map((c) => c.toLowerCase()));
+    }
+    return null;
+  }, [activeCategories]);
+
   const images = useMemo(() => {
     if (gallery && gallery.length > 0) {
       return gallery
-        .filter((item) => item.published !== false)
+        .filter((item) => {
+          if (item.published === false) return false;
+          // Hide items whose category is inactive
+          if (activeCategorySet && item.category) {
+            return activeCategorySet.has(item.category.trim().toLowerCase());
+          }
+          return true;
+        })
         .map((item) => ({
           ...item,
           src: item.imageUrl || item.src || "/public/images/gallery/wedding-1.jpg",
@@ -41,21 +64,26 @@ export default function Gallery() {
       return defaultGalleryImages;
     }
     return [];
-  }, [gallery, loading]);
+  }, [gallery, loading, activeCategorySet]);
 
   const categories = useMemo(() => {
+    if (activeCategories && activeCategories.length > 0) {
+      return ["All", ...activeCategories];
+    }
     if (gallery && gallery.length > 0) {
       const cats = Array.from(new Set(images.map((img) => img.category).filter(Boolean)));
       return ["All", ...cats];
     }
     return defaultCategories;
-  }, [gallery, images]);
+  }, [activeCategories, gallery, images]);
 
   const filtered = useMemo(() => {
     if (active === "All") {
       return images;
     }
-    return images.filter((image) => image.category === active);
+    return images.filter(
+      (image) => (image.category || "").toLowerCase() === active.toLowerCase()
+    );
   }, [active, images]);
 
   useEffect(() => {

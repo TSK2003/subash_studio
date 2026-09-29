@@ -1,4 +1,5 @@
 import * as testimonialsService from "../services/testimonialsService.js";
+import { notifyDataChanged } from "../services/realtimeService.js";
 
 export async function getAllTestimonials(req, res, next) {
   try {
@@ -13,6 +14,7 @@ export async function getAllTestimonials(req, res, next) {
 export async function createTestimonial(req, res, next) {
   try {
     const testimonial = await testimonialsService.createTestimonial(req.body);
+    notifyDataChanged({ entity: "testimonials", action: "created", id: testimonial.id });
     res.status(201).json(testimonial);
   } catch (err) {
     next(err);
@@ -22,6 +24,7 @@ export async function createTestimonial(req, res, next) {
 export async function updateTestimonial(req, res, next) {
   try {
     const testimonial = await testimonialsService.updateTestimonial(req.params.id, req.body);
+    notifyDataChanged({ entity: "testimonials", action: "updated", id: testimonial.id });
     res.json(testimonial);
   } catch (err) {
     next(err);
@@ -31,6 +34,7 @@ export async function updateTestimonial(req, res, next) {
 export async function deleteTestimonial(req, res, next) {
   try {
     await testimonialsService.deleteTestimonial(req.params.id);
+    notifyDataChanged({ entity: "testimonials", action: "deleted", id: req.params.id });
     res.json({ success: true, message: "Testimonial deleted successfully." });
   } catch (err) {
     next(err);
@@ -40,6 +44,7 @@ export async function deleteTestimonial(req, res, next) {
 export async function toggleApproved(req, res, next) {
   try {
     const testimonial = await testimonialsService.toggleTestimonialApproved(req.params.id);
+    notifyDataChanged({ entity: "testimonials", action: "updated", id: testimonial.id });
     res.json(testimonial);
   } catch (err) {
     next(err);
@@ -49,6 +54,7 @@ export async function toggleApproved(req, res, next) {
 export async function toggleFeatured(req, res, next) {
   try {
     const testimonial = await testimonialsService.toggleTestimonialFeatured(req.params.id);
+    notifyDataChanged({ entity: "testimonials", action: "updated", id: testimonial.id });
     res.json(testimonial);
   } catch (err) {
     next(err);
@@ -58,6 +64,7 @@ export async function toggleFeatured(req, res, next) {
 export async function toggleHidden(req, res, next) {
   try {
     const testimonial = await testimonialsService.toggleTestimonialHidden(req.params.id);
+    notifyDataChanged({ entity: "testimonials", action: "updated", id: testimonial.id });
     res.json(testimonial);
   } catch (err) {
     next(err);
@@ -77,6 +84,7 @@ export async function syncReviews(req, res, next) {
   try {
     const reviews = Array.isArray(req.body) ? req.body : req.body.reviews || [];
     const result = await testimonialsService.syncGoogleReviews(reviews);
+    notifyDataChanged({ entity: "testimonials", action: "updated" });
     res.json({ success: true, ...result });
   } catch (err) {
     next(err);

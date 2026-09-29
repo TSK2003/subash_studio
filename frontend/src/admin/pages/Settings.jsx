@@ -14,8 +14,10 @@ import {
   AlertTriangle,
   Eye,
   EyeOff,
+  Loader2,
 } from "lucide-react";
 import ImageUploader from "../components/ImageUploader";
+import api from "../../lib/api.js";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
@@ -26,10 +28,13 @@ export default function Settings() {
     settings,
     updateSettings,
     resetAllDemoData,
+    refreshData,
     bookings,
     enquiries,
     gallery,
+    galleryCategories,
     portfolio,
+    portfolioCategories,
     services,
     films,
     branches,
@@ -39,10 +44,13 @@ export default function Settings() {
     frameDesigns,
     frameRatios,
     frameOrders,
+    notifications,
+    googleReviewsMeta,
   } = useAdminData();
   const { addToast } = useToast();
 
   const [activeTab, setActiveTab] = useState("profile");
+  const [isExporting, setIsExporting] = useState(false);
 
   // Profile Form
   const [profileForm, setProfileForm] = useState({
@@ -139,44 +147,125 @@ export default function Settings() {
     addToast("Notification preferences updated.", "success");
   };
 
-  const handleExportDataSnapshot = () => {
-    const snapshot = {
-      exportedAt: new Date().toISOString(),
-      studio: "SUBASH STUDIO",
-      counts: {
-        bookings: bookings.length,
-        enquiries: enquiries.length,
-        gallery: gallery.length,
-        portfolio: (portfolio || []).length,
-        services: services.length,
-        films: (films || []).length,
-        branches: branches.length,
-        testimonials: (testimonials || []).length,
-        frameOrders: (frameOrders || []).length,
-      },
-      bookings,
-      enquiries,
-      gallery,
-      portfolio,
-      services,
-      films,
-      branches,
-      testimonials,
-      websiteContent,
-      settings,
-      frameWoodTypes,
-      frameDesigns,
-      frameRatios,
-      frameOrders,
-    };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(snapshot, null, 2));
-    const downloadAnchor = document.createElement("a");
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `subash_studio_backup_${new Date().toISOString().split("T")[0]}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    addToast("Complete studio backup exported as JSON.", "success");
+  const handleExportDataSnapshot = async () => {
+    setIsExporting(true);
+    try {
+      let exportData = null;
+
+      // 1. Attempt to fetch full, authoritative server snapshot directly from DB
+      try {
+        const serverSnapshot = await api.get("/api/settings/backup/snapshot");
+        if (serverSnapshot && serverSnapshot.counts) {
+          exportData = serverSnapshot;
+        }
+      } catch (apiErr) {
+        console.warn("Backend snapshot API unavailable, falling back to client context snapshot:", apiErr);
+      }
+
+      // 2. Fallback to client-side data context
+      if (!exportData) {
+        // Attempt to refresh in-memory context data
+        if (typeof refreshData === "function") {
+          try {
+            await refreshData();
+          } catch {
+            // Use current state if refresh fails
+          }
+        }
+
+        const bList = Array.isArray(bookings) ? bookings : [];
+        const eList = Array.isArray(enquiries) ? enquiries : [];
+        const gList = Array.isArray(gallery) ? gallery : [];
+        const gcList = Array.isArray(galleryCategories) ? galleryCategories : [];
+        const pList = Array.isArray(portfolio) ? portfolio : [];
+        const pcList = Array.isArray(portfolioCategories) ? portfolioCategories : [];
+        const sList = Array.isArray(services) ? services : [];
+        const fList = Array.isArray(films) ? films : [];
+        const brList = Array.isArray(branches) ? branches : [];
+        const tList = Array.isArray(testimonials) ? testimonials : [];
+        const wtList = Array.isArray(frameWoodTypes) ? frameWoodTypes : [];
+        const fdList = Array.isArray(frameDesigns) ? frameDesigns : [];
+        const frList = Array.isArray(frameRatios) ? frameRatios : [];
+        const foList = Array.isArray(frameOrders) ? frameOrders : [];
+        const nList = Array.isArray(notifications) ? notifications : [];
+
+        exportData = {
+          system: "Subash Studio Atelier Management System",
+          version: "2.0",
+          exportedAt: new Date().toISOString(),
+          studio: "SUBASH STUDIO",
+          exportedBy: adminUser?.email || "admin",
+          counts: {
+            bookings: bList.length,
+            enquiries: eList.length,
+            gallery: gList.length,
+            galleryCategories: gcList.length,
+            portfolio: pList.length,
+            portfolioCategories: pcList.length,
+            services: sList.length,
+            films: fList.length,
+            branches: brList.length,
+            testimonials: tList.length,
+            frameWoodTypes: wtList.length,
+            frameDesigns: fdList.length,
+            frameRatios: frList.length,
+            frameOrders: foList.length,
+            notifications: nList.length,
+          },
+          adminProfile: {
+            adminName: profileForm.adminName,
+            role: profileForm.role,
+            email: profileForm.email,
+            avatar: profileForm.avatar,
+            phone: profileForm.phone,
+          },
+          bookings: bList,
+          enquiries: eList,
+          gallery: gList,
+          galleryCategories: gcList,
+          portfolio: pList,
+          portfolioCategories: pcList,
+          services: sList,
+          films: fList,
+          branches: brList,
+          testimonials: tList,
+          googleReviewsMeta: googleReviewsMeta || null,
+          websiteContent: websiteContent || {},
+          settings: settings || {},
+          frameWoodTypes: wtList,
+          frameDesigns: fdList,
+          frameRatios: frList,
+          frameOrders: foList,
+          notifications: nList,
+        };
+      }
+
+      // 3. Reliable, standard Blob download (no data: URI length limits)
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+      const downloadUrl = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement("a");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      const filename = `subash_studio_backup_${timestamp}.json`;
+
+      downloadAnchor.href = downloadUrl;
+      downloadAnchor.download = filename;
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      document.body.removeChild(downloadAnchor);
+
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 1500);
+
+      addToast(
+        `Complete studio backup exported successfully as JSON (${filename})`,
+        "success"
+      );
+    } catch (err) {
+      console.error("Export snapshot error:", err);
+      addToast(err.message || "Failed to export data snapshot. Please try again.", "error");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -600,11 +689,16 @@ export default function Settings() {
         <div className="flex flex-wrap items-center gap-3 pt-2">
           <button
             type="button"
+            disabled={isExporting}
             onClick={handleExportDataSnapshot}
-            className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] text-xs font-semibold text-[#2B2B2B] flex items-center gap-2 transition-all"
+            className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] text-xs font-semibold text-[#2B2B2B] flex items-center gap-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
           >
-            <Download className="w-4 h-4 text-[#9C7B3D]" />
-            <span>Export Data Snapshot (.JSON)</span>
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin text-[#9C7B3D]" />
+            ) : (
+              <Download className="w-4 h-4 text-[#9C7B3D]" />
+            )}
+            <span>{isExporting ? "Generating Snapshot..." : "Export Data Snapshot (.JSON)"}</span>
           </button>
 
           <button

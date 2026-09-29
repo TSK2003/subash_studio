@@ -13,12 +13,32 @@ export async function getAllGallery(options = {}) {
   const where = {};
   if (!includeUnpublished) {
     where.published = true;
+    const inactiveCats = await prisma.category.findMany({
+      where: { type: "GALLERY", active: false },
+      select: { name: true },
+    });
+    const inactiveNames = new Set(inactiveCats.map((c) => c.name.toLowerCase()));
+    if (category && category !== "ALL" && category !== "all") {
+      if (inactiveNames.has(category.toLowerCase())) {
+        if (page !== undefined || limit !== undefined) {
+          return {
+            items: [],
+            pagination: { total: 0, page: 1, limit: Number(limit) || 30, totalPages: 0 },
+          };
+        }
+        return [];
+      }
+      where.category = category;
+    } else if (inactiveCats.length > 0) {
+      where.category = {
+        notIn: Array.from(new Set(inactiveCats.flatMap((c) => [c.name, c.name.toLowerCase(), c.name.toUpperCase()]))),
+      };
+    }
+  } else if (category && category !== "ALL" && category !== "all") {
+    where.category = category;
   }
   if (featuredOnly) {
     where.featured = true;
-  }
-  if (category && category !== "ALL" && category !== "all") {
-    where.category = category;
   }
 
   if (page !== undefined || limit !== undefined) {

@@ -1,8 +1,8 @@
 import { Router } from "express";
 import * as bookingsController from "../controllers/bookingsController.js";
-import { authenticateAdmin } from "../middleware/auth.js";
+import { authenticateAdmin, requireAdminPassword } from "../middleware/auth.js";
 import { submissionLimiter } from "../middleware/rateLimiter.js";
-import { validateCreateBooking } from "../middleware/validation.js";
+import { validateCreateBooking, validateUpdateBooking } from "../middleware/validation.js";
 
 const router = Router();
 
@@ -11,7 +11,7 @@ router.post("/", submissionLimiter, validateCreateBooking, bookingsController.cr
 
 // Protected admin endpoints
 router.get("/", authenticateAdmin, bookingsController.getAllBookings);
-router.put("/:id", authenticateAdmin, bookingsController.updateBooking);
-router.delete("/:id", authenticateAdmin, bookingsController.deleteBooking);
+router.put("/:id", authenticateAdmin, validateUpdateBooking, bookingsController.updateBooking);
+router.delete("/:id", authenticateAdmin, requireAdminPassword, bookingsController.deleteBooking);
 
 export default router;

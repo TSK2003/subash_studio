@@ -29,16 +29,11 @@ import EmptyState from "../components/EmptyState";
 import Pagination from "../components/Pagination";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
-
-const STATUSES = [
-  "All",
-  "New",
-  "Contacted",
-  "Confirmed",
-  "In Progress",
-  "Completed",
-  "Cancelled",
-];
+import {
+  BOOKING_STATUS_FILTERS,
+  normalizeBookingStatus,
+  formatBookingStatusLabel,
+} from "../../lib/bookingStatus.js";
 
 export default function Bookings() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,7 +47,7 @@ export default function Bookings() {
   const isNewParam = searchParams.get("new") === "true";
 
   const [searchQuery, setSearchQuery] = useState(urlSearch);
-  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedStatus, setSelectedStatus] = useState("ALL");
   const [selectedBranch, setSelectedBranch] = useState("All");
   const [selectedService, setSelectedService] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,6 +76,8 @@ export default function Bookings() {
   useEffect(() => {
     if (isNewParam) {
       setEditingBooking(null);
+      setFormData(initialFormState);
+      setFormErrors({});
       setFormModalOpen(true);
     }
   }, [isNewParam]);
@@ -90,21 +87,38 @@ export default function Bookings() {
     customerName: "",
     phone: "",
     email: "",
-    eventType: "Wedding & Reception",
+    eventType: "",
     eventDate: "",
     location: "",
-    numberOfDays: "1 Day",
-    requiredService: "Wedding Photography",
-    photographyRequirement: "Candid + Traditional Stills",
-    cinematographyRequirement: "Cinematic 4K Film + Highlights",
-    budget: "₹1,50,000",
-    branch: "Tirunelveli",
-    status: "New",
+    numberOfDays: "",
+    requiredService: "",
+    photographyRequirement: "",
+    cinematographyRequirement: "",
+    budget: "",
+    branch: "",
+    status: "NEW",
     adminNotes: "",
   };
 
+  const FIELD_ORDER = [
+    "customerName",
+    "phone",
+    "email",
+    "eventType",
+    "eventDate",
+    "numberOfDays",
+    "budget",
+    "requiredService",
+    "branch",
+    "status",
+    "location",
+    "photographyRequirement",
+    "cinematographyRequirement",
+  ];
+
   const [formData, setFormData] = useState(initialFormState);
   const [formErrors, setFormErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filtered bookings
   const filteredBookings = useMemo(() => {
@@ -116,8 +130,9 @@ export default function Bookings() {
         b.phone?.includes(searchQuery) ||
         b.location?.toLowerCase().includes(searchQuery.toLowerCase());
 
+      const canonicalStatus = normalizeBookingStatus(b.status);
       const matchesStatus =
-        selectedStatus === "All" || b.status === selectedStatus;
+        selectedStatus === "ALL" || canonicalStatus === selectedStatus;
       const matchesBranch =
         selectedBranch === "All" || b.branch === selectedBranch;
       const matchesService =
@@ -137,57 +152,221 @@ export default function Bookings() {
     setEditingBooking(null);
     setFormData(initialFormState);
     setFormErrors({});
+    setIsSubmitting(false);
     setFormModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setFormModalOpen(false);
+    setEditingBooking(null);
+    setFormData(initialFormState);
+    setFormErrors({});
+    setIsSubmitting(false);
   };
 
   const handleOpenEditModal = (booking) => {
     setEditingBooking(booking);
     setFormData({
-      customerName: booking.customerName || "",
-      phone: booking.phone || "",
+      customerName: booking.customerName || booking.clientName || "",
+      phone: (booking.phone || "").replace(/\D/g, "").slice(0, 10),
       email: booking.email || "",
-      eventType: booking.eventType || "Wedding",
-      eventDate: booking.eventDate || "",
-      location: booking.location || "",
-      numberOfDays: booking.numberOfDays || "1 Day",
-      requiredService: booking.requiredService || "Wedding Photography",
+      eventType: booking.eventType || "",
+      eventDate: booking.eventDate ? (booking.eventDate.includes("T") ? booking.eventDate.split("T")[0] : booking.eventDate) : "",
+      location: booking.location || booking.venue || "",
+      numberOfDays: booking.numberOfDays || "",
+      requiredService: booking.requiredService || booking.service || "",
       photographyRequirement: booking.photographyRequirement || "",
       cinematographyRequirement: booking.cinematographyRequirement || "",
       budget: booking.budget || "",
-      branch: booking.branch || "Tirunelveli",
-      status: booking.status || "New",
-      adminNotes: booking.adminNotes || "",
+      branch: booking.branch || "",
+      status: normalizeBookingStatus(booking.status),
+      adminNotes: booking.adminNotes || booking.notes || "",
     });
     setFormErrors({});
+    setIsSubmitting(false);
     setFormModalOpen(true);
   };
 
-  const handleFormSubmit = (e) => {
+  const handlePhoneChange = (e) => {
+    const numeric = e.target.value.replace(/\D/g, "").slice(0, 10);
+    setFormData((prev) => ({ ...prev, phone: numeric }));
+    if (formErrors.phone) {
+      if (numeric.length === 10) {
+        setFormErrors((prev) => {
+          const next = { ...prev };
+          delete next.phone;
+          return next;
+        });
+      } else if (numeric.length === 0) {
+        setFormErrors((prev) => ({ ...prev, phone: "Phone number is required." }));
+      } else {
+        setFormErrors((prev) => ({ ...prev, phone: "Phone number must be exactly 10 digits." }));
+      }
+    }
+  };
+
+  const handlePhoneKeyDown = (e) => {
+    const allowedKeys = [
+      "Backspace",
+      "Delete",
+      "Tab",
+      "ArrowLeft",
+      "ArrowRight",
+      "Home",
+      "End",
+      "Enter",
+    ];
+    if (allowedKeys.includes(e.key)) return;
+    if ((e.ctrlKey || e.metaKey) && ["a", "c", "v", "x"].includes(e.key.toLowerCase())) return;
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handlePhonePaste = (e) => {
     e.preventDefault();
+    const pasted = e.clipboardData?.getData("text") || "";
+    const digits = pasted.replace(/\D/g, "");
+    setFormData((prev) => {
+      const current = prev.phone || "";
+      const combined = (current + digits).slice(0, 10);
+      return { ...prev, phone: combined };
+    });
+    if (formErrors.phone) {
+      setFormErrors((prev) => {
+        const next = { ...prev };
+        delete next.phone;
+        return next;
+      });
+    }
+  };
+
+  const handleFieldChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const validateForm = () => {
     const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!formData.customerName.trim()) errors.customerName = "Customer name is required.";
-    if (!formData.phone.trim()) errors.phone = "Phone number is required.";
-    if (!formData.eventDate) errors.eventDate = "Event date is required.";
-    if (!formData.location.trim()) errors.location = "Location is required.";
+    // 1. Customer Name *
+    if (!formData.customerName || !formData.customerName.trim()) {
+      errors.customerName = "Customer name is required.";
+    }
 
+    // 2. Phone Number *
+    if (!formData.phone || !formData.phone.trim()) {
+      errors.phone = "Phone number is required.";
+    } else if (formData.phone.trim().length !== 10 || !/^\d{10}$/.test(formData.phone.trim())) {
+      errors.phone = "Phone number must be exactly 10 digits.";
+    }
+
+    // 3. Email Address *
+    if (!formData.email || !formData.email.trim()) {
+      errors.email = "Email address is required.";
+    } else if (!emailRegex.test(formData.email.trim())) {
+      errors.email = "Please enter a valid email address.";
+    }
+
+    // 4. Event Type *
+    if (!formData.eventType || !formData.eventType.trim()) {
+      errors.eventType = "Event type is required.";
+    }
+
+    // 5. Event Date *
+    if (!formData.eventDate || !formData.eventDate.trim()) {
+      errors.eventDate = "Event date is required.";
+    }
+
+    // 6. Duration / Days *
+    if (!formData.numberOfDays || !formData.numberOfDays.trim()) {
+      errors.numberOfDays = "Duration / Days is required.";
+    }
+
+    // 7. Package Budget *
+    if (!formData.budget || !formData.budget.trim()) {
+      errors.budget = "Package budget is required.";
+    }
+
+    // 8. Primary Service *
+    if (!formData.requiredService || !formData.requiredService.trim()) {
+      errors.requiredService = "Please select a primary service.";
+    }
+
+    // 9. Studio Branch *
+    if (!formData.branch || !formData.branch.trim()) {
+      errors.branch = "Please select a studio branch.";
+    }
+
+    // 10. Status *
+    if (!formData.status || !formData.status.trim()) {
+      errors.status = "Status is required.";
+    }
+
+    // 11. Venue Location *
+    if (!formData.location || !formData.location.trim()) {
+      errors.location = "Venue location is required.";
+    }
+
+    // 12. Photography Details *
+    if (!formData.photographyRequirement || !formData.photographyRequirement.trim()) {
+      errors.photographyRequirement = "Photography details are required.";
+    }
+
+    // 13. Cinematography Details *
+    if (!formData.cinematographyRequirement || !formData.cinematographyRequirement.trim()) {
+      errors.cinematographyRequirement = "Cinematography details are required.";
+    }
+
+    return errors;
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
+      const firstInvalidKey = FIELD_ORDER.find((k) => errors[k]);
+      if (firstInvalidKey) {
+        const el = document.getElementById(`booking-${firstInvalidKey}`);
+        if (el) {
+          el.focus();
+          if (el.scrollIntoView) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }
+      }
       return;
     }
 
-    if (editingBooking) {
-      updateBooking(editingBooking.id, formData);
-      addToast(`Booking ${editingBooking.id} updated successfully.`, "success");
-      if (activeBooking?.id === editingBooking.id) {
-        setActiveBooking({ ...activeBooking, ...formData });
+    setIsSubmitting(true);
+    try {
+      if (editingBooking) {
+        await updateBooking(editingBooking.id, formData);
+        addToast(`Booking ${editingBooking.id} updated successfully.`, "success");
+        if (activeBooking?.id === editingBooking.id) {
+          setActiveBooking({ ...activeBooking, ...formData });
+        }
+      } else {
+        const created = await addBooking(formData);
+        addToast(`Booking ${created?.id || ""} created successfully.`, "success");
       }
-    } else {
-      const created = addBooking(formData);
-      addToast(`Booking ${created.id} created successfully.`, "success");
+      handleCloseModal();
+    } catch (err) {
+      console.error("Booking submission error:", err);
+      addToast(err?.message || "Failed to save booking. Please check all fields.", "error");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setFormModalOpen(false);
   };
 
   const handleDeletePrompt = (booking) => {
@@ -195,10 +374,10 @@ export default function Bookings() {
     setDeleteConfirmOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async (adminPassword) => {
     if (bookingToDelete) {
-      deleteBooking(bookingToDelete.id);
-      addToast(`Booking ${bookingToDelete.id} removed.`, "info");
+      await deleteBooking(bookingToDelete.id, adminPassword);
+      addToast(`Booking ${bookingToDelete.id} permanently removed.`, "success");
       if (activeBooking?.id === bookingToDelete.id) {
         setDrawerOpen(false);
         setActiveBooking(null);
@@ -208,17 +387,23 @@ export default function Bookings() {
     }
   };
 
-  const handleStatusQuickChange = (id, newStatus) => {
-    updateBooking(id, { status: newStatus });
-    addToast(`Booking status updated to "${newStatus}".`, "success");
-    if (activeBooking?.id === id) {
-      setActiveBooking((prev) => ({ ...prev, status: newStatus }));
+  const handleStatusQuickChange = async (id, newStatus) => {
+    const canonical = normalizeBookingStatus(newStatus);
+    try {
+      await updateBooking(id, { status: canonical });
+      addToast(`Booking status updated to "${formatBookingStatusLabel(canonical)}".`, "success");
+      if (activeBooking?.id === id) {
+        setActiveBooking((prev) => ({ ...prev, status: canonical }));
+      }
+    } catch (err) {
+      console.error("Status update error:", err);
+      addToast("Failed to update booking status.", "error");
     }
   };
 
   const clearFilters = () => {
     setSearchQuery("");
-    setSelectedStatus("All");
+    setSelectedStatus("ALL");
     setSelectedBranch("All");
     setSelectedService("All");
     setCurrentPage(1);
@@ -226,7 +411,7 @@ export default function Bookings() {
 
   const hasActiveFilters =
     searchQuery !== "" ||
-    selectedStatus !== "All" ||
+    selectedStatus !== "ALL" ||
     selectedBranch !== "All" ||
     selectedService !== "All";
 
@@ -323,18 +508,19 @@ export default function Bookings() {
           <span className="text-[11px] text-[#6F6A62] font-semibold mr-1 shrink-0">
             Status:
           </span>
-          {STATUSES.map((status) => {
+          {BOOKING_STATUS_FILTERS.map(({ key, label }) => {
             const count =
-              status === "All"
+              key === "ALL"
                 ? bookings.length
-                : bookings.filter((b) => b.status === status).length;
-            const isSelected = selectedStatus === status;
+                : bookings.filter((b) => normalizeBookingStatus(b.status) === key).length;
+            const isSelected = selectedStatus === key;
 
             return (
               <button
-                key={status}
+                key={key}
+                type="button"
                 onClick={() => {
-                  setSelectedStatus(status);
+                  setSelectedStatus(key);
                   setCurrentPage(1);
                 }}
                 className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
@@ -343,7 +529,7 @@ export default function Bookings() {
                     : "bg-[#F8F6F2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8]"
                 }`}
               >
-                <span>{status}</span>
+                <span>{label}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full ${
                     isSelected
@@ -491,187 +677,241 @@ export default function Bookings() {
         </div>
       )}
 
-      {/* Booking Details Drawer */}
+      {/* Booking Detail Modal (Standardized to match View Enquiry modal) */}
       <AnimatePresence>
         {drawerOpen && activeBooking && (
-          <>
+          <div className="admin-modal-overlay">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setDrawerOpen(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+              onClick={() => {
+                setDrawerOpen(false);
+                setActiveBooking(null);
+              }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-              className="fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-2xl z-50 overflow-y-auto flex flex-col border-l border-[#E7E0D2]"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] flex flex-col overflow-hidden"
             >
-              {/* Drawer Header */}
-              <div className="p-6 bg-[#FCFAF7] border-b border-[#E7E0D2] flex items-center justify-between sticky top-0 z-10">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-[#9C7B3D]">
+              {/* Fixed Header */}
+              <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[11px] font-mono font-bold text-[#9C7B3D]">
                       {activeBooking.id}
                     </span>
                     <StatusBadge status={activeBooking.status} size="sm" />
                   </div>
-                  <h3 className="text-xl font-display font-bold text-[#2B2B2B]">
-                    {activeBooking.customerName}
+                  <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
+                    {activeBooking.customerName || activeBooking.clientName || "Valued Client"}
                   </h3>
+                  <p className="text-xs text-[#6F6A62]">
+                    Booked on {activeBooking.createdAt ? (activeBooking.createdAt.includes("T") ? activeBooking.createdAt.split("T")[0] : activeBooking.createdAt) : "Recent"}
+                  </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setDrawerOpen(false)}
-                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-xl transition-colors"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    setActiveBooking(null);
+                  }}
+                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
+                  aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Quick Communication Bar */}
-              <div className="p-4 bg-[#F8F6F2] border-b border-[#E7E0D2] grid grid-cols-3 gap-2 text-center text-xs">
-                <a
-                  href={`tel:${activeBooking.phone}`}
-                  className="py-2 px-3 bg-white border border-[#E7E0D2] rounded-xl hover:border-[#C9A669] text-[#2B2B2B] font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm"
-                >
-                  <PhoneCall className="w-3.5 h-3.5 text-[#9C7B3D]" />
-                  <span>Call</span>
-                </a>
-                <a
-                  href={`https://wa.me/${activeBooking.phone.replace(/[^0-9]/g, "")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="py-2 px-3 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 text-emerald-900 font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm"
-                >
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>WhatsApp</span>
-                </a>
-                <a
-                  href={`mailto:${activeBooking.email || ""}`}
-                  className="py-2 px-3 bg-white border border-[#E7E0D2] rounded-xl hover:border-[#C9A669] text-[#2B2B2B] font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm"
-                >
-                  <Mail className="w-3.5 h-3.5 text-[#9C7B3D]" />
-                  <span>Email</span>
-                </a>
-              </div>
+              {/* Scrollable Body */}
+              <div className="overflow-y-auto flex-1 p-6 space-y-4 text-xs modal-scrollbar">
+                {/* Quick Communication Bar */}
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  {activeBooking.phone ? (
+                    <a
+                      href={`tel:${activeBooking.phone}`}
+                      className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] hover:border-[#C9A669] text-[#2B2B2B] font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <PhoneCall className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                      <span>{activeBooking.phone}</span>
+                    </a>
+                  ) : (
+                    <div className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] text-[#8E867B] flex items-center justify-center gap-1.5 opacity-60">
+                      <PhoneCall className="w-3.5 h-3.5 text-[#8E867B]" />
+                      <span>No Phone</span>
+                    </div>
+                  )}
 
-              {/* Drawer Content */}
-              <div className="p-6 space-y-6 flex-1 text-xs text-[#2B2B2B]">
-                {/* Event Highlights */}
-                <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-[#FDFBF7] border border-[#E7E0D2]">
-                  <div>
-                    <span className="text-[#6F6A62] block mb-1">Event Type</span>
-                    <span className="font-bold text-sm text-[#2B2B2B]">
-                      {activeBooking.eventType}
+                  {activeBooking.phone ? (
+                    <a
+                      href={`https://wa.me/${activeBooking.phone.replace(/[^0-9]/g, "")}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-900 font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>WhatsApp</span>
+                    </a>
+                  ) : (
+                    <div className="p-2.5 rounded-xl bg-emerald-50/50 border border-emerald-200/50 text-emerald-900/50 flex items-center justify-center gap-1.5 opacity-60">
+                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600/50" />
+                      <span>WhatsApp</span>
+                    </div>
+                  )}
+
+                  {activeBooking.email ? (
+                    <a
+                      href={`mailto:${activeBooking.email}`}
+                      className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] hover:border-[#C9A669] text-[#2B2B2B] font-semibold flex items-center justify-center gap-1.5 transition-all truncate"
+                      title={activeBooking.email}
+                    >
+                      <Mail className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                      <span className="truncate">{activeBooking.email}</span>
+                    </a>
+                  ) : (
+                    <div className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] text-[#8E867B] flex items-center justify-center gap-1.5 opacity-60">
+                      <Mail className="w-3.5 h-3.5 text-[#8E867B]" />
+                      <span>No Email</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Booking Details */}
+                <div className="p-4 rounded-xl bg-[#FDFBF7] border border-[#E7E0D2] space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#6F6A62]">Event Type:</span>
+                    <span className="font-bold text-[#2B2B2B]">{activeBooking.eventType || "Not specified"}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#6F6A62]">Event Date:</span>
+                    <span className="font-semibold text-[#2B2B2B]">
+                      {activeBooking.eventDate
+                        ? new Date(activeBooking.eventDate).toLocaleDateString("en-IN", {
+                            weekday: "short",
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "Not specified"}
                     </span>
                   </div>
-                  <div>
-                    <span className="text-[#6F6A62] block mb-1">Event Date</span>
-                    <span className="font-bold text-sm text-[#2B2B2B]">
-                      {new Date(activeBooking.eventDate).toLocaleDateString("en-IN", {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#6F6A62]">Shoot Duration:</span>
+                    <span className="font-semibold text-[#2B2B2B]">{activeBooking.numberOfDays || "Not specified"}</span>
                   </div>
-                  <div>
-                    <span className="text-[#6F6A62] block mb-1">Shoot Duration</span>
-                    <span className="font-bold text-[#2B2B2B]">
-                      {activeBooking.numberOfDays}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[#6F6A62] block mb-1">Estimated Budget</span>
-                    <span className="font-bold text-sm text-[#9C7B3D]">
-                      {activeBooking.budget || "₹0"}
-                    </span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#6F6A62]">Estimated Budget:</span>
+                    <span className="font-bold text-[#9C7B3D]">{activeBooking.budget || "₹0"}</span>
                   </div>
                 </div>
 
                 {/* Venue & Location */}
-                <div className="space-y-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#6F6A62]">
+                <div className="space-y-1.5 text-xs">
+                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
                     Venue &amp; Branch Assignment
                   </span>
-                  <div className="p-4 rounded-xl border border-[#E7E0D2] bg-white space-y-2">
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 text-[#9C7B3D] shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-semibold block">{activeBooking.location}</span>
-                        <span className="text-[#6F6A62] text-[11px]">
-                          Assigned Studio Branch: {activeBooking.branch}
-                        </span>
-                      </div>
+                  <div className="p-4 rounded-xl bg-[#FDFBF7] border border-[#E7E0D2] space-y-2 text-xs">
+                    <div className="flex justify-between items-start gap-4">
+                      <span className="text-[#6F6A62] flex items-center gap-1.5 shrink-0">
+                        <MapPin className="w-3.5 h-3.5 text-[#9C7B3D] shrink-0" />
+                        Venue Location:
+                      </span>
+                      <span className="font-semibold text-[#2B2B2B] text-right">
+                        {activeBooking.location || "Not specified"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center gap-4 pt-2 border-t border-[#F0EBE1]">
+                      <span className="text-[#6F6A62] flex items-center gap-1.5 shrink-0">
+                        <Building2 className="w-3.5 h-3.5 text-[#9C7B3D] shrink-0" />
+                        Studio Branch:
+                      </span>
+                      <span className="font-semibold text-[#2B2B2B]">
+                        {activeBooking.branch || "Not specified"}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Coverage Details */}
-                <div className="space-y-3">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#6F6A62]">
+                {/* Shoot Requirements */}
+                <div className="space-y-1.5 text-xs">
+                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
                     Shoot Requirements
                   </span>
-                  <div className="p-4 rounded-xl border border-[#E7E0D2] bg-white space-y-3">
-                    <div>
-                      <span className="text-[#6F6A62] block text-[11px]">Primary Service</span>
-                      <span className="font-bold text-sm text-[#2B2B2B]">{activeBooking.requiredService}</span>
+                  <div className="p-4 rounded-xl bg-[#FDFBF7] border border-[#E7E0D2] space-y-2 text-xs">
+                    <div className="flex justify-between items-center gap-4">
+                      <span className="text-[#6F6A62]">Primary Service:</span>
+                      <span className="font-bold text-[#2B2B2B]">
+                        {activeBooking.requiredService || "General Photography"}
+                      </span>
                     </div>
                     {activeBooking.photographyRequirement && (
-                      <div className="pt-2 border-t border-[#F8F6F2]">
-                        <span className="text-[#6F6A62] block text-[11px]">Photography Stills</span>
-                        <span className="text-[#2B2B2B] font-medium">{activeBooking.photographyRequirement}</span>
+                      <div className="pt-2 border-t border-[#F0EBE1] flex justify-between items-start gap-4">
+                        <span className="text-[#6F6A62] shrink-0">Photography Details:</span>
+                        <span className="font-medium text-[#2B2B2B] text-right">
+                          {activeBooking.photographyRequirement}
+                        </span>
                       </div>
                     )}
                     {activeBooking.cinematographyRequirement && (
-                      <div className="pt-2 border-t border-[#F8F6F2]">
-                        <span className="text-[#6F6A62] block text-[11px]">Cinematography / Films</span>
-                        <span className="text-[#2B2B2B] font-medium">{activeBooking.cinematographyRequirement}</span>
+                      <div className="pt-2 border-t border-[#F0EBE1] flex justify-between items-start gap-4">
+                        <span className="text-[#6F6A62] shrink-0">Cinematography Details:</span>
+                        <span className="font-medium text-[#2B2B2B] text-right">
+                          {activeBooking.cinematographyRequirement}
+                        </span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Status Quick Switch */}
-                <div className="space-y-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#6F6A62]">
+                {/* Change Shoot Status */}
+                <div className="space-y-1.5 text-xs">
+                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
                     Change Shoot Status
                   </span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {STATUSES.filter((s) => s !== "All").map((status) => (
-                      <button
-                        key={status}
-                        type="button"
-                        onClick={() => handleStatusQuickChange(activeBooking.id, status)}
-                        className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all ${
-                          activeBooking.status === status
-                            ? "bg-[#2B2B2B] text-[#E4D3A6] border-[#2B2B2B]"
-                            : "bg-[#F8F6F2] text-[#6F6A62] border-[#E7E0D2] hover:bg-[#F3EFE8]"
-                        }`}
-                      >
-                        {status}
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap gap-2">
+                    {BOOKING_STATUS_FILTERS.filter((s) => s.key !== "ALL").map(({ key, label }) => {
+                      const isSelected =
+                        normalizeBookingStatus(activeBooking.status) === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => handleStatusQuickChange(activeBooking.id, key)}
+                          className={`px-3 py-1.5 rounded-xl font-semibold border transition-all ${
+                            isSelected
+                              ? "bg-[#2B2B2B] text-[#E4D3A6] border-[#2B2B2B]"
+                              : "bg-white text-[#6F6A62] border-[#E7E0D2] hover:bg-[#F8F6F2]"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Admin Notes */}
-                <div className="space-y-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#6F6A62]">
+                {/* Studio Operations Notes */}
+                <div className="space-y-1.5 text-xs">
+                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
                     Studio Operations Notes
                   </span>
-                  <div className="p-4 rounded-xl border border-[#E7E0D2] bg-[#FDFBF7] text-[#2B2B2B] leading-relaxed">
-                    {activeBooking.adminNotes || "No notes added for this booking yet."}
+                  <div className="p-4 rounded-xl bg-[#F8F6F2] border border-[#E7E0D2] text-[#2B2B2B] leading-relaxed text-sm whitespace-pre-wrap">
+                    {activeBooking.adminNotes?.trim() ? (
+                      `"${activeBooking.adminNotes.trim()}"`
+                    ) : (
+                      <span className="text-[#8E867B] italic text-xs">
+                        No operational notes added for this booking yet.
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Drawer Footer Actions */}
-              <div className="p-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-between sticky bottom-0">
+              {/* Fixed Footer */}
+              <div className="px-6 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-between shrink-0">
                 <button
                   type="button"
                   onClick={() => handleDeletePrompt(activeBooking)}
@@ -679,37 +919,50 @@ export default function Bookings() {
                 >
                   Delete Booking
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleOpenEditModal(activeBooking);
-                  }}
-                  className="px-5 py-2 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl font-semibold text-xs transition-all shadow"
-                >
-                  Edit Booking
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      setActiveBooking(null);
+                    }}
+                    className="px-5 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold text-xs transition-colors"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleOpenEditModal(activeBooking);
+                    }}
+                    className="px-5 py-2.5 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl font-semibold text-xs transition-all shadow flex items-center gap-1.5"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span>Edit Booking</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
       {/* Add / Edit Booking Modal */}
       <AnimatePresence>
         {formModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="admin-modal-overlay !z-[60]">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setFormModalOpen(false)}
+              onClick={handleCloseModal}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[90vh] flex flex-col overflow-hidden"
+              className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] flex flex-col overflow-hidden"
             >
               {/* Fixed Header */}
               <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
@@ -723,7 +976,7 @@ export default function Bookings() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setFormModalOpen(false)}
+                  onClick={handleCloseModal}
                   className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
                   aria-label="Close modal"
                 >
@@ -732,227 +985,335 @@ export default function Bookings() {
               </div>
 
               {/* Form with scrollable body & pinned footer */}
-              <form onSubmit={handleFormSubmit} className="flex flex-col flex-1 min-h-0">
+              <form onSubmit={handleFormSubmit} noValidate autoComplete="off" className="flex flex-col flex-1 min-h-0">
                 <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-4 text-xs modal-scrollbar">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Customer Name */}
+                    {/* Customer Name * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-customerName" className="font-semibold text-[#6F6A62]">
+                        Customer Name *
+                      </label>
+                      <input
+                        id="booking-customerName"
+                        type="text"
+                        placeholder="e.g. Kavitha & Arvind"
+                        value={formData.customerName}
+                        onChange={(e) => handleFieldChange("customerName", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.customerName ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      />
+                      {formErrors.customerName && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.customerName}</p>
+                      )}
+                    </div>
+
+                    {/* Phone Number * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-phone" className="font-semibold text-[#6F6A62]">
+                        Phone Number *
+                      </label>
+                      <input
+                        id="booking-phone"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={10}
+                        placeholder="e.g. 9840123456"
+                        value={formData.phone}
+                        onChange={handlePhoneChange}
+                        onKeyDown={handlePhoneKeyDown}
+                        onPaste={handlePhonePaste}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.phone ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      />
+                      {formErrors.phone && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.phone}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Email Address * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-email" className="font-semibold text-[#6F6A62]">
+                        Email Address *
+                      </label>
+                      <input
+                        id="booking-email"
+                        type="email"
+                        placeholder="client@gmail.com"
+                        value={formData.email}
+                        onChange={(e) => handleFieldChange("email", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.email ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      />
+                      {formErrors.email && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.email}</p>
+                      )}
+                    </div>
+
+                    {/* Event Type * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-eventType" className="font-semibold text-[#6F6A62]">
+                        Event Type *
+                      </label>
+                      <input
+                        id="booking-eventType"
+                        type="text"
+                        placeholder="e.g. Wedding & Reception"
+                        value={formData.eventType}
+                        onChange={(e) => handleFieldChange("eventType", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.eventType ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      />
+                      {formErrors.eventType && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.eventType}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Event Date * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-eventDate" className="font-semibold text-[#6F6A62]">
+                        Event Date *
+                      </label>
+                      <input
+                        id="booking-eventDate"
+                        type="date"
+                        value={formData.eventDate}
+                        onChange={(e) => handleFieldChange("eventDate", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.eventDate ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      />
+                      {formErrors.eventDate && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.eventDate}</p>
+                      )}
+                    </div>
+
+                    {/* Duration / Days * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-numberOfDays" className="font-semibold text-[#6F6A62]">
+                        Duration / Days *
+                      </label>
+                      <input
+                        id="booking-numberOfDays"
+                        type="text"
+                        placeholder="e.g. 2 Days / Half Day"
+                        value={formData.numberOfDays}
+                        onChange={(e) => handleFieldChange("numberOfDays", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.numberOfDays ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      />
+                      {formErrors.numberOfDays && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.numberOfDays}</p>
+                      )}
+                    </div>
+
+                    {/* Package Budget * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-budget" className="font-semibold text-[#6F6A62]">
+                        Package Budget *
+                      </label>
+                      <input
+                        id="booking-budget"
+                        type="text"
+                        placeholder="e.g. ₹1,50,000"
+                        value={formData.budget}
+                        onChange={(e) => handleFieldChange("budget", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.budget ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      />
+                      {formErrors.budget && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.budget}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Primary Service * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-requiredService" className="font-semibold text-[#6F6A62]">
+                        Primary Service *
+                      </label>
+                      <select
+                        id="booking-requiredService"
+                        value={formData.requiredService}
+                        onChange={(e) => handleFieldChange("requiredService", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.requiredService ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      >
+                        <option value="">Select service</option>
+                        {services.map((s) => (
+                          <option key={s.id || s.name} value={s.name}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                      {formErrors.requiredService && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.requiredService}</p>
+                      )}
+                    </div>
+
+                    {/* Studio Branch * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-branch" className="font-semibold text-[#6F6A62]">
+                        Studio Branch *
+                      </label>
+                      <select
+                        id="booking-branch"
+                        value={formData.branch}
+                        onChange={(e) => handleFieldChange("branch", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.branch ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      >
+                        <option value="">Select branch</option>
+                        {branches.map((b) => (
+                          <option key={b.id || b.city} value={b.city}>
+                            {b.city}
+                          </option>
+                        ))}
+                      </select>
+                      {formErrors.branch && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.branch}</p>
+                      )}
+                    </div>
+
+                    {/* Status * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-status" className="font-semibold text-[#6F6A62]">
+                        Status *
+                      </label>
+                      <select
+                        id="booking-status"
+                        value={normalizeBookingStatus(formData.status)}
+                        onChange={(e) => handleFieldChange("status", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.status ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      >
+                        {BOOKING_STATUS_FILTERS.filter((s) => s.key !== "ALL").map(({ key, label }) => (
+                          <option key={key} value={key}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                      {formErrors.status && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.status}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Venue Location * */}
                   <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Customer Name *</label>
+                    <label htmlFor="booking-location" className="font-semibold text-[#6F6A62]">
+                      Venue Location *
+                    </label>
                     <input
+                      id="booking-location"
                       type="text"
-                      required
-                      placeholder="e.g. Kavitha & Arvind"
-                      value={formData.customerName}
-                      onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                      placeholder="e.g. Le Royal Méridien, Chennai"
+                      value={formData.location}
+                      onChange={(e) => handleFieldChange("location", e.target.value)}
+                      className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                        formErrors.location ? "border-rose-400" : "border-[#E7E0D2]"
+                      } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
                     />
-                    {formErrors.customerName && (
-                      <p className="text-rose-600 text-[10px]">{formErrors.customerName}</p>
+                    {formErrors.location && (
+                      <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.location}</p>
                     )}
                   </div>
 
-                  {/* Phone */}
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Phone Number *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. +91 98401 23456"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                    {formErrors.phone && (
-                      <p className="text-rose-600 text-[10px]">{formErrors.phone}</p>
-                    )}
-                  </div>
-                </div>
+                  {/* Requirements */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Photography Details * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-photographyRequirement" className="font-semibold text-[#6F6A62]">
+                        Photography Details *
+                      </label>
+                      <input
+                        id="booking-photographyRequirement"
+                        type="text"
+                        placeholder="e.g. Candid + Traditional + Drone"
+                        value={formData.photographyRequirement}
+                        onChange={(e) => handleFieldChange("photographyRequirement", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.photographyRequirement ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      />
+                      {formErrors.photographyRequirement && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">
+                          {formErrors.photographyRequirement}
+                        </p>
+                      )}
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Email */}
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Email Address</label>
-                    <input
-                      type="email"
-                      placeholder="client@gmail.com"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Event Type */}
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Event Type</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Wedding & Reception"
-                      value={formData.eventType}
-                      onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {/* Event Date */}
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Event Date *</label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.eventDate}
-                      onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                    {formErrors.eventDate && (
-                      <p className="text-rose-600 text-[10px]">{formErrors.eventDate}</p>
-                    )}
+                    {/* Cinematography Details * */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-cinematographyRequirement" className="font-semibold text-[#6F6A62]">
+                        Cinematography Details *
+                      </label>
+                      <input
+                        id="booking-cinematographyRequirement"
+                        type="text"
+                        placeholder="e.g. 4K Film + 60sec Teaser"
+                        value={formData.cinematographyRequirement}
+                        onChange={(e) => handleFieldChange("cinematographyRequirement", e.target.value)}
+                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
+                          formErrors.cinematographyRequirement ? "border-rose-400" : "border-[#E7E0D2]"
+                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      />
+                      {formErrors.cinematographyRequirement && (
+                        <p className="text-rose-600 text-[10px] mt-0.5">
+                          {formErrors.cinematographyRequirement}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Duration */}
+                  {/* Notes */}
                   <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Duration / Days</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 2 Days / Half Day"
-                      value={formData.numberOfDays}
-                      onChange={(e) => setFormData({ ...formData, numberOfDays: e.target.value })}
+                    <label htmlFor="booking-adminNotes" className="font-semibold text-[#6F6A62]">
+                      Admin &amp; Operational Notes
+                    </label>
+                    <textarea
+                      id="booking-adminNotes"
+                      rows={3}
+                      placeholder="Advance paid, drone permit status, special requests..."
+                      value={formData.adminNotes}
+                      onChange={(e) => setFormData({ ...formData, adminNotes: e.target.value })}
                       className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
                     />
                   </div>
-
-                  {/* Budget */}
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Package Budget</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. ₹1,50,000"
-                      value={formData.budget}
-                      onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {/* Required Service */}
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Primary Service</label>
-                    <select
-                      value={formData.requiredService}
-                      onChange={(e) => setFormData({ ...formData, requiredService: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    >
-                      {services.map((s) => (
-                        <option key={s.id || s.name} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Branch Assignment */}
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Studio Branch</label>
-                    <select
-                      value={formData.branch}
-                      onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    >
-                      {branches.map((b) => (
-                        <option key={b.id || b.city} value={b.city}>
-                          {b.city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Status */}
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Status</label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    >
-                      {STATUSES.filter((s) => s !== "All").map((st) => (
-                        <option key={st} value={st}>
-                          {st}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Location */}
-                <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Venue Location *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Le Royal Méridien, Chennai"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                  />
-                  {formErrors.location && (
-                    <p className="text-rose-600 text-[10px]">{formErrors.location}</p>
-                  )}
-                </div>
-
-                {/* Requirements */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Photography Details</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Candid + Traditional + Drone"
-                      value={formData.photographyRequirement}
-                      onChange={(e) => setFormData({ ...formData, photographyRequirement: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Cinematography Details</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 4K Film + 60sec Teaser"
-                      value={formData.cinematographyRequirement}
-                      onChange={(e) => setFormData({ ...formData, cinematographyRequirement: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Notes */}
-                <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Admin &amp; Operational Notes</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Advance paid, drone permit status, special requests..."
-                    value={formData.adminNotes}
-                    onChange={(e) => setFormData({ ...formData, adminNotes: e.target.value })}
-                    className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                  />
-                </div>
-
                 </div>
 
                 {/* Pinned Submit Footer */}
                 <div className="px-6 sm:px-8 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setFormModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] text-xs font-semibold transition-colors"
+                    onClick={handleCloseModal}
+                    disabled={isSubmitting}
+                    className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] text-xs font-semibold transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold shadow-md active:scale-95 transition-all"
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow-md active:scale-95 transition-all flex items-center gap-2"
                   >
-                    {editingBooking ? "Save Changes" : "Create Booking"}
+                    {isSubmitting && (
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+                    )}
+                    <span>{isSubmitting ? "Saving..." : editingBooking ? "Save Changes" : "Create Booking"}</span>
                   </button>
                 </div>
               </form>
@@ -964,12 +1325,22 @@ export default function Bookings() {
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setBookingToDelete(null);
+        }}
         onConfirm={handleConfirmDelete}
-        title="Delete Booking Record"
-        message={`Are you sure you want to remove the booking for ${bookingToDelete?.customerName} (${bookingToDelete?.id})? This action cannot be undone.`}
-        confirmText="Delete Booking"
+        title="Confirm Deletion"
+        message="Enter your admin password to permanently delete this record."
+        confirmText="Delete"
+        cancelText="Cancel"
         isDestructive={true}
+        requirePassword={true}
+        itemDetails={
+          bookingToDelete
+            ? `${bookingToDelete.customerName || bookingToDelete.clientName} (${bookingToDelete.id})`
+            : ""
+        }
       />
     </div>
   );

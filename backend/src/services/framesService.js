@@ -15,16 +15,32 @@ export async function getWoodTypes(includeInactive = false) {
 }
 
 export async function createWoodType(data) {
+  if (!data || !data.name || !data.name.trim()) {
+    throw new Error("Wood type name is required.");
+  }
+  const rawPrice = Number(data.basePrice);
+  if (isNaN(rawPrice) || rawPrice < 0) {
+    throw new Error("Base price must be a valid non-negative number.");
+  }
   const id = data.id || `wood-${Date.now()}`;
+  const defaultGrain = "Natural Timber Grain";
+  const defaultImage = "/images/frames/teak-wood.jpg";
+  const active =
+    data.active !== undefined
+      ? Boolean(data.active)
+      : data.inStock !== undefined
+      ? data.inStock === true || data.inStock === "true"
+      : true;
+
   return prisma.frameWoodType.create({
     data: {
       id,
       name: data.name.trim(),
-      basePrice: Number(data.basePrice) || 0,
+      basePrice: rawPrice,
       description: (data.description || "").trim(),
-      grain: (data.grain || "").trim(),
-      image: (data.image || "").trim(),
-      active: data.active !== false,
+      grain: (data.grain || data.description || defaultGrain).trim(),
+      image: (data.image || defaultImage).trim(),
+      active,
     },
   });
 }
@@ -32,11 +48,21 @@ export async function createWoodType(data) {
 export async function updateWoodType(id, data) {
   const updatePayload = {};
   if (data.name !== undefined) updatePayload.name = data.name.trim();
-  if (data.basePrice !== undefined) updatePayload.basePrice = Number(data.basePrice) || 0;
+  if (data.basePrice !== undefined) {
+    const rawPrice = Number(data.basePrice);
+    if (isNaN(rawPrice) || rawPrice < 0) {
+      throw new Error("Base price must be a valid non-negative number.");
+    }
+    updatePayload.basePrice = rawPrice;
+  }
   if (data.description !== undefined) updatePayload.description = data.description.trim();
   if (data.grain !== undefined) updatePayload.grain = data.grain.trim();
   if (data.image !== undefined) updatePayload.image = data.image.trim();
-  if (data.active !== undefined) updatePayload.active = Boolean(data.active);
+  if (data.active !== undefined) {
+    updatePayload.active = Boolean(data.active);
+  } else if (data.inStock !== undefined) {
+    updatePayload.active = data.inStock === true || data.inStock === "true";
+  }
 
   return prisma.frameWoodType.update({
     where: { id },
@@ -132,16 +158,56 @@ export async function getRatios(includeInactive = false) {
   });
 }
 
+export function validateAndNormalizeRatioName(rawName) {
+  if (!rawName || typeof rawName !== "string") {
+    throw new Error("Ratio / Size name is required.");
+  }
+  const trimmed = rawName.trim();
+  const match = trimmed.match(/^(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)$/);
+  if (!match) {
+    throw new Error(
+      "Invalid ratio format. Please enter a valid dimension such as 10 × 12."
+    );
+  }
+  const w = parseFloat(match[1]);
+  const h = parseFloat(match[2]);
+  if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
+    throw new Error("Invalid ratio format. Please enter a valid dimension such as 10 × 12.");
+  }
+  const formatNum = (n) => (Number.isInteger(n) ? String(n) : String(parseFloat(n.toFixed(2))));
+  return `${formatNum(w)} × ${formatNum(h)}`;
+}
+
 export async function createRatio(data) {
+  if (!data || !data.name) {
+    throw new Error("Ratio / Size name is required.");
+  }
+  const normalizedName = validateAndNormalizeRatioName(data.name);
+
+  // Check duplicate
+  const existing = await prisma.frameRatio.findFirst({
+    where: { name: { equals: normalizedName, mode: "insensitive" } },
+  });
+  if (existing) {
+    throw new Error(`A frame ratio/size with dimensions '${normalizedName}' already exists.`);
+  }
+
+  const rawPrice = Number(data.price);
+  if (isNaN(rawPrice) || rawPrice < 0) {
+    throw new Error("Price must be a valid non-negative number.");
+  }
+  const validOrientation = (data.orientation || "portrait").toString().toLowerCase().trim();
+  const orientation = validOrientation === "landscape" ? "landscape" : "portrait";
   const id = data.id || `ratio-${Date.now()}`;
   return prisma.frameRatio.create({
     data: {
       id,
-      name: data.name.trim(),
-      label: (data.label || data.name).trim(),
-      dimensions: (data.dimensions || "").trim(),
-      price: Number(data.price) || 0,
-      aspect: data.aspect || "landscape",
+      name: normalizedName,
+      label: (data.label || `${normalizedName} inches`).trim(),
+      dimensions: (data.dimensions || "").trim() || `${normalizedName} inches`,
+      price: rawPrice,
+      aspect: data.aspect || "2:3",
+      orientation,
       popular: Boolean(data.popular),
       active: data.active !== false,
     },
@@ -150,11 +216,33 @@ export async function createRatio(data) {
 
 export async function updateRatio(id, data) {
   const updatePayload = {};
-  if (data.name !== undefined) updatePayload.name = data.name.trim();
+  if (data.name !== undefined) {
+    const normalizedName = validateAndNormalizeRatioName(data.name);
+    const existing = await prisma.frameRatio.findFirst({
+      where: {
+        name: { equals: normalizedName, mode: "insensitive" },
+        id: { not: id },
+      },
+    });
+    if (existing) {
+      throw new Error(`A frame ratio/size with dimensions '${normalizedName}' already exists.`);
+    }
+    updatePayload.name = normalizedName;
+  }
   if (data.label !== undefined) updatePayload.label = data.label.trim();
   if (data.dimensions !== undefined) updatePayload.dimensions = data.dimensions.trim();
-  if (data.price !== undefined) updatePayload.price = Number(data.price) || 0;
+  if (data.price !== undefined) {
+    const rawPrice = Number(data.price);
+    if (isNaN(rawPrice) || rawPrice < 0) {
+      throw new Error("Price must be a valid non-negative number.");
+    }
+    updatePayload.price = rawPrice;
+  }
   if (data.aspect !== undefined) updatePayload.aspect = data.aspect;
+  if (data.orientation !== undefined) {
+    const validOrientation = data.orientation.toString().toLowerCase().trim();
+    updatePayload.orientation = validOrientation === "landscape" ? "landscape" : "portrait";
+  }
   if (data.popular !== undefined) updatePayload.popular = Boolean(data.popular);
   if (data.active !== undefined) updatePayload.active = Boolean(data.active);
 

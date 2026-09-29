@@ -14,10 +14,12 @@ import {
   MapPin,
   Calendar,
   Layers,
+  SlidersHorizontal,
 } from "lucide-react";
 import ImageUploader from "../components/ImageUploader";
 import ConfirmModal from "../components/ConfirmModal";
 import EmptyState from "../components/EmptyState";
+import { AddCategoryModal, ManageCategoriesModal } from "../components/CategoryModals";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
 
@@ -33,6 +35,38 @@ const PORTFOLIO_CATEGORIES = [
   "Traditional",
 ];
 
+function normalizeDateForInput(val) {
+  if (!val || typeof val !== "string") return "";
+  const trimmed = val.trim();
+  // Standard YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+  // ISO with timestamp: YYYY-MM-DDTHH:mm:ss...
+  if (/^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+    return trimmed.split("T")[0];
+  }
+  // If DD-MM-YYYY or DD/MM/YYYY
+  const dmyMatch = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (dmyMatch) {
+    const day = dmyMatch[1].padStart(2, "0");
+    const month = dmyMatch[2].padStart(2, "0");
+    const year = dmyMatch[3];
+    return `${year}-${month}-${day}`;
+  }
+  // Parseable date string (e.g. "June 2026")
+  const parsed = new Date(trimmed);
+  if (!isNaN(parsed.getTime())) {
+    const year = parsed.getFullYear();
+    if (year >= 1900 && year <= 2100) {
+      const month = String(parsed.getMonth() + 1).padStart(2, "0");
+      const day = String(parsed.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+  }
+  return "";
+}
+
 export default function PortfolioManager() {
   const [searchParams] = useSearchParams();
   const isNewParam = searchParams.get("new") === "true";
@@ -43,6 +77,9 @@ export default function PortfolioManager() {
     updatePortfolio,
     deletePortfolio,
     togglePortfolioFeatured,
+    portfolioCategories,
+    addPortfolioCategory,
+    togglePortfolioCategoryStatus,
   } = useAdminData();
   const { addToast } = useToast();
 
@@ -52,17 +89,26 @@ export default function PortfolioManager() {
   const [editingItem, setEditingItem] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [addCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
+  const [manageCategoriesModalOpen, setManageCategoriesModalOpen] = useState(false);
+
+  const activeCategoryNames = useMemo(() => {
+    if (portfolioCategories && portfolioCategories.length > 0) {
+      return portfolioCategories.filter((c) => c.active).map((c) => c.name);
+    }
+    return PORTFOLIO_CATEGORIES.filter((c) => c !== "All");
+  }, [portfolioCategories]);
 
   // Form state
   const initialForm = {
     title: "",
     subtitle: "",
-    category: "Wedding",
+    category: "",
     coverImage: "",
     eventDate: "",
     location: "",
     description: "",
-    featured: true,
+    featured: false,
     published: true,
   };
   const [formData, setFormData] = useState(initialForm);
@@ -86,6 +132,12 @@ export default function PortfolioManager() {
     setModalOpen(true);
   };
 
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setEditingItem(null);
+    setFormData(initialForm);
+  };
+
   // Auto-open Add modal if requested via URL ?new=true
   useEffect(() => {
     if (isNewParam) {
@@ -98,9 +150,9 @@ export default function PortfolioManager() {
     setFormData({
       title: item.title || item.client || "",
       subtitle: item.subtitle || item.client || "",
-      category: item.category || "Wedding",
+      category: item.category || "",
       coverImage: item.coverImage || item.image || item.imageUrl || "",
-      eventDate: item.eventDate || "",
+      eventDate: normalizeDateForInput(item.eventDate),
       location: item.location || "",
       description: item.description || item.excerpt || "",
       featured: item.featured ?? false,
@@ -119,6 +171,7 @@ export default function PortfolioManager() {
 
     const payload = {
       ...formData,
+      category: formData.category || "Wedding",
       coverImage: effectiveImage,
       image: effectiveImage,
       imageUrl: effectiveImage,
@@ -134,7 +187,7 @@ export default function PortfolioManager() {
       addToast("New portfolio story created.", "success");
     }
 
-    setModalOpen(false);
+    handleCloseModal();
   };
 
   const handleDeletePrompt = (item) => {
@@ -188,41 +241,67 @@ export default function PortfolioManager() {
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-[#F8F6F2]">
-          <span className="text-[11px] text-[#6F6A62] font-semibold mr-1 shrink-0">
-            Category:
-          </span>
-          {PORTFOLIO_CATEGORIES.map((cat) => {
-            const isSelected = selectedCategory === cat;
-            const count =
-              cat === "All"
-                ? portfolio.length
-                : portfolio.filter((p) => p.category === cat).length;
+        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-[#F8F6F2]">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <span className="text-[11px] text-[#6F6A62] font-semibold mr-1 shrink-0">
+              Category:
+            </span>
+            {["All", ...activeCategoryNames].map((cat) => {
+              const isSelected = selectedCategory === cat;
+              const count =
+                cat === "All"
+                  ? portfolio.length
+                  : portfolio.filter(
+                      (p) => (p.category || "").toLowerCase() === cat.toLowerCase()
+                    ).length;
 
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                  isSelected
-                    ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm font-semibold"
-                    : "bg-[#F8F6F2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8]"
-                }`}
-              >
-                <span>{cat}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
                     isSelected
-                      ? "bg-[#3D3A34] text-[#E4D3A6]"
-                      : "bg-[#E7E0D2] text-[#6F6A62]"
+                      ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm font-semibold"
+                      : "bg-[#F8F6F2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8]"
                   }`}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+                  <span>{cat}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      isSelected
+                        ? "bg-[#3D3A34] text-[#E4D3A6]"
+                        : "bg-[#E7E0D2] text-[#6F6A62]"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* + Add Category Button */}
+            <button
+              type="button"
+              onClick={() => setAddCategoryModalOpen(true)}
+              className="px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 bg-[#FAF6F0] text-[#9C7B3D] border border-[#E7D8C5] hover:bg-[#F4ECE0] hover:border-[#C9A669] shrink-0 active:scale-95"
+              title="Add New Category"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Category</span>
+            </button>
+          </div>
+
+          {/* Manage Categories Action */}
+          <button
+            type="button"
+            onClick={() => setManageCategoriesModalOpen(true)}
+            className="px-2.5 py-1 text-[11px] font-semibold text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8] rounded-lg transition-colors flex items-center gap-1 shrink-0 ml-auto"
+            title="Manage Category Status"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#9C7B3D]" />
+            <span>Manage</span>
+          </button>
         </div>
       </div>
 
@@ -318,19 +397,19 @@ export default function PortfolioManager() {
       {/* Add / Edit Project Modal */}
       <AnimatePresence>
         {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="admin-modal-overlay">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setModalOpen(false)}
+              onClick={handleCloseModal}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[90vh] flex flex-col overflow-hidden"
+              className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] flex flex-col overflow-hidden"
             >
               {/* Fixed Header */}
               <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
@@ -344,7 +423,7 @@ export default function PortfolioManager() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setModalOpen(false)}
+                  onClick={handleCloseModal}
                   className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
                   aria-label="Close modal"
                 >
@@ -353,7 +432,7 @@ export default function PortfolioManager() {
               </div>
 
               {/* Form with scrollable body & pinned footer */}
-              <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0">
+              <form onSubmit={handleSave} autoComplete="off" className="flex flex-col flex-1 min-h-0">
                 <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-4 text-xs modal-scrollbar">
                   {/* Cover Image */}
                   <ImageUploader
@@ -398,11 +477,21 @@ export default function PortfolioManager() {
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
                       >
-                        <option value="Wedding">Wedding</option>
-                        <option value="Couple Shoot">Couple Shoot</option>
-                        <option value="Baby Shoot">Baby Shoot</option>
-                        <option value="Maternity Shoot">Maternity Shoot</option>
-                        <option value="Editorial">Editorial</option>
+                        <option value="">Select category</option>
+                        {activeCategoryNames.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                        {/* Preserve existing item category even if inactive */}
+                        {formData.category &&
+                          !activeCategoryNames.some(
+                            (c) => c.toLowerCase() === formData.category.toLowerCase()
+                          ) && (
+                            <option value={formData.category}>
+                              {formData.category} (Inactive)
+                            </option>
+                          )}
                       </select>
                     </div>
 
@@ -410,11 +499,24 @@ export default function PortfolioManager() {
                     <div className="space-y-1">
                       <label className="font-semibold text-[#6F6A62]">Shoot Date / Month</label>
                       <input
-                        type="text"
-                        placeholder="e.g. June 2026"
-                        value={formData.eventDate}
+                        type="date"
+                        name="eventDate"
+                        value={formData.eventDate || ""}
                         onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                        onClick={(e) => {
+                          try {
+                            e.target.showPicker?.();
+                          } catch (err) {}
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key !== "Tab" && e.key !== "Escape") {
+                            e.preventDefault();
+                            try {
+                              e.target.showPicker?.();
+                            } catch (err) {}
+                          }
+                        }}
+                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                       />
                     </div>
 
@@ -471,7 +573,7 @@ export default function PortfolioManager() {
                 <div className="px-6 sm:px-8 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setModalOpen(false)}
+                    onClick={handleCloseModal}
                     className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold transition-colors"
                   >
                     Cancel
@@ -498,6 +600,25 @@ export default function PortfolioManager() {
         message={`Are you sure you want to remove the portfolio story for "${itemToDelete?.title}"?`}
         confirmText="Delete Story"
         isDestructive={true}
+      />
+
+      {/* Dynamic Category Modals */}
+      <AddCategoryModal
+        isOpen={addCategoryModalOpen}
+        onClose={() => setAddCategoryModalOpen(false)}
+        title="Add Portfolio Category"
+        existingCategories={portfolioCategories}
+        onAdd={addPortfolioCategory}
+      />
+
+      <ManageCategoriesModal
+        isOpen={manageCategoriesModalOpen}
+        onClose={() => setManageCategoriesModalOpen(false)}
+        title="Manage Portfolio Categories"
+        categories={portfolioCategories}
+        items={portfolio}
+        onToggleStatus={togglePortfolioCategoryStatus}
+        onOpenAdd={() => setAddCategoryModalOpen(true)}
       />
     </div>
   );

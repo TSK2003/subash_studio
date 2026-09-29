@@ -1,8 +1,14 @@
 import { Router } from "express";
 import * as galleryController from "../controllers/galleryController.js";
+import * as categoriesController from "../controllers/categoriesController.js";
 import { authenticateAdmin } from "../middleware/auth.js";
 
 const router = Router();
+
+// Category management
+router.get("/categories", categoriesController.getGalleryCategories);
+router.post("/categories", authenticateAdmin, categoriesController.createGalleryCategory);
+router.patch("/categories/:id/toggle-status", authenticateAdmin, categoriesController.toggleGalleryCategoryStatus);
 
 // Public: get published gallery items
 router.get("/", galleryController.getAllGallery);

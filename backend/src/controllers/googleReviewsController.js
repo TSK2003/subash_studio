@@ -27,19 +27,19 @@ export async function handleCallback(req, res) {
   const frontendOrigin = ENV.FRONTEND_URL || "http://localhost:5173";
 
   if (error) {
-    return res.redirect(`${frontendOrigin}/admin/testimonials?google_error=${encodeURIComponent(error)}`);
+    return res.redirect(`${frontendOrigin}/x7k9/t1x9?google_error=${encodeURIComponent(error)}`);
   }
 
   if (!code) {
-    return res.redirect(`${frontendOrigin}/admin/testimonials?google_error=Missing+authorization+code`);
+    return res.redirect(`${frontendOrigin}/x7k9/t1x9?google_error=Missing+authorization+code`);
   }
 
   try {
     const origin = `${req.protocol}://${req.get("host")}`;
     await handleOAuthCallback(code, origin);
-    return res.redirect(`${frontendOrigin}/admin/testimonials?google_connected=1`);
+    return res.redirect(`${frontendOrigin}/x7k9/t1x9?google_connected=1`);
   } catch (err) {
-    return res.redirect(`${frontendOrigin}/admin/testimonials?google_error=${encodeURIComponent(err.message)}`);
+    return res.redirect(`${frontendOrigin}/x7k9/t1x9?google_error=${encodeURIComponent(err.message)}`);
   }
 }
 

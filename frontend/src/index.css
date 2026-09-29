@@ -79,6 +79,42 @@ body::before {
   background: #C9A669;
 }
 
+/* Shared Admin Modal Centering System:
+   Centers the modal relative to the Main Content Area (right of Admin Sidebar)
+   instead of the entire screen. */
+:root {
+  --admin-sidebar-w: 0px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --admin-sidebar-w: 14rem;
+  }
+}
+
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .admin-modal-overlay {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-modal-overlay {
+    padding: 2rem;
+    padding-left: calc(var(--admin-sidebar-w, 14rem) + 2rem);
+  }
+}
+
 .eyebrow {
   font-family: 'Manrope', sans-serif;
   font-size: 0.72rem;
@@ -236,4 +272,49 @@ select:focus-visible {
   outline: 2px solid #C9A669 !important;
   outline-offset: 2px !important;
 }
+
+/* Utility to hide scrollbars while maintaining scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Custom luxury scrollbar and independent scroll for Order Frames workspace columns */
+@media (min-width: 1024px) {
+  .frame-scroll-container {
+    height: 680px !important;
+    max-height: 680px !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #C9A669 #F3EFE6 !important;
+  }
+
+  .frame-scroll-container::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+    display: block !important;
+  }
+
+  .frame-scroll-container::-webkit-scrollbar-track {
+    background: #F3EFE6 !important;
+    border-radius: 9999px !important;
+  }
+
+  .frame-scroll-container::-webkit-scrollbar-thumb {
+    background: #C9A669 !important;
+    border-radius: 9999px !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  }
+
+  .frame-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #8C6D32 !important;
+  }
+}
+
+
 

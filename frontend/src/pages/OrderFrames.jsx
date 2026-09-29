@@ -21,6 +21,7 @@ import {
   ShoppingBag,
   Trash2,
   Edit3,
+  X,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import FramePrintReceipt from "../components/FramePrintReceipt";
@@ -36,6 +37,7 @@ import {
 import {
   formatRatioDisplayLabel,
   formatDimensionsLabel,
+  isValidRatioName,
 } from "../lib/frameDimensions";
 
 // 4-Step Simplified Workflow Navigator
@@ -62,7 +64,17 @@ export default function OrderFrames() {
   // Active catalog items from admin context
   const activeWoods = (frameWoodTypes || []).filter((w) => w.active !== false);
   const activeDesigns = (frameDesigns || []).filter((d) => d.active !== false);
-  const activeRatios = (frameRatios || []).filter((r) => r.active !== false);
+
+  const WOOD_DISPLAY_LIMIT = 6;
+  const FRAME_DISPLAY_LIMIT = 8;
+
+  const displayedWoods = activeWoods.slice(0, WOOD_DISPLAY_LIMIT);
+  const hasMoreWoods = activeWoods.length > WOOD_DISPLAY_LIMIT;
+  const remainingWoods = Math.max(activeWoods.length - WOOD_DISPLAY_LIMIT, 0);
+
+  const displayedDesigns = activeDesigns.slice(0, FRAME_DISPLAY_LIMIT);
+  const hasMoreDesigns = activeDesigns.length > FRAME_DISPLAY_LIMIT;
+  const remainingDesigns = Math.max(activeDesigns.length - FRAME_DISPLAY_LIMIT, 0);
 
   // Active branches for studio pickup
   const activeBranches = (branches || []).filter((b) => b.active !== false);
@@ -78,13 +90,29 @@ export default function OrderFrames() {
   // ==========================================================
   // CENTRALIZED PERSISTENT CONFIGURATION STATE
   // ==========================================================
+  const [orientation, setOrientation] = useState("portrait"); // "portrait" | "landscape"
+
+  // Defensive filter: only active ratios with valid numeric dimensions (excludes legacy/test "afras")
+  const validActiveRatios = (frameRatios || []).filter(
+    (r) => r.active !== false && isValidRatioName(r.name)
+  );
+
+  // Filter visible ratios strictly by canonical database orientation
+  const visibleRatios = validActiveRatios.filter(
+    (r) => (r.orientation || "portrait").toLowerCase() === orientation.toLowerCase()
+  );
+
   const [selectedWood, setSelectedWood] = useState(() => activeWoods[0] || null);
   const [selectedDesign, setSelectedDesign] = useState(() => activeDesigns[0] || null);
   const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [photoFileName, setPhotoFileName] = useState("");
   const [photoError, setPhotoError] = useState("");
-  const [selectedRatio, setSelectedRatio] = useState(() => activeRatios[0] || activeRatios[1] || null);
-  const [orientation, setOrientation] = useState("portrait"); // "portrait" | "landscape"
+  const [selectedRatio, setSelectedRatio] = useState(() => {
+    const portraitRatios = (frameRatios || []).filter(
+      (r) => r.active !== false && isValidRatioName(r.name) && (r.orientation || "portrait").toLowerCase() === "portrait"
+    );
+    return portraitRatios.find((r) => r.popular) || portraitRatios[0] || null;
+  });
 
   // Photo editing state (separate from original image)
   const [photoZoom, setPhotoZoom] = useState(1);
@@ -106,6 +134,10 @@ export default function OrderFrames() {
   });
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [editingCartItemId, setEditingCartItemId] = useState(null);
+
+  // More items full-list modals
+  const [moreWoodsModalOpen, setMoreWoodsModalOpen] = useState(false);
+  const [moreDesignsModalOpen, setMoreDesignsModalOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -140,9 +172,29 @@ export default function OrderFrames() {
   // Set default selections once active lists load
   useEffect(() => {
     if (!selectedWood && activeWoods.length > 0) setSelectedWood(activeWoods[0]);
-    if (!selectedDesign && activeDesigns.length > 0) setSelectedDesign(activeDesigns[0]);
-    if (!selectedRatio && activeRatios.length > 0) setSelectedRatio(activeRatios[1] || activeRatios[0]);
-  }, [activeWoods, activeDesigns, activeRatios, selectedWood, selectedDesign, selectedRatio]);
+    if (!selectedDesign && activeDesigns.length > 0) {
+      const defaultWood = selectedWood || activeWoods[0];
+      const compatibleDesign = activeDesigns.find((d) => isDesignCompatible(d, defaultWood)) || activeDesigns[0];
+      setSelectedDesign(compatibleDesign);
+    }
+    if (visibleRatios.length > 0) {
+      const isSelectedValid = selectedRatio && visibleRatios.some((r) => r.id === selectedRatio.id);
+      if (!isSelectedValid) {
+        const defaultRatio = visibleRatios.find((r) => r.popular) || visibleRatios[0];
+        setSelectedRatio(defaultRatio);
+      }
+    }
+  }, [activeWoods, activeDesigns, visibleRatios, selectedWood, selectedDesign, selectedRatio]);
+
+  // Ensure selected design automatically remains compatible when selected wood changes
+  useEffect(() => {
+    if (selectedWood && selectedDesign && !isDesignCompatible(selectedDesign, selectedWood)) {
+      const firstCompatible = activeDesigns.find((d) => isDesignCompatible(d, selectedWood));
+      if (firstCompatible) {
+        setSelectedDesign(firstCompatible);
+      }
+    }
+  }, [selectedWood, selectedDesign, activeDesigns]);
 
   // Centralized authoritative pricing calculation
   const pricing = calculateFramePrice({
@@ -801,11 +853,14 @@ export default function OrderFrames() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* ====================================================
+                    TWO-COLUMN ATELIER WORKSPACE (DESKTOP DUAL SCROLL)
+                ==================================================== */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16" data-lenis-prevent="true">
                   {/* ====================================================
                       LEFT COLUMN (58%): ALL CUSTOMIZATION CONTROLS
                   ==================================================== */}
-                  <div className="lg:col-span-7 space-y-6">
+                  <div className="lg:col-span-7 space-y-6 frame-scroll-container pr-2 pb-8" data-lenis-prevent="true">
                     {/* SECTION 01: CHOOSE RATIO / SIZE & ORIENTATION */}
                     <div className="bg-white rounded-3xl p-5 sm:p-7 border border-[#E7E0D2] shadow-sm space-y-4">
                       <div className="flex items-center justify-between border-b border-[#E7E0D2] pb-3">
@@ -830,8 +885,16 @@ export default function OrderFrames() {
                         <div className="grid grid-cols-2 gap-3 max-w-sm">
                           <button
                             type="button"
-                            onClick={() => setOrientation("portrait")}
-                            className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                            onClick={() => {
+                              setOrientation("portrait");
+                              const matching = validActiveRatios.filter(
+                                (r) => (r.orientation || "portrait").toLowerCase() === "portrait"
+                              );
+                              if (matching.length > 0) {
+                                setSelectedRatio(matching.find((r) => r.popular) || matching[0]);
+                              }
+                            }}
+                            className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                               orientation === "portrait"
                                 ? "border-[#C9A669] bg-[#1C1B19] text-[#F8F6F2] shadow-sm"
                                 : "border-[#E7E0D2] bg-[#FAF8F5] text-[#2B2B2B] hover:bg-[#F0EBE0]"
@@ -843,8 +906,16 @@ export default function OrderFrames() {
 
                           <button
                             type="button"
-                            onClick={() => setOrientation("landscape")}
-                            className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                            onClick={() => {
+                              setOrientation("landscape");
+                              const matching = validActiveRatios.filter(
+                                (r) => (r.orientation || "").toLowerCase() === "landscape"
+                              );
+                              if (matching.length > 0) {
+                                setSelectedRatio(matching.find((r) => r.popular) || matching[0]);
+                              }
+                            }}
+                            className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                               orientation === "landscape"
                                 ? "border-[#C9A669] bg-[#1C1B19] text-[#F8F6F2] shadow-sm"
                                 : "border-[#E7E0D2] bg-[#FAF8F5] text-[#2B2B2B] hover:bg-[#F0EBE0]"
@@ -858,7 +929,7 @@ export default function OrderFrames() {
 
                       {/* Frame Sizes */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5 pt-2">
-                        {activeRatios.map((ratio) => {
+                        {visibleRatios.map((ratio) => {
                           const isSelected = selectedRatio?.id === ratio.id;
                           const ratioDisplayName = formatRatioDisplayLabel(ratio.name, orientation);
                           const dimensionsDisplayName = formatDimensionsLabel(ratio.dimensions, orientation);
@@ -866,7 +937,9 @@ export default function OrderFrames() {
                           return (
                             <div
                               key={ratio.id}
-                              onClick={() => setSelectedRatio(ratio)}
+                              onClick={() => {
+                                setSelectedRatio(ratio);
+                              }}
                               className={`group cursor-pointer rounded-2xl border transition-all p-3.5 flex flex-col justify-between relative ${
                                 isSelected
                                   ? "border-[#C9A669] ring-2 ring-[#C9A669]/25 bg-[#FDFBF7] shadow-sm"
@@ -876,10 +949,13 @@ export default function OrderFrames() {
                               <div className="space-y-2">
                                 <div className="flex items-start justify-between gap-1">
                                   <div>
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
                                       <h3 className="font-display font-bold text-base text-[#1C1B19]">
                                         {ratioDisplayName}
                                       </h3>
+                                      <span className="px-1.5 py-0.5 rounded-full bg-[#1C1B19]/5 text-[#6F6A62] text-[9px] font-bold capitalize">
+                                        {ratio.orientation || "portrait"}
+                                      </span>
                                       {ratio.popular && (
                                         <span className="px-1.5 py-0.2 rounded-full bg-[#C9A669]/20 text-[#8C6D32] text-[9px] font-bold">
                                           Popular
@@ -915,6 +991,12 @@ export default function OrderFrames() {
                             </div>
                           );
                         })}
+
+                        {visibleRatios.length === 0 && (
+                          <div className="col-span-full py-8 text-center text-xs text-[#6F6A62] bg-[#FAF8F5] rounded-2xl border border-[#E7E0D2]">
+                            No frame sizes currently configured for {orientation} orientation.
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -939,7 +1021,7 @@ export default function OrderFrames() {
                       </p>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
-                        {activeWoods.map((wood) => {
+                        {displayedWoods.map((wood) => {
                           const isSelected = selectedWood?.id === wood.id;
                           return (
                             <div
@@ -991,6 +1073,19 @@ export default function OrderFrames() {
                           );
                         })}
                       </div>
+
+                      {hasMoreWoods && (
+                        <div className="pt-1.5 flex justify-center">
+                          <button
+                            type="button"
+                            onClick={() => setMoreWoodsModalOpen(true)}
+                            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full border border-[#C9A669]/40 bg-[#FAF8F5]/80 hover:bg-[#FAF8F5] hover:border-[#C9A669] text-[#8C6D32] hover:text-[#1C1B19] text-[11px] font-medium tracking-wide transition-all cursor-pointer shadow-xs"
+                          >
+                            <Plus className="w-3 h-3 stroke-[2.5]" />
+                            <span>More Woods ({remainingWoods})</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* SECTION 03: CHOOSE FRAME PROFILE & FINISH */}
@@ -1014,7 +1109,7 @@ export default function OrderFrames() {
                       </p>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
-                        {activeDesigns.map((design) => {
+                        {displayedDesigns.map((design) => {
                           const isSelected = selectedDesign?.id === design.id;
                           const compatible = isDesignCompatible(design, selectedWood);
 
@@ -1068,7 +1163,12 @@ export default function OrderFrames() {
 
                               <div className="mt-2.5 pt-2 border-t border-[#E7E0D2]/70 text-[10px]">
                                 {!compatible ? (
-                                  <span className="text-red-700 font-medium">Incompatible</span>
+                                  <span
+                                    className="text-red-700 font-medium truncate block"
+                                    title={`Compatible with: ${(design.compatibleWoods || ["All"]).join(", ")}`}
+                                  >
+                                    Incompatible {design.compatibleWoods && !design.compatibleWoods.includes("All") ? `(Requires ${design.compatibleWoods.join(", ")})` : ""}
+                                  </span>
                                 ) : (
                                   <span className={isSelected ? "font-bold text-[#C9A669]" : "text-[#8C6D32]"}>
                                     {isSelected ? "Selected" : "Select"}
@@ -1079,6 +1179,19 @@ export default function OrderFrames() {
                           );
                         })}
                       </div>
+
+                      {hasMoreDesigns && (
+                        <div className="pt-1.5 flex justify-center">
+                          <button
+                            type="button"
+                            onClick={() => setMoreDesignsModalOpen(true)}
+                            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full border border-[#C9A669]/40 bg-[#FAF8F5]/80 hover:bg-[#FAF8F5] hover:border-[#C9A669] text-[#8C6D32] hover:text-[#1C1B19] text-[11px] font-medium tracking-wide transition-all cursor-pointer shadow-xs"
+                          >
+                            <Plus className="w-3 h-3 stroke-[2.5]" />
+                            <span>More Frames ({remainingDesigns})</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* SECTION 04: UPLOAD PHOTOGRAPH */}
@@ -1340,11 +1453,12 @@ export default function OrderFrames() {
                   </div>
 
                   {/* ====================================================
-                      RIGHT COLUMN (42%): STICKY LIVE ARTISAN PREVIEW
+                      RIGHT COLUMN (42%): LIVE ARTISAN PREVIEW
                   ==================================================== */}
                   <div
                     ref={previewSectionRef}
-                    className="lg:col-span-5 lg:sticky lg:top-28 space-y-4"
+                    className="lg:col-span-5 space-y-4 frame-scroll-container pr-2 pb-8"
+                    data-lenis-prevent="true"
                   >
                     <FrameLivePreview
                       wood={selectedWood}
@@ -2275,6 +2389,241 @@ export default function OrderFrames() {
 
       {/* Standalone print-only receipt portal */}
       <FramePrintReceipt order={placedOrder} />
+
+      {/* More Woods Modal */}
+      <AnimatePresence>
+        {moreWoodsModalOpen && (
+          <MoreWoodsModal
+            isOpen={moreWoodsModalOpen}
+            onClose={() => setMoreWoodsModalOpen(false)}
+            woods={activeWoods}
+            selectedWood={selectedWood}
+            onSelectWood={(wood) => setSelectedWood(wood)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* More Frame Designs Modal */}
+      <AnimatePresence>
+        {moreDesignsModalOpen && (
+          <MoreDesignsModal
+            isOpen={moreDesignsModalOpen}
+            onClose={() => setMoreDesignsModalOpen(false)}
+            designs={activeDesigns}
+            selectedDesign={selectedDesign}
+            selectedWood={selectedWood}
+            onSelectDesign={(design) => setSelectedDesign(design)}
+          />
+        )}
+      </AnimatePresence>
     </>
+  );
+}
+
+/* ==========================================================
+   SUB-COMPONENTS: MORE WOODS & MORE FRAME DESIGNS OVERLAYS
+========================================================== */
+
+function MoreWoodsModal({ isOpen, onClose, woods, selectedWood, onSelectWood }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-[#FCFAF7] rounded-3xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
+      >
+        <div className="flex items-center justify-between border-b border-[#E7E0D2] px-6 py-4 shrink-0 bg-white">
+          <div>
+            <h3 className="font-display font-bold text-lg text-[#1C1B19]">
+              All Timber Woods ({woods.length})
+            </h3>
+            <p className="text-xs text-[#6F6A62]">
+              Choose from our sustainably harvested artisan timbers
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-xl text-[#6F6A62] hover:bg-[#F8F6F2] hover:text-[#1C1B19] transition-colors cursor-pointer"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-6 modal-scrollbar">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {woods.map((wood) => {
+              const isSelected = selectedWood?.id === wood.id;
+              return (
+                <div
+                  key={wood.id}
+                  onClick={() => {
+                    onSelectWood(wood);
+                    onClose();
+                  }}
+                  className={`group cursor-pointer rounded-2xl overflow-hidden border transition-all p-3 flex flex-col justify-between bg-white relative ${
+                    isSelected
+                      ? "border-[#C9A669] ring-2 ring-[#C9A669]/25 bg-[#FDFBF7] shadow-sm"
+                      : "border-[#E7E0D2] hover:border-[#C9A669]/60 hover:bg-[#FAF8F5]"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="relative h-28 rounded-xl overflow-hidden bg-[#ECE7DC] border border-[#E7E0D2]">
+                      <img
+                        src={wood.image}
+                        alt={wood.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#C9A669] text-[#1C1B19] flex items-center justify-center shadow">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        </div>
+                      )}
+                      <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded bg-[#1C1B19]/80 backdrop-blur-sm text-[#F8F6F2] text-[10px] font-semibold">
+                        {formatRupee(wood.basePrice)} base
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-display font-bold text-sm text-[#1C1B19] flex items-center justify-between">
+                        <span>{wood.name}</span>
+                        <span className="text-xs font-semibold text-[#8C6D32]">
+                          {formatRupee(wood.basePrice)}
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-[#6F6A62] mt-1 line-clamp-2 leading-relaxed">
+                        {wood.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-2.5 pt-2 border-t border-[#E7E0D2]/70 flex items-center justify-between text-[10px]">
+                    <span className="text-[#8C6D32] truncate">{wood.grain || "Natural Grain"}</span>
+                    <span className={isSelected ? "font-bold text-[#C9A669]" : "text-[#9E988E]"}>
+                      {isSelected ? "Selected" : "Select"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function MoreDesignsModal({ isOpen, onClose, designs, selectedDesign, selectedWood, onSelectDesign }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-[#FCFAF7] rounded-3xl max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
+      >
+        <div className="flex items-center justify-between border-b border-[#E7E0D2] px-6 py-4 shrink-0 bg-white">
+          <div>
+            <h3 className="font-display font-bold text-lg text-[#1C1B19]">
+              All Frame Profiles &amp; Finishes ({designs.length})
+            </h3>
+            <p className="text-xs text-[#6F6A62]">
+              Select an artisan lip or gallery accent for your frame
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-xl text-[#6F6A62] hover:bg-[#F8F6F2] hover:text-[#1C1B19] transition-colors cursor-pointer"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-6 modal-scrollbar">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {designs.map((design) => {
+              const isSelected = selectedDesign?.id === design.id;
+              const compatible = isDesignCompatible(design, selectedWood);
+
+              return (
+                <div
+                  key={design.id}
+                  onClick={() => {
+                    if (compatible) {
+                      onSelectDesign(design);
+                      onClose();
+                    }
+                  }}
+                  className={`group rounded-2xl overflow-hidden border transition-all p-3 flex flex-col justify-between bg-white relative ${
+                    !compatible
+                      ? "opacity-40 bg-[#F5F2EC] border-[#DCD3C0] cursor-not-allowed"
+                      : isSelected
+                      ? "border-[#C9A669] ring-2 ring-[#C9A669]/25 bg-[#FDFBF7] shadow-sm cursor-pointer"
+                      : "border-[#E7E0D2] hover:border-[#C9A669]/60 hover:bg-[#FAF8F5] cursor-pointer"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="relative h-24 rounded-xl overflow-hidden bg-[#ECE7DC] border border-[#E7E0D2]">
+                      <img
+                        src={design.image}
+                        alt={design.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#C9A669] text-[#1C1B19] flex items-center justify-center shadow">
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        </div>
+                      )}
+                      <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded bg-[#1C1B19]/80 backdrop-blur-sm text-[#F8F6F2] text-[10px] font-semibold">
+                        {design.additionalPrice > 0
+                          ? `+${formatRupee(design.additionalPrice)}`
+                          : "Included (+₹0)"}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-display font-bold text-sm text-[#1C1B19] flex items-center justify-between">
+                        <span className="truncate">{design.name}</span>
+                        <span className="text-xs font-semibold text-[#8C6D32] shrink-0">
+                          {design.additionalPrice > 0
+                            ? `+${formatRupee(design.additionalPrice)}`
+                            : "₹0"}
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-[#6F6A62] mt-1 line-clamp-2 leading-relaxed">
+                        {design.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-2.5 pt-2 border-t border-[#E7E0D2]/70 text-[10px]">
+                    {!compatible ? (
+                      <span
+                        className="text-red-700 font-medium truncate block"
+                        title={`Compatible with: ${(design.compatibleWoods || ["All"]).join(", ")}`}
+                      >
+                        Incompatible {design.compatibleWoods && !design.compatibleWoods.includes("All") ? `(Requires ${design.compatibleWoods.join(", ")})` : ""}
+                      </span>
+                    ) : (
+                      <span className={isSelected ? "font-bold text-[#C9A669]" : "text-[#8C6D32]"}>
+                        {isSelected ? "Selected" : "Select"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 }

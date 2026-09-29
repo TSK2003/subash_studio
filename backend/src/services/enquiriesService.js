@@ -137,7 +137,16 @@ export async function updateEnquiry(id, data) {
 }
 
 export async function deleteEnquiry(id) {
+  const existing = await prisma.enquiry.findUnique({
+    where: { id },
+  });
+  if (!existing) {
+    const error = new Error("Enquiry record not found.");
+    error.statusCode = 404;
+    throw error;
+  }
   return prisma.enquiry.delete({
     where: { id },
   });
 }
+

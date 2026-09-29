@@ -17,6 +17,7 @@ const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Gallery = lazy(() => import("./pages/Gallery"));
 const Films = lazy(() => import("./pages/Films"));
 const Branches = lazy(() => import("./pages/Branches"));
+const Reviews = lazy(() => import("./pages/Reviews"));
 const Contact = lazy(() => import("./pages/Contact"));
 const OrderFrames = lazy(() => import("./pages/OrderFrames"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -43,6 +44,7 @@ const WebsiteContent = lazy(() => import("./admin/pages/WebsiteContent"));
 const Settings = lazy(() => import("./admin/pages/Settings"));
 
 import PremiumPageBackground from "./components/PremiumPageBackground";
+import { ADMIN_BASE_PATH, ADMIN_ROUTES, ADMIN_SUBPATHS } from "./admin/constants/adminRoutes";
 
 const pageVariants = {
   initial: { opacity: 0, y: 24 },
@@ -86,6 +88,7 @@ function PublicWebsiteLayout() {
                 <Route path="/gallery" element={<PageWrapper><Gallery /></PageWrapper>} />
                 <Route path="/films" element={<PageWrapper><Films /></PageWrapper>} />
                 <Route path="/branches" element={<PageWrapper><Branches /></PageWrapper>} />
+                <Route path="/reviews" element={<PageWrapper><Reviews /></PageWrapper>} />
                 <Route path="/contact" element={<PageWrapper><Contact /></PageWrapper>} />
                 <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
               </Routes>
@@ -112,36 +115,37 @@ export default function App() {
         <AdminDataProvider>
           <Suspense fallback={<LuxuryLoader />}>
             <Routes>
-              {/* Admin Login (Public) */}
-              <Route path="/admin/login" element={<AdminLogin />} />
+              {/* Opaque Admin Login */}
+              <Route path={ADMIN_ROUTES.LOGIN} element={<AdminLogin />} />
 
-              {/* Admin Redirect */}
+              {/* Opaque Admin Root Redirect */}
               <Route
-                path="/admin"
-                element={<Navigate to="/admin/dashboard" replace />}
+                path={ADMIN_BASE_PATH}
+                element={<Navigate to={ADMIN_ROUTES.DASHBOARD} replace />}
               />
 
-              {/* Protected Admin Routes */}
+              {/* Protected Opaque Admin Routes */}
               <Route
-                path="/admin"
+                path={ADMIN_BASE_PATH}
                 element={
                   <ProtectedAdminRoute>
                     <AdminLayout />
                   </ProtectedAdminRoute>
                 }
               >
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="bookings" element={<Bookings />} />
-                <Route path="enquiries" element={<Enquiries />} />
-                <Route path="frames" element={<FramesManager />} />
-                <Route path="gallery" element={<GalleryManager />} />
-                <Route path="portfolio" element={<PortfolioManager />} />
-                <Route path="services" element={<ServicesManager />} />
-                <Route path="films" element={<FilmsManager />} />
-                <Route path="branches" element={<BranchesManager />} />
-                <Route path="testimonials" element={<TestimonialsManager />} />
-                <Route path="content" element={<WebsiteContent />} />
-                <Route path="settings" element={<Settings />} />
+                <Route path={ADMIN_SUBPATHS.OVERVIEW} element={<Dashboard />} />
+                <Route path={ADMIN_SUBPATHS.BOOKINGS} element={<Bookings />} />
+                <Route path={ADMIN_SUBPATHS.ENQUIRIES} element={<Enquiries />} />
+                <Route path={ADMIN_SUBPATHS.FRAMES} element={<FramesManager />} />
+                <Route path={ADMIN_SUBPATHS.GALLERY} element={<GalleryManager />} />
+                <Route path={ADMIN_SUBPATHS.PORTFOLIO} element={<PortfolioManager />} />
+                <Route path={ADMIN_SUBPATHS.SERVICES} element={<ServicesManager />} />
+                <Route path={ADMIN_SUBPATHS.FILMS} element={<FilmsManager />} />
+                <Route path={ADMIN_SUBPATHS.BRANCHES} element={<BranchesManager />} />
+                <Route path={ADMIN_SUBPATHS.TESTIMONIALS} element={<TestimonialsManager />} />
+                <Route path={ADMIN_SUBPATHS.CONTENT} element={<WebsiteContent />} />
+                <Route path={ADMIN_SUBPATHS.SETTINGS} element={<Settings />} />
+                <Route path="*" element={<Navigate to={ADMIN_ROUTES.DASHBOARD} replace />} />
               </Route>
 
               {/* Public Website Routes (Catch-all for non-admin) */}

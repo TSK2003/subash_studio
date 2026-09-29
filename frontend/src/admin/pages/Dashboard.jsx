@@ -21,6 +21,13 @@ import StatCard from "../components/StatCard";
 import StatusBadge from "../components/StatusBadge";
 import { useAdminData } from "../context/AdminDataContext";
 import { useAdminAuth } from "../context/AdminAuthContext";
+import { ADMIN_ROUTES } from "../constants/adminRoutes";
+import { normalizeBookingStatus } from "../../lib/bookingStatus.js";
+import {
+  filterAndSortUpcomingShoots,
+  formatShootDate,
+  parseBookingDateMidnight,
+} from "../../lib/bookingDate.js";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -45,15 +52,26 @@ export default function Dashboard() {
     return "Good Evening";
   };
 
-  // Metrics directly derived from AdminDataContext
+  // Metrics directly derived from AdminDataContext with normalized canonical statuses
   const totalBookings = bookings.length;
-  const pendingBookings = bookings.filter((b) => b.status === "New" || b.status === "Contacted").length;
-  const confirmedBookings = bookings.filter((b) => b.status === "Confirmed").length;
-  const completedShoots = bookings.filter((b) => b.status === "Completed").length;
-  const cancelledBookings = bookings.filter((b) => b.status === "Cancelled").length;
+  const pendingBookings = bookings.filter((b) => {
+    const s = normalizeBookingStatus(b.status);
+    return s === "NEW" || s === "CONTACTED";
+  }).length;
+  const confirmedBookings = bookings.filter(
+    (b) => normalizeBookingStatus(b.status) === "CONFIRMED"
+  ).length;
+  const completedShoots = bookings.filter(
+    (b) => normalizeBookingStatus(b.status) === "COMPLETED"
+  ).length;
+  const cancelledBookings = bookings.filter(
+    (b) => normalizeBookingStatus(b.status) === "CANCELLED"
+  ).length;
 
   const totalEnquiries = enquiries.length;
-  const newEnquiries = enquiries.filter((e) => e.status === "New").length;
+  const newEnquiries = enquiries.filter(
+    (e) => (e.status || "").toString().trim().toUpperCase() === "NEW"
+  ).length;
 
   const totalGallery = gallery.length;
   const totalPortfolio = (portfolio || []).length;
@@ -63,18 +81,13 @@ export default function Dashboard() {
   const totalTestimonials = (testimonials || []).length;
 
   const totalFrameOrders = (frameOrders || []).length;
-  const newFrameOrders = (frameOrders || []).filter((o) => o.status === "New").length;
+  const newFrameOrders = (frameOrders || []).filter(
+    (o) => (o.status || "").toString().trim().toUpperCase() === "NEW"
+  ).length;
 
-  // Upcoming shoots (sorted by event date ascending)
+  // Upcoming shoots: actual future or today bookings, sorted nearest-date first, excluding COMPLETED and CANCELLED
   const upcomingShoots = useMemo(() => {
-    return [...bookings]
-      .filter((b) => b.status === "Confirmed" || b.status === "In Progress" || b.status === "New")
-      .sort((a, b) => {
-        const timeA = a.eventDate ? new Date(a.eventDate).getTime() : 0;
-        const timeB = b.eventDate ? new Date(b.eventDate).getTime() : 0;
-        return timeA - timeB;
-      })
-      .slice(0, 5);
+    return filterAndSortUpcomingShoots(bookings).slice(0, 6);
   }, [bookings]);
 
   // Recent enquiries
@@ -199,7 +212,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-2.5 relative z-10 shrink-0">
           {newFrameOrders > 0 ? (
             <Link
-              to="/admin/frames"
+              to={ADMIN_ROUTES.FRAMES}
               className="px-3.5 py-2.5 bg-[#FAF8F5] hover:bg-[#F3EFE8] text-[#2B2B2B] border border-[#E7E0D2] rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shadow-sm group"
             >
               <Frame className="w-3.5 h-3.5 text-[#C9A669] group-hover:scale-110 transition-transform" />
@@ -210,7 +223,7 @@ export default function Dashboard() {
             </Link>
           ) : (
             <Link
-              to="/admin/bookings"
+              to={ADMIN_ROUTES.BOOKINGS}
               className="px-3.5 py-2.5 bg-[#FAF8F5] hover:bg-[#F3EFE8] text-[#2B2B2B] border border-[#E7E0D2] rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shadow-sm group"
             >
               <CalendarDays className="w-3.5 h-3.5 text-[#C9A669] group-hover:scale-110 transition-transform" />
@@ -219,7 +232,7 @@ export default function Dashboard() {
           )}
 
           <Link
-            to="/admin/bookings?new=true"
+            to={`${ADMIN_ROUTES.BOOKINGS}?new=true`}
             className="px-4 py-2.5 bg-gradient-to-r from-[#C9A669] to-[#9C7B3D] hover:from-[#D4B376] hover:to-[#A88544] text-[#1C1B19] rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all flex items-center gap-2 active:scale-95 shrink-0"
           >
             <Plus className="w-4 h-4" />
@@ -236,7 +249,7 @@ export default function Dashboard() {
           icon={CalendarDays}
           description="All studio shoots"
           accent="neutral"
-          onClick={() => navigate("/admin/bookings")}
+          onClick={() => navigate(ADMIN_ROUTES.BOOKINGS)}
         />
         <StatCard
           title="Pending Bookings"
@@ -244,7 +257,7 @@ export default function Dashboard() {
           icon={Clock}
           description="Awaiting shoot date"
           accent={pendingBookings > 0 ? "gold" : "neutral"}
-          onClick={() => navigate("/admin/bookings")}
+          onClick={() => navigate(ADMIN_ROUTES.BOOKINGS)}
         />
         <StatCard
           title="Total Enquiries"
@@ -253,7 +266,7 @@ export default function Dashboard() {
           trend={newEnquiries > 0 ? `${newEnquiries} new lead${newEnquiries > 1 ? "s" : ""}` : undefined}
           description={newEnquiries === 0 ? "All leads addressed" : undefined}
           accent={newEnquiries > 0 ? "gold" : "neutral"}
-          onClick={() => navigate("/admin/enquiries")}
+          onClick={() => navigate(ADMIN_ROUTES.ENQUIRIES)}
         />
         <StatCard
           title="Frame Orders"
@@ -262,7 +275,7 @@ export default function Dashboard() {
           trend={newFrameOrders > 0 ? `${newFrameOrders} new order${newFrameOrders > 1 ? "s" : ""}` : undefined}
           description={newFrameOrders === 0 ? "Bespoke framing orders" : undefined}
           accent={newFrameOrders > 0 ? "gold" : "neutral"}
-          onClick={() => navigate("/admin/frames")}
+          onClick={() => navigate(ADMIN_ROUTES.FRAMES)}
         />
         <StatCard
           title="Gallery Items"
@@ -270,7 +283,7 @@ export default function Dashboard() {
           icon={Images}
           description="High-res photos"
           accent="neutral"
-          onClick={() => navigate("/admin/gallery")}
+          onClick={() => navigate(ADMIN_ROUTES.GALLERY)}
         />
         <StatCard
           title="Portfolio Items"
@@ -278,7 +291,7 @@ export default function Dashboard() {
           icon={Briefcase}
           description="Curated stories"
           accent="neutral"
-          onClick={() => navigate("/admin/portfolio")}
+          onClick={() => navigate(ADMIN_ROUTES.PORTFOLIO)}
         />
         <StatCard
           title="Services"
@@ -286,7 +299,7 @@ export default function Dashboard() {
           icon={Camera}
           description="Active packages"
           accent="neutral"
-          onClick={() => navigate("/admin/services")}
+          onClick={() => navigate(ADMIN_ROUTES.SERVICES)}
         />
         <StatCard
           title="Films"
@@ -294,7 +307,7 @@ export default function Dashboard() {
           icon={Clapperboard}
           description="Cinematic films"
           accent="neutral"
-          onClick={() => navigate("/admin/films")}
+          onClick={() => navigate(ADMIN_ROUTES.FILMS)}
         />
         <StatCard
           title="Branches"
@@ -302,7 +315,7 @@ export default function Dashboard() {
           icon={MapPin}
           description="Studios & lounges"
           accent="neutral"
-          onClick={() => navigate("/admin/branches")}
+          onClick={() => navigate(ADMIN_ROUTES.BRANCHES)}
         />
         <StatCard
           title="Testimonials"
@@ -310,7 +323,7 @@ export default function Dashboard() {
           icon={Star}
           description="Client reviews"
           accent="neutral"
-          onClick={() => navigate("/admin/testimonials")}
+          onClick={() => navigate(ADMIN_ROUTES.TESTIMONIALS)}
         />
         <StatCard
           title="Confirmed Shoots"
@@ -318,7 +331,7 @@ export default function Dashboard() {
           icon={CheckCircle2}
           description="Confirmed on calendar"
           accent="neutral"
-          onClick={() => navigate("/admin/bookings")}
+          onClick={() => navigate(ADMIN_ROUTES.BOOKINGS)}
         />
         <StatCard
           title="Completed Shoots"
@@ -326,7 +339,7 @@ export default function Dashboard() {
           icon={Clock}
           description="Successfully archived"
           accent="neutral"
-          onClick={() => navigate("/admin/bookings")}
+          onClick={() => navigate(ADMIN_ROUTES.BOOKINGS)}
         />
       </div>
 
@@ -340,7 +353,7 @@ export default function Dashboard() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5">
           <Link
-            to="/admin/bookings?new=true"
+            to={`${ADMIN_ROUTES.BOOKINGS}?new=true`}
             className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
           >
             <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
@@ -350,7 +363,7 @@ export default function Dashboard() {
           </Link>
 
           <Link
-            to="/admin/gallery?new=true"
+            to={`${ADMIN_ROUTES.GALLERY}?new=true`}
             className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
           >
             <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
@@ -360,7 +373,7 @@ export default function Dashboard() {
           </Link>
 
           <Link
-            to="/admin/portfolio?new=true"
+            to={`${ADMIN_ROUTES.PORTFOLIO}?new=true`}
             className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
           >
             <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
@@ -370,7 +383,7 @@ export default function Dashboard() {
           </Link>
 
           <Link
-            to="/admin/services?new=true"
+            to={`${ADMIN_ROUTES.SERVICES}?new=true`}
             className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
           >
             <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
@@ -380,7 +393,7 @@ export default function Dashboard() {
           </Link>
 
           <Link
-            to="/admin/films?new=true"
+            to={`${ADMIN_ROUTES.FILMS}?new=true`}
             className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
           >
             <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
@@ -486,7 +499,7 @@ export default function Dashboard() {
 
           <div className="pt-2 border-t border-[#E7E0D2]/80">
             <Link
-              to="/admin/services"
+              to={ADMIN_ROUTES.SERVICES}
               className="text-xs text-[#9C7B3D] hover:underline font-semibold flex items-center justify-between"
             >
               <span>Manage Service Pricing &amp; Features</span>
@@ -508,7 +521,7 @@ export default function Dashboard() {
               <p className="text-xs text-[#6F6A62]">Next client sessions in calendar order</p>
             </div>
             <Link
-              to="/admin/bookings"
+              to={ADMIN_ROUTES.BOOKINGS}
               className="text-xs text-[#9C7B3D] hover:underline font-semibold flex items-center gap-1"
             >
               <span>View All Bookings</span>
@@ -532,25 +545,19 @@ export default function Dashboard() {
                   upcomingShoots.map((b) => (
                     <tr key={b.id} className="hover:bg-[#FDFBF7] transition-colors">
                       <td className="py-3 font-medium text-[#2B2B2B]">
-                        <div className="font-semibold">{b.customerName}</div>
-                        <div className="text-[10px] text-[#8E867B]">{b.location}</div>
+                        <div className="font-semibold">{b.customerName || b.clientName || "Client"}</div>
+                        <div className="text-[10px] text-[#8E867B]">{b.location || b.venue || "Studio Location"}</div>
                       </td>
-                      <td className="py-3 text-[#6F6A62]">{b.requiredService}</td>
+                      <td className="py-3 text-[#6F6A62]">{b.requiredService || b.service || "Photography Session"}</td>
                       <td className="py-3 font-medium text-[#2B2B2B]">
-                        {b.eventDate
-                          ? new Date(b.eventDate).toLocaleDateString("en-IN", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })
-                          : "TBD"}
+                        {formatShootDate(b.eventDate || b.date)}
                       </td>
                       <td className="py-3">
                         <StatusBadge status={b.status} size="sm" />
                       </td>
                       <td className="py-3 text-right">
                         <button
-                          onClick={() => navigate(`/admin/bookings?id=${b.id}`)}
+                          onClick={() => navigate(`${ADMIN_ROUTES.BOOKINGS}?id=${b.id}`)}
                           className="p-1.5 text-[#6F6A62] hover:text-[#9C7B3D] rounded-lg hover:bg-[#F8F6F2]"
                           title="View Shoot Details"
                         >
@@ -581,7 +588,7 @@ export default function Dashboard() {
               <p className="text-xs text-[#6F6A62]">Leads received via website</p>
             </div>
             <Link
-              to="/admin/enquiries"
+              to={ADMIN_ROUTES.ENQUIRIES}
               className="text-xs text-[#9C7B3D] hover:underline font-semibold flex items-center gap-1"
             >
               <span>View All</span>
@@ -594,7 +601,7 @@ export default function Dashboard() {
               recentEnquiries.map((enq) => (
                 <div
                   key={enq.id}
-                  onClick={() => navigate("/admin/enquiries")}
+                  onClick={() => navigate(ADMIN_ROUTES.ENQUIRIES)}
                   className="p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] cursor-pointer transition-all space-y-1.5 min-w-0"
                 >
                   <div className="flex items-start justify-between gap-2 min-w-0">

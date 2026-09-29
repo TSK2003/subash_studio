@@ -386,6 +386,68 @@ export async function seedInitialDataIfNeeded() {
         });
       }
     }
+
+    // 15. Initial Categories (Portfolio and Gallery)
+    const categoryCount = await prisma.category.count();
+    if (categoryCount === 0) {
+      const defaultPortfolioCats = [
+        "Wedding",
+        "Couple",
+        "Baby",
+        "Maternity",
+        "Fashion",
+        "Outdoor",
+        "Corporate",
+        "Traditional",
+      ];
+      for (const name of defaultPortfolioCats) {
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        const id = `CAT-PORT-${slug}`;
+        await prisma.category.upsert({
+          where: { name_type: { name, type: "PORTFOLIO" } },
+          update: {},
+          create: {
+            id,
+            name,
+            slug,
+            type: "PORTFOLIO",
+            active: true,
+          },
+        });
+      }
+
+      const defaultGalleryCats = [
+        "Wedding",
+        "Reception",
+        "Engagement",
+        "Couple Shoot",
+        "Baby Shoot",
+        "Maternity Shoot",
+        "Birthday",
+        "Puberty Ceremony",
+        "House Warming",
+        "Corporate",
+        "Outdoor",
+        "Fashion",
+        "Studio Portrait",
+      ];
+      for (const name of defaultGalleryCats) {
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        const id = `CAT-GAL-${slug}`;
+        await prisma.category.upsert({
+          where: { name_type: { name, type: "GALLERY" } },
+          update: {},
+          create: {
+            id,
+            name,
+            slug,
+            type: "GALLERY",
+            active: true,
+          },
+        });
+      }
+      console.log("✓ Portfolio & Gallery categories seeded");
+    }
   } catch (err) {
     console.warn("Database seeding note:", err.message);
   }

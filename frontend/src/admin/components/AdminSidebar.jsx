@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -15,76 +15,76 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   X,
   Aperture,
   Frame,
 } from "lucide-react";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { useAdminData } from "../context/AdminDataContext";
+import { ADMIN_ROUTES } from "../constants/adminRoutes";
 
 export const navItems = [
   {
-    path: "/admin/dashboard",
+    path: ADMIN_ROUTES.DASHBOARD,
     label: "Dashboard",
     icon: LayoutDashboard,
   },
   {
-    path: "/admin/bookings",
+    path: ADMIN_ROUTES.BOOKINGS,
     label: "Bookings",
     icon: CalendarDays,
     badgeKey: "bookings",
   },
   {
-    path: "/admin/enquiries",
+    path: ADMIN_ROUTES.ENQUIRIES,
     label: "Enquiries",
     icon: MessageSquare,
     badgeKey: "enquiries",
   },
   {
-    path: "/admin/frames",
+    path: ADMIN_ROUTES.FRAMES,
     label: "Frames",
     icon: Frame,
     badgeKey: "frames",
   },
   {
-    path: "/admin/gallery",
+    path: ADMIN_ROUTES.GALLERY,
     label: "Gallery",
     icon: Images,
   },
   {
-    path: "/admin/portfolio",
+    path: ADMIN_ROUTES.PORTFOLIO,
     label: "Portfolio",
     icon: Briefcase,
   },
   {
-    path: "/admin/services",
+    path: ADMIN_ROUTES.SERVICES,
     label: "Services",
     icon: Camera,
   },
   {
-    path: "/admin/films",
+    path: ADMIN_ROUTES.FILMS,
     label: "Films",
     icon: Clapperboard,
   },
   {
-    path: "/admin/branches",
+    path: ADMIN_ROUTES.BRANCHES,
     label: "Branches",
     icon: MapPin,
   },
   {
-    path: "/admin/testimonials",
+    path: ADMIN_ROUTES.TESTIMONIALS,
     label: "Testimonials",
     icon: Star,
     badgeKey: "testimonials",
   },
   {
-    path: "/admin/content",
+    path: ADMIN_ROUTES.CONTENT,
     label: "Website Content",
     icon: PanelsTopLeft,
   },
   {
-    path: "/admin/settings",
+    path: ADMIN_ROUTES.SETTINGS,
     label: "Settings",
     icon: Settings,
   },
@@ -96,8 +96,14 @@ export default function AdminSidebar({
   mobileOpen,
   setMobileOpen,
 }) {
+  const navigate = useNavigate();
   const { adminUser, logout } = useAdminAuth();
   const { bookings, enquiries, frameOrders, testimonials } = useAdminData();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate(ADMIN_ROUTES.LOGIN, { replace: true });
+  };
 
   const newBookingsCount = (bookings || []).filter((b) => b.status === "New").length;
   const newEnquiriesCount = (enquiries || []).filter((e) => e.status === "New").length;
@@ -118,9 +124,9 @@ export default function AdminSidebar({
     return (
       <div className="flex flex-col h-full bg-[#1C1B19] text-[#E7E0D2] select-none border-r border-[#2C2A26]">
         {/* Brand Header */}
-        <div className="h-20 flex items-center justify-between px-5 border-b border-[#2C2A26]/80 shrink-0">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-md shrink-0 border border-[#E4D3A6]/40 overflow-hidden">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-[#2C2A26]/80 shrink-0">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center shadow-md shrink-0 border border-[#E4D3A6]/40 overflow-hidden">
               <img
                 src="/images/admin/logo.png"
                 alt="SUBASH STUDIO"
@@ -133,7 +139,7 @@ export default function AdminSidebar({
                 animate={{ opacity: 1, x: 0 }}
                 className="flex flex-col min-w-0"
               >
-                <span className="font-display font-bold text-base tracking-widest text-[#F8F6F2] uppercase truncate">
+                <span className="font-display font-bold text-sm tracking-widest text-[#F8F6F2] uppercase truncate">
                   SUBASH STUDIO
                 </span>
                 <div className="flex items-center gap-1.5">
@@ -157,7 +163,7 @@ export default function AdminSidebar({
         </div>
 
         {/* Navigation Links */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-2.5 py-4 space-y-1 custom-scrollbar">
           <div className="px-3 pb-2 text-[10px] uppercase font-bold tracking-widest2 text-[#6F6A62]">
             {!collapsed && "Management"}
           </div>
@@ -171,7 +177,7 @@ export default function AdminSidebar({
                 to={item.path}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  `group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  `group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? "bg-[#2A2824] text-[#E4D3A6] font-semibold shadow-inner"
                       : "text-[#B3AAA0] hover:text-[#F8F6F2] hover:bg-[#252420]"
@@ -211,18 +217,7 @@ export default function AdminSidebar({
 
         {/* Footer Profile & Logout */}
         <div className="p-3 border-t border-[#2C2A26] bg-[#171614] shrink-0 space-y-2">
-          <a
-            href="/"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-[#9C7B3D] hover:text-[#E4D3A6] hover:bg-[#252420] rounded-xl transition-colors"
-            title="Open Public Website in new tab"
-          >
-            <ExternalLink className="w-4 h-4 shrink-0" />
-            {!collapsed && <span>View Public Website</span>}
-          </a>
-
-          <div className="pt-2 border-t border-[#2C2A26]/60 flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-full bg-[#2A2824] border border-[#3D3A34] overflow-hidden shrink-0 flex items-center justify-center font-display font-bold text-[#E4D3A6] text-sm">
                 {adminUser?.avatar ? (
@@ -249,7 +244,7 @@ export default function AdminSidebar({
 
             <button
               type="button"
-              onClick={logout}
+              onClick={handleLogout}
               className="p-2 text-[#8E867B] hover:text-rose-400 hover:bg-[#252420] rounded-lg transition-colors"
               title="Sign Out"
               aria-label="Sign Out"
@@ -286,7 +281,7 @@ export default function AdminSidebar({
       {/* Desktop Persistent Sidebar */}
       <aside
         className={`hidden lg:block h-screen sticky top-0 transition-all duration-300 z-30 shrink-0 ${
-          isCollapsed ? "w-20" : "w-64"
+          isCollapsed ? "w-20" : "w-56"
         }`}
       >
         {renderSidebarContent(false)}

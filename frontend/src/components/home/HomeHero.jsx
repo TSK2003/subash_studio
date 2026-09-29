@@ -40,11 +40,20 @@ export default function HomeHero() {
   } else {
     const words = rawHeading.split(/\s+/);
     if (words.length > 1) {
-      const splitIndex = Math.ceil(words.length / 2);
-      line1 = words.slice(0, splitIndex).join(" ");
-      line2 = words.slice(splitIndex).join(" ");
+      if (words[0].toLowerCase() === "subash") {
+        line1 = words[0];
+        line2 = words.slice(1).join(" ");
+      } else {
+        const splitIndex = Math.ceil(words.length / 2);
+        line1 = words.slice(0, splitIndex).join(" ");
+        line2 = words.slice(splitIndex).join(" ");
+      }
     }
   }
+
+  const heroTagline =
+    homeData.heroTagline ||
+    "Preserving timeless heritage, profound emotions, and authentic human celebrations across generations.";
 
   const handleScrollDown = () => {
     const nextSection = document.getElementById("home-stats-section");
@@ -193,7 +202,7 @@ export default function HomeHero() {
               transition={{ duration: 0.65, delay: 0.22, ease: [0.25, 1, 0.5, 1] }}
               className="text-[#6F6A62] text-[15px] sm:text-[16px] xl:text-[17px] leading-[1.65] max-w-[490px] xl:max-w-[530px] font-normal"
             >
-              {homeData.heroTagline || "Preserving timeless heritage, profound emotions, and authentic human celebrations across generations."}
+              {heroTagline}
             </motion.p>
 
             {/* Action Buttons: BOOK A SHOOT & EXPLORE OUR WORK */}
@@ -203,12 +212,12 @@ export default function HomeHero() {
               transition={{ duration: 0.7, delay: 0.28, ease: [0.25, 1, 0.5, 1] }}
               className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 lg:gap-5 mt-6 sm:mt-7 xl:mt-8 w-full sm:w-fit sm:mx-auto lg:mx-0"
             >
-              {/* Primary: BOOK A SHOOT / CMS CTA (~210px-225px x 52px-58px) */}
+              {/* Primary: BOOK A SHOOT (~210px-225px x 52px-58px) */}
               <Link
-                to="/portfolio"
+                to="/contact"
                 className="group w-full sm:w-[210px] xl:w-[220px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#B38F4D] hover:bg-[#9C7B3D] text-white rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-[0_8px_20px_-4px_rgba(179,143,77,0.38)] hover:shadow-lg hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0 px-4 text-center"
               >
-                <span className="truncate">{homeData.heroCtaText || "BOOK A SHOOT"}</span>
+                <span className="truncate">BOOK A SHOOT</span>
                 <ArrowRight
                   size={14}
                   className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
@@ -217,7 +226,7 @@ export default function HomeHero() {
 
               {/* Secondary: EXPLORE OUR WORK (~230px-245px x 52px-58px) */}
               <Link
-                to="/gallery"
+                to="/portfolio"
                 className="group w-full sm:w-[230px] xl:w-[240px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#FAF7F2]/80 hover:bg-[#1C1B19] border border-[#B38F4D]/70 hover:border-[#1C1B19] text-[#1C1B19] hover:text-[#F8F6F2] rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0"
               >
                 <span>EXPLORE OUR WORK</span>

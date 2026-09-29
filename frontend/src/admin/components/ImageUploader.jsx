@@ -1,5 +1,7 @@
-import { useState, useRef } from "react";
-import { UploadCloud, Image as ImageIcon, X, Check, Link2, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { UploadCloud, Image as ImageIcon, X, Check, Link2, Loader2, Eye } from "lucide-react";
 import api from "../../lib/api.js";
 
 export default function ImageUploader({
@@ -8,13 +10,47 @@ export default function ImageUploader({
   label = "Upload Image",
   helpText = "PNG, JPG, WEBP up to 25MB.",
   category = "general",
+  aspect = "landscape",
+  onDimensionsDetected,
+  showView = true,
 }) {
   const [dragActive, setDragActive] = useState(false);
   const [useUrlInput, setUseUrlInput] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [dimensions, setDimensions] = useState(null);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (!value) {
+      setDimensions(null);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      const detectedOrientation = h > w ? "portrait" : "landscape";
+      setDimensions({ width: w, height: h, orientation: detectedOrientation });
+      if (onDimensionsDetected) {
+        onDimensionsDetected({ width: w, height: h, orientation: detectedOrientation });
+      }
+    };
+    img.src = value;
+  }, [value, onDimensionsDetected]);
+
+  useEffect(() => {
+    if (!isPreviewOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsPreviewOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPreviewOpen]);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -79,20 +115,38 @@ export default function ImageUploader({
     }
   };
 
+  const isPortrait = aspect === "portrait";
+  const containerAspectClasses = isPortrait
+    ? "aspect-[3/4] max-h-72 w-full max-w-[280px] mx-auto"
+    : "aspect-[16/10] max-h-56 w-full";
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-xs font-semibold uppercase tracking-wider text-[#6F6A62]">
           {label}
         </label>
-        <button
-          type="button"
-          onClick={() => setUseUrlInput(!useUrlInput)}
-          className="text-xs text-[#9C7B3D] hover:underline flex items-center gap-1 font-medium"
-        >
-          <Link2 className="w-3.5 h-3.5" />
-          {useUrlInput ? "Upload File instead" : "Use Image URL"}
-        </button>
+        <div className="flex items-center gap-3">
+          {showView && value && (
+            <button
+              type="button"
+              onClick={() => setIsPreviewOpen(true)}
+              className="text-xs text-[#9C7B3D] hover:underline flex items-center gap-1 font-medium cursor-pointer"
+              title="View full-size photo"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>View</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setUseUrlInput(!useUrlInput)}
+            className="text-xs text-[#9C7B3D] hover:underline flex items-center gap-1 font-medium cursor-pointer"
+          >
+            <Link2 className="w-3.5 h-3.5" />
+            {useUrlInput ? "Upload File instead" : "Use Image URL"}
+          </button>
+        </div>
       </div>
 
       {useUrlInput ? (
@@ -113,12 +167,26 @@ export default function ImageUploader({
           </button>
         </div>
       ) : value ? (
-        <div className="relative group rounded-xl overflow-hidden border border-[#E7E0D2] bg-[#F8F6F2] aspect-[16/9] max-h-56 flex items-center justify-center">
+        <div className={`relative group rounded-xl overflow-hidden border border-[#E7E0D2] bg-[#F8F6F2] transition-all duration-300 flex items-center justify-center ${containerAspectClasses}`}>
           <img
             src={value}
             alt="Uploaded Preview"
-            className="w-full h-full object-cover"
+            onClick={() => showView && setIsPreviewOpen(true)}
+            className={`w-full h-full ${
+              isPortrait ? "object-contain bg-[#1C1B19]/5" : "object-cover"
+            } transition-all duration-300 ${showView ? "cursor-pointer" : ""}`}
           />
+          {/* Orientation Badge Overlay */}
+          <div className="absolute top-2.5 left-2.5 pointer-events-none z-10 transition-opacity">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#1C1B19]/85 backdrop-blur-md text-[#E4D3A6] border border-[#3D3A34]/50 shadow-sm">
+              <span
+                className={`inline-block border border-current rounded-[1px] ${
+                  isPortrait ? "w-1.5 h-2.5" : "w-2.5 h-1.5"
+                }`}
+              />
+              <span>{isPortrait ? "Portrait (Vertical)" : "Landscape (Horizontal)"}</span>
+            </span>
+          </div>
           {uploading && (
             <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white text-xs gap-2">
               <Loader2 className="w-6 h-6 animate-spin text-[#C9A669]" />
@@ -126,18 +194,30 @@ export default function ImageUploader({
             </div>
           )}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">
+            {showView && (
+              <button
+                type="button"
+                onClick={() => setIsPreviewOpen(true)}
+                className="px-3 py-1.5 bg-white text-[#2B2B2B] rounded-lg text-xs font-medium shadow hover:bg-[#F8F6F2] flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                title="View full-size photo"
+              >
+                <Eye className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                <span>View</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="px-3 py-1.5 bg-white text-[#2B2B2B] rounded-lg text-xs font-medium shadow hover:bg-[#F8F6F2]"
+              className="px-3 py-1.5 bg-white text-[#2B2B2B] rounded-lg text-xs font-medium shadow hover:bg-[#F8F6F2] transition-all active:scale-95 cursor-pointer"
             >
               Replace
             </button>
             <button
               type="button"
               onClick={() => onChange("")}
-              className="p-1.5 bg-rose-600 text-white rounded-lg text-xs shadow hover:bg-rose-700"
+              className="p-1.5 bg-rose-600 text-white rounded-lg text-xs shadow hover:bg-rose-700 transition-all active:scale-95 cursor-pointer"
               aria-label="Remove image"
+              title="Remove image"
             >
               <X className="w-4 h-4" />
             </button>
@@ -180,6 +260,82 @@ export default function ImageUploader({
         onChange={handleChange}
         className="hidden"
       />
+
+      {/* Lightbox Preview Modal via Portal */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {isPreviewOpen && value && (
+              <div
+                className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6"
+                role="dialog"
+                aria-modal="true"
+                aria-label={label || "Image Preview"}
+              >
+                {/* Backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="fixed inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
+                />
+
+                {/* Centered Lightbox Modal Card */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="relative z-10 w-fit max-w-[94vw] sm:max-w-3xl lg:max-w-4xl max-h-[90vh] flex flex-col items-center bg-[#171614]/95 border border-[#3D3A34]/90 rounded-2xl px-4 pt-11 pb-4 sm:px-6 sm:pt-12 sm:pb-5 shadow-2xl overflow-hidden backdrop-blur-sm"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Close Button Inside Modal Boundary (Top-Right) */}
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewOpen(false)}
+                    className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20 p-2 text-white/75 hover:text-white rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-all shadow-sm cursor-pointer"
+                    title="Close (Esc)"
+                    aria-label="Close modal"
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+
+                  {/* Top Label & Details Header */}
+                  <div className="absolute top-3 left-4 sm:left-6 z-20 flex items-center gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-[#E4D3A6]">
+                      {label}
+                    </span>
+                    {dimensions && (
+                      <span className="text-[10px] text-white/50 border-l border-white/20 pl-2">
+                        {dimensions.width} × {dimensions.height}px
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Image Container with object-contain */}
+                  <div className="w-full flex items-center justify-center overflow-hidden min-h-0 flex-1">
+                    <img
+                      src={value}
+                      alt={label || "Preview"}
+                      className="max-w-full max-h-[66vh] sm:max-h-[72vh] object-contain rounded-xl shadow-lg border border-white/5"
+                    />
+                  </div>
+
+                  {/* Content Below Image */}
+                  <div className="mt-3 sm:mt-3.5 text-center text-white shrink-0 px-2 space-y-0.5">
+                    <p className="text-xs text-[#E4D3A6] tracking-wider uppercase font-medium">
+                      {dimensions?.orientation
+                        ? `${dimensions.orientation.toUpperCase()} ORIENTATION`
+                        : "IMAGE PREVIEW"}
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
     </div>
   );
 }
