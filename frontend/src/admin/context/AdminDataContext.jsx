@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import api from "../../lib/api.js";
 import { useAdminAuth } from "./AdminAuthContext.jsx";
+import useRealtimeSync from "../../hooks/useRealtimeSync.js";
+import { normalizeBookingStatus } from "../../lib/bookingStatus.js";
 
 const AdminDataContext = createContext(null);
 
@@ -23,10 +25,30 @@ export function normalizeBooking(booking = {}) {
     cinematographyRequirement: booking.cinematographyRequirement || "",
     budget: booking.budget || "",
     branch: booking.branch || "Tirunelveli",
-    status: booking.status || "NEW",
+    status: normalizeBookingStatus(booking.status),
     adminNotes: booking.adminNotes || booking.notes || "",
     createdAt: booking.createdAt || new Date().toISOString().split("T")[0],
   };
+}
+
+export function normalizeEnquiryStatus(status) {
+  if (!status) return "NEW";
+  const upper = String(status).trim().toUpperCase().replace(/[\s_-]+/g, "");
+  switch (upper) {
+    case "READ":
+      return "READ";
+    case "CONTACTED":
+    case "CONTACT":
+      return "CONTACTED";
+    case "CLOSED":
+    case "CLOSE":
+    case "CANCELLED":
+    case "CANCEL":
+      return "CLOSED";
+    case "NEW":
+    default:
+      return "NEW";
+  }
 }
 
 export function normalizeEnquiry(enquiry = {}) {
@@ -38,7 +60,7 @@ export function normalizeEnquiry(enquiry = {}) {
   const eventDate = enquiry.proposedDate || enquiry.eventDate || enquiry.date || "";
   const location = enquiry.location || enquiry.venue || "";
   const message = (enquiry.message || enquiry.notes || enquiry.clientMessage || "").trim();
-  const status = enquiry.status || "NEW";
+  const status = normalizeEnquiryStatus(enquiry.status);
 
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -131,6 +153,12 @@ export function normalizeService(srv = {}) {
   const blurb = srv.blurb || srv.shortDesc || srv.description || "";
   const fullDesc = srv.fullDesc || srv.description || srv.shortDesc || "";
   const description = srv.description || srv.fullDesc || srv.shortDesc || "";
+  const rawStatus = typeof srv.status === "string" ? srv.status.trim() : "";
+  const status = rawStatus
+    ? rawStatus.toLowerCase() === "active"
+      ? "Active"
+      : "Inactive"
+    : "Active";
   return {
     ...srv,
     id: srv.id || `SRV-${Math.floor(100 + Math.random() * 900)}`,
@@ -145,7 +173,7 @@ export function normalizeService(srv = {}) {
     description,
     startingPrice: srv.startingPrice || srv.price || "₹50,000",
     features: Array.isArray(srv.features) ? srv.features : [],
-    status: srv.status || "Active",
+    status,
   };
 }
 
@@ -190,8 +218,8 @@ export function normalizeFilm(film = {}) {
 
 export function normalizeBranch(branch = {}) {
   if (!branch) return branch;
-  const city = branch.city || branch.name || "Studio Branch";
-  const name = branch.name || `${city} Studio`;
+  const city = branch.city || branch.name || "";
+  const name = branch.name || (city ? `${city} Studio` : "");
   return {
     ...branch,
     id: branch.id || `BR-${Math.floor(100 + Math.random() * 900)}`,
@@ -199,13 +227,13 @@ export function normalizeBranch(branch = {}) {
     city,
     tag: branch.tag || "Studio & Consultation Lounge",
     address: branch.address || "",
-    phone: branch.phone || "+91 93457 06609",
-    whatsapp: branch.whatsapp || branch.phone || "+91 93457 06609",
-    email: branch.email || "subashstudio009@gmail.com",
+    phone: branch.phone || "",
+    whatsapp: branch.whatsapp || branch.phone || "",
+    email: branch.email || "",
     mapsUrl: branch.mapsUrl || "",
     embedUrl: branch.embedUrl || "",
-    hours: branch.hours || "Mon – Sun, 08:00 AM – 09:00 PM",
-    image: branch.image || "/images/gallery/branches/kalladaikurichi.jpg",
+    hours: branch.hours || "",
+    image: branch.image || "",
     manager: branch.manager || "",
     active: branch.active !== false,
   };
@@ -258,6 +286,8 @@ export function AdminDataProvider({ children }) {
   const [gallery, setGallery] = useState([]);
   const [portfolio, setPortfolio] = useState([]);
   const [featuredPortfolio, setFeaturedPortfolio] = useState([]);
+  const [portfolioCategories, setPortfolioCategories] = useState([]);
+  const [galleryCategories, setGalleryCategories] = useState([]);
   const [services, setServices] = useState([]);
   const [films, setFilms] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -307,7 +337,7 @@ export function AdminDataProvider({ children }) {
         api.get(adminMode ? "/api/gallery?all=true" : "/api/gallery"),
         api.get(adminMode ? "/api/portfolio?all=true" : "/api/portfolio"),
         api.get("/api/portfolio?featured=true"),
-        api.get("/api/services"),
+        api.get(adminMode ? "/api/services?all=true" : "/api/services"),
         api.get(adminMode ? "/api/films?all=true" : "/api/films"),
         api.get(adminMode ? "/api/branches?all=true" : "/api/branches"),
         api.get(adminMode ? "/api/testimonials?admin=true" : "/api/testimonials"),
@@ -315,6 +345,8 @@ export function AdminDataProvider({ children }) {
         api.get(adminMode ? "/api/frames/wood-types?all=true" : "/api/frames/wood-types"),
         api.get(adminMode ? "/api/frames/designs?all=true" : "/api/frames/designs"),
         api.get(adminMode ? "/api/frames/ratios?all=true" : "/api/frames/ratios"),
+        api.get(adminMode ? "/api/portfolio/categories?all=true" : "/api/portfolio/categories"),
+        api.get(adminMode ? "/api/gallery/categories?all=true" : "/api/gallery/categories"),
       ];
 
       const adminRequests = adminMode
@@ -334,7 +366,7 @@ export function AdminDataProvider({ children }) {
         Promise.allSettled(adminRequests),
       ]);
 
-      const [gal, port, featPort, srv, flm, br, tst, cnt, woods, designs, ratios] = publicResults;
+      const [gal, port, featPort, srv, flm, br, tst, cnt, woods, designs, ratios, portCats, galCats] = publicResults;
 
       if (gal && gal.status === "fulfilled" && Array.isArray(gal.value)) {
         setGallery(gal.value.map(normalizeGalleryItem));
@@ -344,6 +376,12 @@ export function AdminDataProvider({ children }) {
       }
       if (featPort && featPort.status === "fulfilled" && Array.isArray(featPort.value)) {
         setFeaturedPortfolio(featPort.value.map(normalizePortfolioItem));
+      }
+      if (portCats && portCats.status === "fulfilled" && Array.isArray(portCats.value)) {
+        setPortfolioCategories(portCats.value);
+      }
+      if (galCats && galCats.status === "fulfilled" && Array.isArray(galCats.value)) {
+        setGalleryCategories(galCats.value);
       }
       if (srv && srv.status === "fulfilled" && Array.isArray(srv.value)) {
         setServices(srv.value.map(normalizeService));
@@ -406,6 +444,232 @@ export function AdminDataProvider({ children }) {
     refreshData(isAuthenticated);
   }, [refreshData, isAuthenticated]);
 
+  // Targeted refetch handlers for real-time synchronization
+  const refetchPortfolio = useCallback(async () => {
+    try {
+      const [portRes, featRes] = await Promise.allSettled([
+        api.get(isAuthenticated ? "/api/portfolio?all=true" : "/api/portfolio"),
+        api.get("/api/portfolio?featured=true"),
+      ]);
+      if (portRes.status === "fulfilled" && Array.isArray(portRes.value)) {
+        setPortfolio(portRes.value.map(normalizePortfolioItem));
+      }
+      if (featRes.status === "fulfilled" && Array.isArray(featRes.value)) {
+        setFeaturedPortfolio(featRes.value.map(normalizePortfolioItem));
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch portfolio:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchGallery = useCallback(async () => {
+    try {
+      const res = await api.get(isAuthenticated ? "/api/gallery?all=true" : "/api/gallery");
+      if (Array.isArray(res)) {
+        setGallery(res.map(normalizeGalleryItem));
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch gallery:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchPortfolioCategories = useCallback(async () => {
+    try {
+      const res = await api.get(isAuthenticated ? "/api/portfolio/categories?all=true" : "/api/portfolio/categories");
+      if (Array.isArray(res)) {
+        setPortfolioCategories(res);
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch portfolio categories:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchGalleryCategories = useCallback(async () => {
+    try {
+      const res = await api.get(isAuthenticated ? "/api/gallery/categories?all=true" : "/api/gallery/categories");
+      if (Array.isArray(res)) {
+        setGalleryCategories(res);
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch gallery categories:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchServices = useCallback(async () => {
+    try {
+      const res = await api.get(isAuthenticated ? "/api/services?all=true" : "/api/services");
+      if (Array.isArray(res)) {
+        setServices(res.map(normalizeService));
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch services:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchFilms = useCallback(async () => {
+    try {
+      const res = await api.get(isAuthenticated ? "/api/films?all=true" : "/api/films");
+      if (Array.isArray(res)) {
+        setFilms(res.map(normalizeFilm));
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch films:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchBranches = useCallback(async () => {
+    try {
+      const res = await api.get(isAuthenticated ? "/api/branches?all=true" : "/api/branches");
+      if (Array.isArray(res)) {
+        setBranches(res.map(normalizeBranch));
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch branches:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchTestimonials = useCallback(async () => {
+    try {
+      const res = await api.get(isAuthenticated ? "/api/testimonials?admin=true" : "/api/testimonials");
+      if (Array.isArray(res)) {
+        setTestimonials(res.map(normalizeTestimonial));
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch testimonials:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchWebsiteContent = useCallback(async () => {
+    try {
+      const res = await api.get("/api/content");
+      if (res) {
+        setWebsiteContent(res);
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch content:", err);
+    }
+  }, []);
+
+  const refetchFramesCatalog = useCallback(async () => {
+    try {
+      const [woodsRes, designsRes, ratiosRes] = await Promise.allSettled([
+        api.get(isAuthenticated ? "/api/frames/wood-types?all=true" : "/api/frames/wood-types"),
+        api.get(isAuthenticated ? "/api/frames/designs?all=true" : "/api/frames/designs"),
+        api.get(isAuthenticated ? "/api/frames/ratios?all=true" : "/api/frames/ratios"),
+      ]);
+      if (woodsRes.status === "fulfilled" && Array.isArray(woodsRes.value)) {
+        setFrameWoodTypes(woodsRes.value);
+      }
+      if (designsRes.status === "fulfilled" && Array.isArray(designsRes.value)) {
+        setFrameDesigns(designsRes.value);
+      }
+      if (ratiosRes.status === "fulfilled" && Array.isArray(ratiosRes.value)) {
+        setFrameRatios(ratiosRes.value);
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch frame catalog:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchEnquiries = useCallback(async () => {
+    try {
+      if (!isAuthenticated) return;
+      const res = await api.get("/api/enquiries");
+      if (Array.isArray(res)) {
+        setEnquiries(res.map(normalizeEnquiry));
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch enquiries:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchBookings = useCallback(async () => {
+    try {
+      if (!isAuthenticated) return;
+      const res = await api.get("/api/bookings");
+      if (Array.isArray(res)) {
+        setBookings(res.map(normalizeBooking));
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch bookings:", err);
+    }
+  }, [isAuthenticated]);
+
+  // Central real-time event dispatcher for targeted synchronization
+  const handleRealtimeDataChanged = useCallback((data) => {
+    if (!data || !data.entity) return;
+
+    switch (data.entity) {
+      case "bookings":
+      case "booking":
+        refetchBookings();
+        break;
+      case "enquiries":
+      case "enquiry":
+        refetchEnquiries();
+        break;
+      case "portfolio":
+        refetchPortfolio();
+        break;
+      case "gallery":
+        refetchGallery();
+        break;
+      case "portfolio_categories":
+        refetchPortfolioCategories();
+        refetchPortfolio();
+        break;
+      case "gallery_categories":
+        refetchGalleryCategories();
+        refetchGallery();
+        break;
+      case "services":
+        refetchServices();
+        break;
+      case "films":
+        refetchFilms();
+        break;
+      case "branches":
+        refetchBranches();
+        break;
+      case "testimonials":
+        refetchTestimonials();
+        break;
+      case "content":
+        refetchWebsiteContent();
+        break;
+      case "frames":
+        refetchFramesCatalog();
+        break;
+      default:
+        break;
+    }
+  }, [
+    refetchBookings,
+    refetchEnquiries,
+    refetchPortfolio,
+    refetchGallery,
+    refetchPortfolioCategories,
+    refetchGalleryCategories,
+    refetchServices,
+    refetchFilms,
+    refetchBranches,
+    refetchTestimonials,
+    refetchWebsiteContent,
+    refetchFramesCatalog,
+  ]);
+
+  const handleReconnectSync = useCallback(() => {
+    // When reconnected, refresh studio data so missed changes are recovered
+    refreshData(isAuthenticated);
+  }, [refreshData, isAuthenticated]);
+
+  // Shared application-wide real-time connection
+  useRealtimeSync({
+    onDataChanged: handleRealtimeDataChanged,
+    onReconnectSync: handleReconnectSync,
+    enabled: true,
+  });
+
   // 1. Bookings
   const addBooking = useCallback(async (booking) => {
     const created = await api.post("/api/bookings", booking);
@@ -421,8 +685,11 @@ export function AdminDataProvider({ children }) {
     return normalized;
   }, []);
 
-  const deleteBooking = useCallback(async (id) => {
-    await api.delete(`/api/bookings/${id}`);
+  const deleteBooking = useCallback(async (id, adminPassword) => {
+    await api.delete(`/api/bookings/${id}`, {
+      body: { password: adminPassword, adminPassword },
+      headers: { "x-admin-password": adminPassword },
+    });
     setBookings((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
@@ -448,8 +715,11 @@ export function AdminDataProvider({ children }) {
     return normalized;
   }, []);
 
-  const deleteEnquiry = useCallback(async (id) => {
-    await api.delete(`/api/enquiries/${id}`);
+  const deleteEnquiry = useCallback(async (id, adminPassword) => {
+    await api.delete(`/api/enquiries/${id}`, {
+      body: { password: adminPassword, adminPassword },
+      headers: { "x-admin-password": adminPassword },
+    });
     setEnquiries((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
@@ -547,6 +817,38 @@ export function AdminDataProvider({ children }) {
       setFeaturedPortfolio((prev) => prev.filter((it) => it.id !== id));
     }
     return normalized;
+  }, []);
+
+  // Category Management: Portfolio
+  const addPortfolioCategory = useCallback(async (name) => {
+    const created = await api.post("/api/portfolio/categories", { name });
+    setPortfolioCategories((prev) => {
+      const exists = prev.some((c) => c.id === created.id || c.name.toLowerCase() === created.name.toLowerCase());
+      return exists ? prev.map((c) => (c.id === created.id ? created : c)) : [...prev, created];
+    });
+    return created;
+  }, []);
+
+  const togglePortfolioCategoryStatus = useCallback(async (id) => {
+    const updated = await api.patch(`/api/portfolio/categories/${id}/toggle-status`);
+    setPortfolioCategories((prev) => prev.map((c) => (c.id === id ? updated : c)));
+    return updated;
+  }, []);
+
+  // Category Management: Gallery
+  const addGalleryCategory = useCallback(async (name) => {
+    const created = await api.post("/api/gallery/categories", { name });
+    setGalleryCategories((prev) => {
+      const exists = prev.some((c) => c.id === created.id || c.name.toLowerCase() === created.name.toLowerCase());
+      return exists ? prev.map((c) => (c.id === created.id ? created : c)) : [...prev, created];
+    });
+    return created;
+  }, []);
+
+  const toggleGalleryCategoryStatus = useCallback(async (id) => {
+    const updated = await api.patch(`/api/gallery/categories/${id}/toggle-status`);
+    setGalleryCategories((prev) => prev.map((c) => (c.id === id ? updated : c)));
+    return updated;
   }, []);
 
   // 5. Services
@@ -860,6 +1162,18 @@ export function AdminDataProvider({ children }) {
         loading,
         error,
         refreshData,
+        refetchPortfolio,
+        refetchGallery,
+        refetchPortfolioCategories,
+        refetchGalleryCategories,
+        refetchServices,
+        refetchFilms,
+        refetchBranches,
+        refetchTestimonials,
+        refetchWebsiteContent,
+        refetchFramesCatalog,
+        refetchBookings,
+        refetchEnquiries,
 
         // Bookings
         bookings,
@@ -885,6 +1199,11 @@ export function AdminDataProvider({ children }) {
         toggleGalleryFeatured,
         toggleGalleryPublished,
 
+        // Gallery Categories
+        galleryCategories,
+        addGalleryCategory,
+        toggleGalleryCategoryStatus,
+
         // Portfolio
         portfolio,
         featuredPortfolio,
@@ -896,6 +1215,11 @@ export function AdminDataProvider({ children }) {
         deletePortfolioItem: deletePortfolio,
         togglePortfolioFeatured,
         togglePortfolioPublished,
+
+        // Portfolio Categories
+        portfolioCategories,
+        addPortfolioCategory,
+        togglePortfolioCategoryStatus,
 
         // Services
         services,
@@ -975,6 +1299,7 @@ export function AdminDataProvider({ children }) {
         refreshNotifications,
 
         resetAllDemoData,
+        refreshData,
       }}
     >
       {children}

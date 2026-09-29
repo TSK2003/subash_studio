@@ -1,5 +1,6 @@
 import { verifyToken } from "../utils/token.js";
 import prisma from "../config/prisma.js";
+import { verifyAdminPassword } from "../services/authService.js";
 
 export async function authenticateAdmin(req, res, next) {
   try {
@@ -55,3 +56,29 @@ export async function authenticateAdmin(req, res, next) {
     });
   }
 }
+
+export async function requireAdminPassword(req, res, next) {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        error: "Authentication required. Please log in to access this resource.",
+      });
+    }
+
+    const password =
+      req.body?.adminPassword ||
+      req.body?.password ||
+      req.headers["x-admin-password"] ||
+      "";
+
+    await verifyAdminPassword(req.user.id, password);
+    next();
+  } catch (err) {
+    return res.status(err.statusCode || 403).json({
+      success: false,
+      error: err.message || "Incorrect admin password.",
+    });
+  }
+}
+

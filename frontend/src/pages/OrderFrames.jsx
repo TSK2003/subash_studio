@@ -37,6 +37,7 @@ import {
 import {
   formatRatioDisplayLabel,
   formatDimensionsLabel,
+  isValidRatioName,
 } from "../lib/frameDimensions";
 
 // 4-Step Simplified Workflow Navigator
@@ -63,14 +64,17 @@ export default function OrderFrames() {
   // Active catalog items from admin context
   const activeWoods = (frameWoodTypes || []).filter((w) => w.active !== false);
   const activeDesigns = (frameDesigns || []).filter((d) => d.active !== false);
-  const activeRatios = (frameRatios || []).filter((r) => r.active !== false);
 
-  // Maximum 8 items displayed initially on main customizer page
-  const displayedWoods = activeWoods.slice(0, 8);
-  const hasMoreWoods = activeWoods.length > 8;
+  const WOOD_DISPLAY_LIMIT = 6;
+  const FRAME_DISPLAY_LIMIT = 8;
 
-  const displayedDesigns = activeDesigns.slice(0, 8);
-  const hasMoreDesigns = activeDesigns.length > 8;
+  const displayedWoods = activeWoods.slice(0, WOOD_DISPLAY_LIMIT);
+  const hasMoreWoods = activeWoods.length > WOOD_DISPLAY_LIMIT;
+  const remainingWoods = Math.max(activeWoods.length - WOOD_DISPLAY_LIMIT, 0);
+
+  const displayedDesigns = activeDesigns.slice(0, FRAME_DISPLAY_LIMIT);
+  const hasMoreDesigns = activeDesigns.length > FRAME_DISPLAY_LIMIT;
+  const remainingDesigns = Math.max(activeDesigns.length - FRAME_DISPLAY_LIMIT, 0);
 
   // Active branches for studio pickup
   const activeBranches = (branches || []).filter((b) => b.active !== false);
@@ -86,13 +90,29 @@ export default function OrderFrames() {
   // ==========================================================
   // CENTRALIZED PERSISTENT CONFIGURATION STATE
   // ==========================================================
+  const [orientation, setOrientation] = useState("portrait"); // "portrait" | "landscape"
+
+  // Defensive filter: only active ratios with valid numeric dimensions (excludes legacy/test "afras")
+  const validActiveRatios = (frameRatios || []).filter(
+    (r) => r.active !== false && isValidRatioName(r.name)
+  );
+
+  // Filter visible ratios strictly by canonical database orientation
+  const visibleRatios = validActiveRatios.filter(
+    (r) => (r.orientation || "portrait").toLowerCase() === orientation.toLowerCase()
+  );
+
   const [selectedWood, setSelectedWood] = useState(() => activeWoods[0] || null);
   const [selectedDesign, setSelectedDesign] = useState(() => activeDesigns[0] || null);
   const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [photoFileName, setPhotoFileName] = useState("");
   const [photoError, setPhotoError] = useState("");
-  const [selectedRatio, setSelectedRatio] = useState(() => activeRatios[0] || activeRatios[1] || null);
-  const [orientation, setOrientation] = useState("portrait"); // "portrait" | "landscape"
+  const [selectedRatio, setSelectedRatio] = useState(() => {
+    const portraitRatios = (frameRatios || []).filter(
+      (r) => r.active !== false && isValidRatioName(r.name) && (r.orientation || "portrait").toLowerCase() === "portrait"
+    );
+    return portraitRatios.find((r) => r.popular) || portraitRatios[0] || null;
+  });
 
   // Photo editing state (separate from original image)
   const [photoZoom, setPhotoZoom] = useState(1);
@@ -157,8 +177,14 @@ export default function OrderFrames() {
       const compatibleDesign = activeDesigns.find((d) => isDesignCompatible(d, defaultWood)) || activeDesigns[0];
       setSelectedDesign(compatibleDesign);
     }
-    if (!selectedRatio && activeRatios.length > 0) setSelectedRatio(activeRatios[1] || activeRatios[0]);
-  }, [activeWoods, activeDesigns, activeRatios, selectedWood, selectedDesign, selectedRatio]);
+    if (visibleRatios.length > 0) {
+      const isSelectedValid = selectedRatio && visibleRatios.some((r) => r.id === selectedRatio.id);
+      if (!isSelectedValid) {
+        const defaultRatio = visibleRatios.find((r) => r.popular) || visibleRatios[0];
+        setSelectedRatio(defaultRatio);
+      }
+    }
+  }, [activeWoods, activeDesigns, visibleRatios, selectedWood, selectedDesign, selectedRatio]);
 
   // Ensure selected design automatically remains compatible when selected wood changes
   useEffect(() => {
@@ -827,11 +853,14 @@ export default function OrderFrames() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* ====================================================
+                    TWO-COLUMN ATELIER WORKSPACE (DESKTOP DUAL SCROLL)
+                ==================================================== */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16" data-lenis-prevent="true">
                   {/* ====================================================
                       LEFT COLUMN (58%): ALL CUSTOMIZATION CONTROLS
                   ==================================================== */}
-                  <div className="lg:col-span-7 space-y-6">
+                  <div className="lg:col-span-7 space-y-6 frame-scroll-container pr-2 pb-8" data-lenis-prevent="true">
                     {/* SECTION 01: CHOOSE RATIO / SIZE & ORIENTATION */}
                     <div className="bg-white rounded-3xl p-5 sm:p-7 border border-[#E7E0D2] shadow-sm space-y-4">
                       <div className="flex items-center justify-between border-b border-[#E7E0D2] pb-3">
@@ -856,8 +885,16 @@ export default function OrderFrames() {
                         <div className="grid grid-cols-2 gap-3 max-w-sm">
                           <button
                             type="button"
-                            onClick={() => setOrientation("portrait")}
-                            className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                            onClick={() => {
+                              setOrientation("portrait");
+                              const matching = validActiveRatios.filter(
+                                (r) => (r.orientation || "portrait").toLowerCase() === "portrait"
+                              );
+                              if (matching.length > 0) {
+                                setSelectedRatio(matching.find((r) => r.popular) || matching[0]);
+                              }
+                            }}
+                            className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                               orientation === "portrait"
                                 ? "border-[#C9A669] bg-[#1C1B19] text-[#F8F6F2] shadow-sm"
                                 : "border-[#E7E0D2] bg-[#FAF8F5] text-[#2B2B2B] hover:bg-[#F0EBE0]"
@@ -869,8 +906,16 @@ export default function OrderFrames() {
 
                           <button
                             type="button"
-                            onClick={() => setOrientation("landscape")}
-                            className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                            onClick={() => {
+                              setOrientation("landscape");
+                              const matching = validActiveRatios.filter(
+                                (r) => (r.orientation || "").toLowerCase() === "landscape"
+                              );
+                              if (matching.length > 0) {
+                                setSelectedRatio(matching.find((r) => r.popular) || matching[0]);
+                              }
+                            }}
+                            className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                               orientation === "landscape"
                                 ? "border-[#C9A669] bg-[#1C1B19] text-[#F8F6F2] shadow-sm"
                                 : "border-[#E7E0D2] bg-[#FAF8F5] text-[#2B2B2B] hover:bg-[#F0EBE0]"
@@ -884,7 +929,7 @@ export default function OrderFrames() {
 
                       {/* Frame Sizes */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5 pt-2">
-                        {activeRatios.map((ratio) => {
+                        {visibleRatios.map((ratio) => {
                           const isSelected = selectedRatio?.id === ratio.id;
                           const ratioDisplayName = formatRatioDisplayLabel(ratio.name, orientation);
                           const dimensionsDisplayName = formatDimensionsLabel(ratio.dimensions, orientation);
@@ -894,9 +939,6 @@ export default function OrderFrames() {
                               key={ratio.id}
                               onClick={() => {
                                 setSelectedRatio(ratio);
-                                if (ratio.orientation && (ratio.orientation === "portrait" || ratio.orientation === "landscape")) {
-                                  setOrientation(ratio.orientation);
-                                }
                               }}
                               className={`group cursor-pointer rounded-2xl border transition-all p-3.5 flex flex-col justify-between relative ${
                                 isSelected
@@ -949,6 +991,12 @@ export default function OrderFrames() {
                             </div>
                           );
                         })}
+
+                        {visibleRatios.length === 0 && (
+                          <div className="col-span-full py-8 text-center text-xs text-[#6F6A62] bg-[#FAF8F5] rounded-2xl border border-[#E7E0D2]">
+                            No frame sizes currently configured for {orientation} orientation.
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -1027,14 +1075,14 @@ export default function OrderFrames() {
                       </div>
 
                       {hasMoreWoods && (
-                        <div className="pt-2 flex justify-center">
+                        <div className="pt-1.5 flex justify-center">
                           <button
                             type="button"
                             onClick={() => setMoreWoodsModalOpen(true)}
-                            className="px-5 py-2.5 rounded-full border border-[#C9A669] bg-[#FAF8F5] text-[#8C6D32] hover:bg-[#C9A669] hover:text-[#1C1B19] text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full border border-[#C9A669]/40 bg-[#FAF8F5]/80 hover:bg-[#FAF8F5] hover:border-[#C9A669] text-[#8C6D32] hover:text-[#1C1B19] text-[11px] font-medium tracking-wide transition-all cursor-pointer shadow-xs"
                           >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>More Woods ({activeWoods.length})</span>
+                            <Plus className="w-3 h-3 stroke-[2.5]" />
+                            <span>More Woods ({remainingWoods})</span>
                           </button>
                         </div>
                       )}
@@ -1133,14 +1181,14 @@ export default function OrderFrames() {
                       </div>
 
                       {hasMoreDesigns && (
-                        <div className="pt-2 flex justify-center">
+                        <div className="pt-1.5 flex justify-center">
                           <button
                             type="button"
                             onClick={() => setMoreDesignsModalOpen(true)}
-                            className="px-5 py-2.5 rounded-full border border-[#C9A669] bg-[#FAF8F5] text-[#8C6D32] hover:bg-[#C9A669] hover:text-[#1C1B19] text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full border border-[#C9A669]/40 bg-[#FAF8F5]/80 hover:bg-[#FAF8F5] hover:border-[#C9A669] text-[#8C6D32] hover:text-[#1C1B19] text-[11px] font-medium tracking-wide transition-all cursor-pointer shadow-xs"
                           >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>More Frames ({activeDesigns.length})</span>
+                            <Plus className="w-3 h-3 stroke-[2.5]" />
+                            <span>More Frames ({remainingDesigns})</span>
                           </button>
                         </div>
                       )}
@@ -1405,11 +1453,12 @@ export default function OrderFrames() {
                   </div>
 
                   {/* ====================================================
-                      RIGHT COLUMN (42%): STICKY LIVE ARTISAN PREVIEW
+                      RIGHT COLUMN (42%): LIVE ARTISAN PREVIEW
                   ==================================================== */}
                   <div
                     ref={previewSectionRef}
-                    className="lg:col-span-5 lg:sticky lg:top-28 space-y-4"
+                    className="lg:col-span-5 space-y-4 frame-scroll-container pr-2 pb-8"
+                    data-lenis-prevent="true"
                   >
                     <FrameLivePreview
                       wood={selectedWood}

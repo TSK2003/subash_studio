@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import api, { setAuthToken, clearAuthToken, getAuthToken } from "../../lib/api";
+import { ADMIN_ROUTES } from "../constants/adminRoutes";
 
 const AdminAuthContext = createContext(null);
 
@@ -151,7 +152,7 @@ export function ProtectedAdminRoute({ children }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to={ADMIN_ROUTES.LOGIN} state={{ from: location }} replace />;
   }
 
   return children;

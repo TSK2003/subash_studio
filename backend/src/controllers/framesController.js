@@ -1,4 +1,5 @@
 import * as framesService from "../services/framesService.js";
+import { notifyDataChanged } from "../services/realtimeService.js";
 
 // ==========================================
 // WOOD TYPES
@@ -16,6 +17,7 @@ export async function getWoodTypes(req, res, next) {
 export async function createWoodType(req, res, next) {
   try {
     const wood = await framesService.createWoodType(req.body);
+    notifyDataChanged({ entity: "frames", action: "created", id: wood.id });
     res.status(201).json(wood);
   } catch (err) {
     if (err.code === "P2002") {
@@ -28,6 +30,7 @@ export async function createWoodType(req, res, next) {
 export async function updateWoodType(req, res, next) {
   try {
     const wood = await framesService.updateWoodType(req.params.id, req.body);
+    notifyDataChanged({ entity: "frames", action: "updated", id: wood.id });
     res.json(wood);
   } catch (err) {
     if (err.code === "P2002") {
@@ -40,6 +43,7 @@ export async function updateWoodType(req, res, next) {
 export async function deleteWoodType(req, res, next) {
   try {
     await framesService.deleteWoodType(req.params.id);
+    notifyDataChanged({ entity: "frames", action: "deleted", id: req.params.id });
     res.json({ success: true, message: "Wood type deleted successfully." });
   } catch (err) {
     next(err);
@@ -49,6 +53,7 @@ export async function deleteWoodType(req, res, next) {
 export async function toggleWoodType(req, res, next) {
   try {
     const wood = await framesService.toggleWoodType(req.params.id);
+    notifyDataChanged({ entity: "frames", action: "toggled", id: wood.id });
     res.json(wood);
   } catch (err) {
     next(err);
@@ -71,6 +76,7 @@ export async function getDesigns(req, res, next) {
 export async function createDesign(req, res, next) {
   try {
     const design = await framesService.createDesign(req.body);
+    notifyDataChanged({ entity: "frames", action: "created", id: design.id });
     res.status(201).json(design);
   } catch (err) {
     next(err);
@@ -80,6 +86,7 @@ export async function createDesign(req, res, next) {
 export async function updateDesign(req, res, next) {
   try {
     const design = await framesService.updateDesign(req.params.id, req.body);
+    notifyDataChanged({ entity: "frames", action: "updated", id: design.id });
     res.json(design);
   } catch (err) {
     next(err);
@@ -89,6 +96,7 @@ export async function updateDesign(req, res, next) {
 export async function deleteDesign(req, res, next) {
   try {
     await framesService.deleteDesign(req.params.id);
+    notifyDataChanged({ entity: "frames", action: "deleted", id: req.params.id });
     res.json({ success: true, message: "Frame design deleted successfully." });
   } catch (err) {
     next(err);
@@ -98,6 +106,7 @@ export async function deleteDesign(req, res, next) {
 export async function toggleDesign(req, res, next) {
   try {
     const design = await framesService.toggleDesign(req.params.id);
+    notifyDataChanged({ entity: "frames", action: "toggled", id: design.id });
     res.json(design);
   } catch (err) {
     next(err);
@@ -120,30 +129,35 @@ export async function getRatios(req, res, next) {
 export async function createRatio(req, res, next) {
   try {
     const ratio = await framesService.createRatio(req.body);
+    notifyDataChanged({ entity: "frames", action: "created", id: ratio.id });
     res.status(201).json(ratio);
   } catch (err) {
-    if (err.code === "P2002") {
-      return res.status(400).json({ error: "A frame ratio with this name already exists.", message: "A frame ratio with this name already exists." });
-    }
-    return res.status(400).json({ error: err.message || "Failed to create frame ratio.", message: err.message || "Failed to create frame ratio." });
+    const errorMsg =
+      err.code === "P2002"
+        ? "A frame ratio with this name already exists."
+        : err.message || "Failed to create frame ratio.";
+    return res.status(400).json({ success: false, message: errorMsg, error: errorMsg });
   }
 }
 
 export async function updateRatio(req, res, next) {
   try {
     const ratio = await framesService.updateRatio(req.params.id, req.body);
+    notifyDataChanged({ entity: "frames", action: "updated", id: ratio.id });
     res.json(ratio);
   } catch (err) {
-    if (err.code === "P2002") {
-      return res.status(400).json({ error: "A frame ratio with this name already exists.", message: "A frame ratio with this name already exists." });
-    }
-    return res.status(400).json({ error: err.message || "Failed to update frame ratio.", message: err.message || "Failed to update frame ratio." });
+    const errorMsg =
+      err.code === "P2002"
+        ? "A frame ratio with this name already exists."
+        : err.message || "Failed to update frame ratio.";
+    return res.status(400).json({ success: false, message: errorMsg, error: errorMsg });
   }
 }
 
 export async function deleteRatio(req, res, next) {
   try {
     await framesService.deleteRatio(req.params.id);
+    notifyDataChanged({ entity: "frames", action: "deleted", id: req.params.id });
     res.json({ success: true, message: "Frame ratio deleted successfully." });
   } catch (err) {
     next(err);
@@ -153,11 +167,13 @@ export async function deleteRatio(req, res, next) {
 export async function toggleRatio(req, res, next) {
   try {
     const ratio = await framesService.toggleRatio(req.params.id);
+    notifyDataChanged({ entity: "frames", action: "toggled", id: ratio.id });
     res.json(ratio);
   } catch (err) {
     next(err);
   }
 }
+
 
 // ==========================================
 // ORDERS

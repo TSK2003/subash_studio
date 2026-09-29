@@ -104,3 +104,32 @@ export async function changeAdminPassword(userId, { currentPassword, newPassword
 
   return true;
 }
+
+export async function verifyAdminPassword(userId, password) {
+  const cleanPassword = (password || "").trim();
+  if (!cleanPassword) {
+    const error = new Error("Admin password is required.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const admin = await prisma.adminUser.findUnique({
+    where: { id: userId },
+  });
+
+  if (!admin) {
+    const error = new Error("Admin account not found.");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const isMatch = await comparePassword(cleanPassword, admin.passwordHash);
+  if (!isMatch) {
+    const error = new Error("Incorrect admin password.");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return true;
+}
+

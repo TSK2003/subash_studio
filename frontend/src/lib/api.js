@@ -3,7 +3,7 @@
  * Communicates with backend REST API using VITE_API_BASE_URL or dev proxy.
  */
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+export const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 const TOKEN_KEY = "subash_admin_token";
 
 let currentToken = null;
@@ -64,19 +64,23 @@ async function request(endpoint, options = {}) {
     credentials: "include", // For secure httpOnly cookies
   });
 
-  if (res.status === 401) {
-    // If unauthorized, clear invalid token
-    if (currentToken && !endpoint.includes("/api/auth/login")) {
-      clearAuthToken();
-    }
-  }
-
   const contentType = res.headers.get("content-type");
   let data = null;
   if (contentType && contentType.includes("application/json")) {
     data = await res.json();
   } else {
     data = await res.text();
+  }
+
+  if (res.status === 401) {
+    // If unauthorized, clear invalid token unless it's an inline password check
+    const isPasswordCheck =
+      (data && typeof data === "object" && data.error === "Incorrect admin password.") ||
+      endpoint.includes("/api/auth/login") ||
+      endpoint.includes("/change-password");
+    if (currentToken && !isPasswordCheck) {
+      clearAuthToken();
+    }
   }
 
   if (!res.ok) {

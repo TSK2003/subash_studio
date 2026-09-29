@@ -60,13 +60,13 @@ export default function FilmsManager() {
 
   const initialForm = {
     title: "",
-    category: "Wedding Film",
+    category: "",
     videoSourceType: "upload",
     videoUrl: "",
-    duration: "3:45",
+    duration: "",
     thumbnail: "",
     description: "",
-    featured: true,
+    featured: false,
     published: true,
   };
   const [formData, setFormData] = useState(initialForm);
@@ -90,6 +90,12 @@ export default function FilmsManager() {
     setModalOpen(true);
   };
 
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setEditingFilm(null);
+    setFormData(initialForm);
+  };
+
   // Auto-open Add modal if requested via URL ?new=true
   useEffect(() => {
     if (isNewParam) {
@@ -104,7 +110,7 @@ export default function FilmsManager() {
       (film.videoUrl?.startsWith("/uploads/") || film.videoUrl?.includes("films/videos") ? "upload" : "external");
     setFormData({
       title: film.title || "",
-      category: film.category || "Wedding Film",
+      category: film.category || "",
       videoSourceType: initialSourceType,
       videoUrl: film.videoUrl || "",
       duration: film.duration || "",
@@ -140,14 +146,18 @@ export default function FilmsManager() {
     }
 
     try {
+      const payload = {
+        ...formData,
+        category: formData.category || "Wedding Film",
+      };
       if (editingFilm) {
-        await updateFilm(editingFilm.id, formData);
+        await updateFilm(editingFilm.id, payload);
         addToast("Cinematic film updated successfully.", "success");
       } else {
-        await addFilm(formData);
+        await addFilm(payload);
         addToast("New cinematic film published.", "success");
       }
-      setModalOpen(false);
+      handleCloseModal();
     } catch (err) {
       addToast(err.message || "Failed to save film.", "error");
     }
@@ -352,19 +362,19 @@ export default function FilmsManager() {
       {/* Add / Edit Modal */}
       <AnimatePresence>
         {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="admin-modal-overlay">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setModalOpen(false)}
+              onClick={handleCloseModal}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-xl bg-white rounded-xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[90vh] flex flex-col overflow-hidden"
+              className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] flex flex-col overflow-hidden"
             >
               {/* Fixed Header */}
               <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
@@ -378,7 +388,7 @@ export default function FilmsManager() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setModalOpen(false)}
+                  onClick={handleCloseModal}
                   className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
                   aria-label="Close modal"
                 >
@@ -387,7 +397,7 @@ export default function FilmsManager() {
               </div>
 
               {/* Form with scrollable body & pinned footer */}
-              <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0">
+              <form onSubmit={handleSave} autoComplete="off" className="flex flex-col flex-1 min-h-0">
                 <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-4 text-xs modal-scrollbar">
                   <ImageUploader
                     value={formData.thumbnail}
@@ -415,6 +425,7 @@ export default function FilmsManager() {
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
                       >
+                        <option value="">Select category</option>
                         {CATEGORIES.filter((c) => c !== "All").map((cat) => (
                           <option key={cat} value={cat}>
                             {cat}
@@ -536,7 +547,7 @@ export default function FilmsManager() {
                 <div className="px-6 sm:px-8 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setModalOpen(false)}
+                    onClick={handleCloseModal}
                     className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold transition-colors"
                   >
                     Cancel

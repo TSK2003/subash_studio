@@ -15,11 +15,13 @@ import {
   UploadCloud,
   Check,
   Sparkles,
+  SlidersHorizontal,
 } from "lucide-react";
 import ImageUploader from "../components/ImageUploader";
 import ConfirmModal from "../components/ConfirmModal";
 import EmptyState from "../components/EmptyState";
 import Pagination from "../components/Pagination";
+import { AddCategoryModal, ManageCategoriesModal } from "../components/CategoryModals";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
 
@@ -51,12 +53,16 @@ export default function GalleryManager() {
     deleteGalleryImage,
     toggleGalleryFeatured,
     toggleGalleryPublished,
+    galleryCategories,
+    addGalleryCategory,
+    toggleGalleryCategoryStatus,
   } = useAdminData();
   const { addToast } = useToast();
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterFeatured, setFilterFeatured] = useState(false);
+  const [filterAspect, setFilterAspect] = useState("all"); // "all" | "landscape" | "portrait"
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 24;
 
@@ -66,11 +72,37 @@ export default function GalleryManager() {
   const [previewImage, setPreviewImage] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [imageToDelete, setImageToDelete] = useState(null);
+  const [addCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
+  const [manageCategoriesModalOpen, setManageCategoriesModalOpen] = useState(false);
+
+  // Lock body scroll and close on Escape key when preview modal is open
+  useEffect(() => {
+    if (!previewImage) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setPreviewImage(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [previewImage]);
+
+  const activeCategoryNames = useMemo(() => {
+    if (galleryCategories && galleryCategories.length > 0) {
+      return galleryCategories.filter((c) => c.active).map((c) => c.name);
+    }
+    return CATEGORIES.filter((c) => c !== "All");
+  }, [galleryCategories]);
 
   // Form State
   const initialFormState = {
     title: "",
-    category: "Wedding",
+    category: "",
     imageUrl: "",
     featured: false,
     published: true,
@@ -88,10 +120,13 @@ export default function GalleryManager() {
         img.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         img.category?.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesFeatured = !filterFeatured || img.featured;
+      const matchesAspect =
+        filterAspect === "all" ||
+        (img.aspect || "landscape").toLowerCase() === filterAspect.toLowerCase();
 
-      return matchesCat && matchesSearch && matchesFeatured;
+      return matchesCat && matchesSearch && matchesFeatured && matchesAspect;
     });
-  }, [gallery, selectedCategory, searchQuery, filterFeatured]);
+  }, [gallery, selectedCategory, searchQuery, filterFeatured, filterAspect]);
 
   const paginatedGallery = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -102,6 +137,12 @@ export default function GalleryManager() {
     setEditingImage(null);
     setFormData(initialFormState);
     setUploadModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setUploadModalOpen(false);
+    setEditingImage(null);
+    setFormData(initialFormState);
   };
 
   // Auto-open upload modal if requested via URL ?new=true
@@ -115,7 +156,7 @@ export default function GalleryManager() {
     setEditingImage(img);
     setFormData({
       title: img.title || img.caption || "",
-      category: img.category || "Wedding",
+      category: img.category || "",
       imageUrl: img.imageUrl || img.src || "",
       featured: img.featured ?? false,
       published: img.published ?? true,
@@ -132,12 +173,14 @@ export default function GalleryManager() {
       return;
     }
 
+    const defaultTitle = formData.category ? `${formData.category} Special Moment` : "Special Moment";
     const payload = {
       ...formData,
+      category: formData.category || "Wedding",
       imageUrl: effectiveUrl,
       src: effectiveUrl,
-      title: formData.title || `${formData.category} Special Moment`,
-      caption: formData.title || `${formData.category} Special Moment`,
+      title: formData.title || defaultTitle,
+      caption: formData.title || defaultTitle,
     };
 
     if (editingImage) {
@@ -148,7 +191,7 @@ export default function GalleryManager() {
       addToast("New photo added to gallery.", "success");
     }
 
-    setUploadModalOpen(false);
+    handleCloseModal();
   };
 
   const handleDeletePrompt = (img) => {
@@ -218,47 +261,88 @@ export default function GalleryManager() {
             <Star className={`w-3.5 h-3.5 ${filterFeatured ? "fill-[#E4D3A6] text-[#E4D3A6]" : ""}`} />
             <span>Featured Only</span>
           </button>
+
+          {/* Orientation Filter */}
+          <select
+            value={filterAspect}
+            onChange={(e) => {
+              setFilterAspect(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="px-3 py-2 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs font-semibold text-[#6F6A62] hover:text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none cursor-pointer"
+            title="Filter by Orientation"
+          >
+            <option value="all">All Orientations</option>
+            <option value="landscape">Landscape Only</option>
+            <option value="portrait">Portrait Only</option>
+          </select>
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-[#F8F6F2]">
-          <span className="text-[11px] text-[#6F6A62] font-semibold mr-1 shrink-0">
-            Category:
-          </span>
-          {CATEGORIES.map((cat) => {
-            const isSelected = selectedCategory === cat;
-            const count =
-              cat === "All"
-                ? gallery.length
-                : gallery.filter((i) => i.category === cat).length;
+        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-[#F8F6F2]">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <span className="text-[11px] text-[#6F6A62] font-semibold mr-1 shrink-0">
+              Category:
+            </span>
+            {["All", ...activeCategoryNames].map((cat) => {
+              const isSelected = selectedCategory === cat;
+              const count =
+                cat === "All"
+                  ? gallery.length
+                  : gallery.filter(
+                      (i) => (i.category || "").toLowerCase() === cat.toLowerCase()
+                    ).length;
 
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => {
-                  setSelectedCategory(cat);
-                  setCurrentPage(1);
-                }}
-                className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                  isSelected
-                    ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm font-semibold"
-                    : "bg-[#F8F6F2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8]"
-                }`}
-              >
-                <span>{cat}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory(cat);
+                    setCurrentPage(1);
+                  }}
+                  className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
                     isSelected
-                      ? "bg-[#3D3A34] text-[#E4D3A6]"
-                      : "bg-[#E7E0D2] text-[#6F6A62]"
+                      ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm font-semibold"
+                      : "bg-[#F8F6F2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8]"
                   }`}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+                  <span>{cat}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                      isSelected
+                        ? "bg-[#3D3A34] text-[#E4D3A6]"
+                        : "bg-[#E7E0D2] text-[#6F6A62]"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* + Add Category Button */}
+            <button
+              type="button"
+              onClick={() => setAddCategoryModalOpen(true)}
+              className="px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 bg-[#FAF6F0] text-[#9C7B3D] border border-[#E7D8C5] hover:bg-[#F4ECE0] hover:border-[#C9A669] shrink-0 active:scale-95"
+              title="Add New Category"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Category</span>
+            </button>
+          </div>
+
+          {/* Manage Categories Action */}
+          <button
+            type="button"
+            onClick={() => setManageCategoriesModalOpen(true)}
+            className="px-2.5 py-1 text-[11px] font-semibold text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8] rounded-lg transition-colors flex items-center gap-1 shrink-0 ml-auto"
+            title="Manage Category Status"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#9C7B3D]" />
+            <span>Manage</span>
+          </button>
         </div>
       </div>
 
@@ -298,6 +382,16 @@ export default function GalleryManager() {
                   <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1C1B19]/80 backdrop-blur-md text-[#E4D3A6] border border-[#3D3A34]">
                       {img.category}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1C1B19]/80 backdrop-blur-md text-[#F0EBE1] border border-[#3D3A34] capitalize flex items-center gap-1">
+                      <span
+                        className={`inline-block border border-current rounded-[1px] ${
+                          (img.aspect || "landscape").toLowerCase() === "portrait"
+                            ? "w-1.5 h-2.5"
+                            : "w-2.5 h-1.5"
+                        }`}
+                      />
+                      <span>{(img.aspect || "landscape").toLowerCase() === "portrait" ? "Portrait" : "Landscape"}</span>
                     </span>
                     {img.featured && (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#9C7B3D] text-[#1C1B19] shadow">
@@ -342,7 +436,7 @@ export default function GalleryManager() {
                       {img.title}
                     </h4>
                     <span className="text-[10px] text-[#8E867B]">
-                      {img.id} • Added {img.createdAt || "Recent"}
+                      {img.id} • Added {img.createdAt || "Recent"} • <span className="capitalize">{img.aspect || "landscape"}</span>
                     </span>
                   </div>
 
@@ -439,19 +533,19 @@ export default function GalleryManager() {
       {/* Upload / Edit Modal */}
       <AnimatePresence>
         {uploadModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="admin-modal-overlay">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setUploadModalOpen(false)}
+              onClick={handleCloseModal}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-lg bg-white rounded-xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[90vh] flex flex-col overflow-hidden"
+              className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] flex flex-col overflow-hidden"
             >
               {/* Fixed Header */}
               <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
@@ -465,7 +559,7 @@ export default function GalleryManager() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setUploadModalOpen(false)}
+                  onClick={handleCloseModal}
                   className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
                   aria-label="Close modal"
                 >
@@ -474,13 +568,19 @@ export default function GalleryManager() {
               </div>
 
               {/* Form with scrollable body & pinned footer */}
-              <form onSubmit={handleSaveImage} className="flex flex-col flex-1 min-h-0">
+              <form onSubmit={handleSaveImage} autoComplete="off" className="flex flex-col flex-1 min-h-0">
                 <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-4 text-xs modal-scrollbar">
                   {/* Cloudinary Ready Uploader */}
                   <ImageUploader
                     value={formData.imageUrl}
-                    onChange={(url) => setFormData({ ...formData, imageUrl: url })}
+                    onChange={(url) => setFormData((prev) => ({ ...prev, imageUrl: url }))}
                     label="Photo Image (File or URL)"
+                    aspect={formData.aspect}
+                    onDimensionsDetected={({ orientation }) => {
+                      if (!editingImage) {
+                        setFormData((prev) => ({ ...prev, aspect: orientation }));
+                      }
+                    }}
                   />
 
                   {/* Title */}
@@ -504,16 +604,31 @@ export default function GalleryManager() {
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
                       >
-                        {CATEGORIES.filter((c) => c !== "All").map((cat) => (
+                        <option value="">Select category</option>
+                        {activeCategoryNames.map((cat) => (
                           <option key={cat} value={cat}>
                             {cat}
                           </option>
                         ))}
+                        {/* Preserve existing item category even if inactive */}
+                        {formData.category &&
+                          !activeCategoryNames.some(
+                            (c) => c.toLowerCase() === formData.category.toLowerCase()
+                          ) && (
+                            <option value={formData.category}>
+                              {formData.category} (Inactive)
+                            </option>
+                          )}
                       </select>
                     </div>
 
                     <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Orientation</label>
+                      <div className="flex items-center justify-between">
+                        <label className="font-semibold text-[#6F6A62]">Orientation</label>
+                        <span className="text-[10px] text-[#9C7B3D] font-medium">
+                          {formData.aspect === "portrait" ? "↕ Vertical Format" : "↔ Horizontal Format"}
+                        </span>
+                      </div>
                       <select
                         value={formData.aspect}
                         onChange={(e) => setFormData({ ...formData, aspect: e.target.value })}
@@ -553,7 +668,7 @@ export default function GalleryManager() {
                 <div className="px-6 sm:px-8 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setUploadModalOpen(false)}
+                    onClick={handleCloseModal}
                     className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold transition-colors"
                   >
                     Cancel
@@ -574,34 +689,58 @@ export default function GalleryManager() {
       {/* Full Preview Lightbox Modal */}
       <AnimatePresence>
         {previewImage && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-5 md:p-6"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Gallery Image Preview"
+          >
+            {/* Dark Backdrop Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setPreviewImage(null)}
-              className="fixed inset-0 bg-black/85 backdrop-blur-md"
+              className="fixed inset-0 bg-black/85 backdrop-blur-md cursor-pointer"
             />
+
+            {/* Centered Lightbox Modal Card */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="relative max-w-4xl w-full max-h-[90vh] z-10 flex flex-col items-center"
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="relative z-10 w-fit max-w-[94vw] sm:max-w-3xl lg:max-w-4xl max-h-[90vh] flex flex-col items-center bg-[#171614]/95 border border-[#3D3A34]/90 rounded-2xl px-4 pt-11 pb-4 sm:px-6 sm:pt-12 sm:pb-5 shadow-2xl overflow-hidden backdrop-blur-sm"
+              onClick={(e) => e.stopPropagation()}
             >
+              {/* Close Button Inside Modal Boundary (Top-Right) */}
               <button
+                type="button"
                 onClick={() => setPreviewImage(null)}
-                className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white rounded-full bg-white/10 hover:bg-white/20 transition-all"
+                className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20 p-2 text-white/75 hover:text-white rounded-full bg-white/10 hover:bg-white/20 border border-white/10 transition-all shadow-sm cursor-pointer"
+                title="Close (Esc)"
+                aria-label="Close modal"
               >
-                <X className="w-6 h-6" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
-              <img
-                src={previewImage.imageUrl}
-                alt={previewImage.title}
-                className="max-w-full max-h-[78vh] object-contain rounded-xl shadow-2xl border border-white/10"
-              />
-              <div className="mt-3 text-center text-white">
-                <h4 className="font-display font-semibold text-lg">{previewImage.title}</h4>
-                <p className="text-xs text-[#E4D3A6]">{previewImage.category} Collection</p>
+
+              {/* Image Container with object-contain */}
+              <div className="w-full flex items-center justify-center overflow-hidden min-h-0 flex-1">
+                <img
+                  src={previewImage.imageUrl}
+                  alt={previewImage.title}
+                  className="max-w-full max-h-[62vh] sm:max-h-[68vh] object-contain rounded-xl shadow-lg border border-white/5"
+                />
+              </div>
+
+              {/* Content Below Image */}
+              <div className="mt-3 sm:mt-3.5 text-center text-white shrink-0 px-2 space-y-0.5">
+                <h4 className="font-display font-semibold text-base sm:text-lg text-[#FAF8F5] tracking-wide">
+                  {previewImage.title}
+                </h4>
+                <p className="text-xs text-[#E4D3A6] tracking-wider uppercase font-medium">
+                  {previewImage.category} Collection
+                </p>
               </div>
             </motion.div>
           </div>
@@ -617,6 +756,25 @@ export default function GalleryManager() {
         message={`Are you sure you want to remove "${imageToDelete?.title}" from the studio gallery?`}
         confirmText="Delete Photo"
         isDestructive={true}
+      />
+
+      {/* Dynamic Category Modals */}
+      <AddCategoryModal
+        isOpen={addCategoryModalOpen}
+        onClose={() => setAddCategoryModalOpen(false)}
+        title="Add Gallery Category"
+        existingCategories={galleryCategories}
+        onAdd={addGalleryCategory}
+      />
+
+      <ManageCategoriesModal
+        isOpen={manageCategoriesModalOpen}
+        onClose={() => setManageCategoriesModalOpen(false)}
+        title="Manage Gallery Categories"
+        categories={galleryCategories}
+        items={gallery}
+        onToggleStatus={toggleGalleryCategoryStatus}
+        onOpenAdd={() => setAddCategoryModalOpen(true)}
       />
     </div>
   );

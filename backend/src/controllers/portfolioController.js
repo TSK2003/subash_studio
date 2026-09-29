@@ -1,4 +1,5 @@
 import * as portfolioService from "../services/portfolioService.js";
+import { notifyDataChanged } from "../services/realtimeService.js";
 
 export async function getAllPortfolio(req, res, next) {
   try {
@@ -33,6 +34,7 @@ export async function getPortfolioById(req, res, next) {
 export async function createPortfolioProject(req, res, next) {
   try {
     const project = await portfolioService.createPortfolioProject(req.body);
+    notifyDataChanged({ entity: "portfolio", action: "created", id: project.id });
     res.status(201).json(project);
   } catch (err) {
     next(err);
@@ -42,6 +44,7 @@ export async function createPortfolioProject(req, res, next) {
 export async function updatePortfolioProject(req, res, next) {
   try {
     const project = await portfolioService.updatePortfolioProject(req.params.id, req.body);
+    notifyDataChanged({ entity: "portfolio", action: "updated", id: project.id });
     res.json(project);
   } catch (err) {
     next(err);
@@ -51,6 +54,7 @@ export async function updatePortfolioProject(req, res, next) {
 export async function deletePortfolioProject(req, res, next) {
   try {
     await portfolioService.deletePortfolioProject(req.params.id);
+    notifyDataChanged({ entity: "portfolio", action: "deleted", id: req.params.id });
     res.json({ success: true, message: "Portfolio project deleted successfully." });
   } catch (err) {
     next(err);
@@ -60,6 +64,7 @@ export async function deletePortfolioProject(req, res, next) {
 export async function toggleFeatured(req, res, next) {
   try {
     const project = await portfolioService.togglePortfolioFeatured(req.params.id);
+    notifyDataChanged({ entity: "portfolio", action: "updated", id: project.id });
     res.json(project);
   } catch (err) {
     next(err);
@@ -69,6 +74,7 @@ export async function toggleFeatured(req, res, next) {
 export async function togglePublished(req, res, next) {
   try {
     const project = await portfolioService.togglePortfolioPublished(req.params.id);
+    notifyDataChanged({ entity: "portfolio", action: "updated", id: project.id });
     res.json(project);
   } catch (err) {
     next(err);

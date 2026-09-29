@@ -158,10 +158,40 @@ export async function getRatios(includeInactive = false) {
   });
 }
 
-export async function createRatio(data) {
-  if (!data || !data.name || !data.name.trim()) {
+export function validateAndNormalizeRatioName(rawName) {
+  if (!rawName || typeof rawName !== "string") {
     throw new Error("Ratio / Size name is required.");
   }
+  const trimmed = rawName.trim();
+  const match = trimmed.match(/^(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)$/);
+  if (!match) {
+    throw new Error(
+      "Invalid ratio format. Please enter a valid dimension such as 10 × 12."
+    );
+  }
+  const w = parseFloat(match[1]);
+  const h = parseFloat(match[2]);
+  if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
+    throw new Error("Invalid ratio format. Please enter a valid dimension such as 10 × 12.");
+  }
+  const formatNum = (n) => (Number.isInteger(n) ? String(n) : String(parseFloat(n.toFixed(2))));
+  return `${formatNum(w)} × ${formatNum(h)}`;
+}
+
+export async function createRatio(data) {
+  if (!data || !data.name) {
+    throw new Error("Ratio / Size name is required.");
+  }
+  const normalizedName = validateAndNormalizeRatioName(data.name);
+
+  // Check duplicate
+  const existing = await prisma.frameRatio.findFirst({
+    where: { name: { equals: normalizedName, mode: "insensitive" } },
+  });
+  if (existing) {
+    throw new Error(`A frame ratio/size with dimensions '${normalizedName}' already exists.`);
+  }
+
   const rawPrice = Number(data.price);
   if (isNaN(rawPrice) || rawPrice < 0) {
     throw new Error("Price must be a valid non-negative number.");
@@ -172,9 +202,9 @@ export async function createRatio(data) {
   return prisma.frameRatio.create({
     data: {
       id,
-      name: data.name.trim(),
-      label: (data.label || data.name).trim(),
-      dimensions: (data.dimensions || "").trim(),
+      name: normalizedName,
+      label: (data.label || `${normalizedName} inches`).trim(),
+      dimensions: (data.dimensions || "").trim() || `${normalizedName} inches`,
       price: rawPrice,
       aspect: data.aspect || "2:3",
       orientation,
@@ -186,7 +216,19 @@ export async function createRatio(data) {
 
 export async function updateRatio(id, data) {
   const updatePayload = {};
-  if (data.name !== undefined) updatePayload.name = data.name.trim();
+  if (data.name !== undefined) {
+    const normalizedName = validateAndNormalizeRatioName(data.name);
+    const existing = await prisma.frameRatio.findFirst({
+      where: {
+        name: { equals: normalizedName, mode: "insensitive" },
+        id: { not: id },
+      },
+    });
+    if (existing) {
+      throw new Error(`A frame ratio/size with dimensions '${normalizedName}' already exists.`);
+    }
+    updatePayload.name = normalizedName;
+  }
   if (data.label !== undefined) updatePayload.label = data.label.trim();
   if (data.dimensions !== undefined) updatePayload.dimensions = data.dimensions.trim();
   if (data.price !== undefined) {

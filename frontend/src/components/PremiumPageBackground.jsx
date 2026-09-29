@@ -1,4 +1,5 @@
 import { useLocation } from "react-router-dom";
+import { ADMIN_BASE_PATH, ADMIN_ROUTES } from "../admin/constants/adminRoutes";
 
 /**
  * PremiumPageBackground
@@ -32,8 +33,8 @@ export default function PremiumPageBackground({
 
   const isAdminDashboard =
     variant === "admin" ||
-    (pathname.startsWith("/admin") && pathname !== "/admin/login");
-  const isAdminLogin = variant === "login" || pathname === "/admin/login";
+    (pathname.startsWith(ADMIN_BASE_PATH) && pathname !== ADMIN_ROUTES.LOGIN);
+  const isAdminLogin = variant === "login" || pathname === ADMIN_ROUTES.LOGIN;
 
   // Calibrated opacities so the background art is CLEARLY visible
   // while keeping content/cards readable

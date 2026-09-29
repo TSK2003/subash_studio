@@ -58,3 +58,40 @@ export function formatDimensionsLabel(dimensions, orientation = "portrait") {
 
   return str;
 }
+
+/**
+ * Checks whether a given ratio name represents valid numeric dimensions.
+ * Must match: NUMBER × NUMBER (e.g. "4 × 6", "10 × 12", "10x12", "10X12", "10 x 12").
+ *
+ * @param {string | undefined | null} name
+ * @returns {boolean}
+ */
+export function isValidRatioName(name) {
+  if (!name || typeof name !== "string") return false;
+  const match = name.trim().match(/^(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)$/);
+  if (!match) return false;
+  const w = parseFloat(match[1]);
+  const h = parseFloat(match[2]);
+  return !isNaN(w) && !isNaN(h) && w > 0 && h > 0;
+}
+
+/**
+ * Normalizes ratio input to canonical "NUMBER × NUMBER" format (e.g. "10 × 12").
+ * Safely returns empty string if invalid instead of throwing uncaught exception.
+ *
+ * @param {string | undefined | null} rawName
+ * @returns {string}
+ */
+export function normalizeRatioName(rawName) {
+  if (!rawName || !isValidRatioName(rawName)) {
+    return "";
+  }
+  const match = String(rawName).trim().match(/^(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)$/);
+  if (!match) return "";
+  const w = parseFloat(match[1]);
+  const h = parseFloat(match[2]);
+  /** @param {number} n */
+  const formatNum = (n) => (Number.isInteger(n) ? String(n) : String(parseFloat(n.toFixed(2))));
+  return `${formatNum(w)} × ${formatNum(h)}`;
+}
+

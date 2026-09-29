@@ -9,6 +9,13 @@ const COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
+const CLEAR_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: ENV.NODE_ENV === "production",
+  sameSite: ENV.NODE_ENV === "production" ? "strict" : "lax",
+  path: "/",
+};
+
 export async function login(req, res, next) {
   try {
     const { email, password } = req.body;
@@ -30,7 +37,7 @@ export async function login(req, res, next) {
 }
 
 export async function logout(req, res) {
-  res.clearCookie("admin_token", COOKIE_OPTIONS);
+  res.clearCookie("admin_token", CLEAR_COOKIE_OPTIONS);
   res.json({
     success: true,
     message: "Logged out successfully.",

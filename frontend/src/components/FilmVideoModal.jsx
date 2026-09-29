@@ -15,10 +15,19 @@ function getEmbedDetails(url) {
     /(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/|v\/)|youtu\.be\/|youtube-nocookie\.com\/embed\/)([a-zA-Z0-9_-]{11})/i
   );
   if (ytMatch && ytMatch[1]) {
+    const videoId = ytMatch[1];
+    const params = new URLSearchParams({
+      autoplay: "1",
+      rel: "0",
+      modestbranding: "1",
+      iv_load_policy: "3",
+      playsinline: "1",
+      enablejsapi: "1",
+    });
     return {
       provider: "youtube",
       type: "embed",
-      embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`,
+      embedUrl: `https://www.youtube.com/embed/${videoId}?${params.toString()}`,
     };
   }
 
@@ -152,6 +161,8 @@ export default function FilmVideoModal({ isOpen, onClose, film }) {
                   ref={videoRef}
                   src={videoSourceInfo.src}
                   controls
+                  controlsList="nodownload noplaybackrate"
+                  disablePictureInPicture
                   autoPlay
                   playsInline
                   preload="auto"

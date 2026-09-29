@@ -1,4 +1,5 @@
 import * as contentService from "../services/contentService.js";
+import { notifyDataChanged } from "../services/realtimeService.js";
 
 export async function getAllContent(req, res, next) {
   try {
@@ -22,8 +23,10 @@ export async function getContentBySection(req, res, next) {
 export async function updateContent(req, res, next) {
   try {
     const updated = await contentService.updateContent(req.params.section, req.body);
+    notifyDataChanged({ entity: "content", action: "updated", id: req.params.section });
     res.json(updated.data);
   } catch (err) {
     res.status(400).json({ error: err.message || "Failed to update content" });
   }
 }
+

@@ -12,8 +12,6 @@ import {
   X,
   ExternalLink,
   RefreshCw,
-  HelpCircle,
-  Unlink,
 } from "lucide-react";
 import ImageUploader from "../components/ImageUploader";
 import ConfirmModal from "../components/ConfirmModal";
@@ -68,7 +66,6 @@ export default function TestimonialsManager() {
   const [editingTestimonial, setEditingTestimonial] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
-  const [setupModalOpen, setSetupModalOpen] = useState(false);
 
   // Google status & sync states
   const [googleStatus, setGoogleStatus] = useState({
@@ -89,16 +86,22 @@ export default function TestimonialsManager() {
 
   const initialForm = {
     customerName: "",
-    customerRole: "Wedding Clients",
+    customerRole: "",
     customerImage: "",
     rating: 5,
-    eventType: "Wedding & Reception",
+    eventType: "",
     review: "",
-    date: "August 2026",
+    date: "",
     approved: true,
-    featured: true,
+    featured: false,
   };
   const [formData, setFormData] = useState(initialForm);
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setEditingTestimonial(null);
+    setFormData(initialForm);
+  };
 
   // Check integration status
   const refreshGoogleStatus = async () => {
@@ -145,7 +148,7 @@ export default function TestimonialsManager() {
     setEditingTestimonial(tst);
     setFormData({
       customerName: tst.customerName || "",
-      customerRole: tst.customerRole || "Wedding Clients",
+      customerRole: tst.customerRole || "",
       customerImage: tst.customerImage || "",
       rating: tst.rating || 5,
       eventType: tst.eventType || "",
@@ -172,7 +175,7 @@ export default function TestimonialsManager() {
       addToast("New testimonial added successfully.", "success");
     }
 
-    setModalOpen(false);
+    handleCloseModal();
   };
 
   const handleDeletePrompt = (tst) => {
@@ -318,116 +321,6 @@ export default function TestimonialsManager() {
             <Plus className="w-4 h-4 text-[#E4D3A6]" />
             <span>Add Testimonial</span>
           </button>
-        </div>
-      </div>
-
-      {/* Google Business Profile Integration Banner */}
-      <div className="bg-white rounded-xl border border-[#E7E0D2] p-4 sm:p-5 shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          {/* Status Details */}
-          <div className="flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-[#F8F6F2] border border-[#E7E0D2] flex items-center justify-center shrink-0 shadow-inner">
-              <GoogleGIcon className="w-6 h-6" />
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h3 className="font-display font-bold text-sm text-[#2B2B2B]">
-                  Google Business Profile Reviews
-                </h3>
-
-                {/* Status Indicator */}
-                {googleStatus.connected ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Connected
-                  </span>
-                ) : googleStatus.configured ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    Not Connected
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 text-stone-700 border border-stone-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-stone-400" />
-                    Not Configured
-                  </span>
-                )}
-              </div>
-
-              <p className="text-xs text-[#6F6A62] leading-relaxed max-w-2xl">
-                {googleStatus.connected ? (
-                  <>
-                    Connected to{" "}
-                    <strong className="text-[#2B2B2B]">
-                      {googleStatus.businessName || "Subash Studio"}
-                    </strong>{" "}
-                    ({googleStatus.locationName || "Authorized Location"}). Last synced:{" "}
-                    <span className="text-[#9C7B3D] font-medium">
-                      {googleReviewsMeta?.lastSynced
-                        ? new Date(googleReviewsMeta.lastSynced).toLocaleString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "Never"}
-                    </span>
-                    .
-                  </>
-                ) : googleStatus.configured ? (
-                  "OAuth credentials are ready. Connect your Google account to authorize the Google Business Profile Reviews API."
-                ) : (
-                  "Google Business Profile API is not configured yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable OAuth reviews sync."
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-center">
-            {googleStatus.connected ? (
-              <>
-                <button
-                  type="button"
-                  onClick={handleSyncReviews}
-                  disabled={syncing}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
-                  <span>{syncing ? "Syncing..." : "Sync Now"}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDisconnectGoogle}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 border border-[#E7E0D2] text-[#6F6A62] hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50/50 rounded-xl text-xs font-semibold transition-all"
-                  title="Disconnect Google Business Profile"
-                >
-                  <Unlink className="w-3.5 h-3.5" />
-                  <span>Disconnect</span>
-                </button>
-              </>
-            ) : googleStatus.configured ? (
-              <button
-                type="button"
-                onClick={handleConnectGoogle}
-                disabled={connecting}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl text-xs font-semibold shadow-md transition-all active:scale-95"
-              >
-                <GoogleGIcon className="w-4 h-4" />
-                <span>{connecting ? "Redirecting..." : "Connect Google Business Profile"}</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setSetupModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#F8F6F2] hover:bg-[#EFECE6] border border-[#E7E0D2] text-[#2B2B2B] rounded-xl text-xs font-semibold transition-all"
-              >
-                <HelpCircle className="w-3.5 h-3.5 text-[#C9A669]" />
-                <span>Setup Guide</span>
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -691,114 +584,22 @@ export default function TestimonialsManager() {
         </div>
       )}
 
-      {/* Setup Guide Modal */}
-      <AnimatePresence>
-        {setupModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSetupModalOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-xl bg-white rounded-xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[90vh] flex flex-col overflow-hidden"
-            >
-              {/* Fixed Header */}
-              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#F8F6F2] border border-[#E7E0D2] flex items-center justify-center shrink-0">
-                    <GoogleGIcon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-display font-bold text-[#2B2B2B]">
-                      Google Business Profile Setup
-                    </h3>
-                    <p className="text-[11px] text-[#6F6A62]">
-                      Instructions to connect your official Google Business Profile reviews.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSetupModalOpen(false)}
-                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
-                  aria-label="Close modal"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-4 text-xs text-[#2B2B2B] modal-scrollbar">
-                <div className="p-4 rounded-xl bg-[#F8F6F2] border border-[#E7E0D2] space-y-3">
-                  <p className="font-semibold text-[#9C7B3D]">1. Required Environment Variables</p>
-                  <p className="text-[#6F6A62]">
-                    Add the following credentials to your server environment file (e.g.{" "}
-                    <code className="bg-white px-1.5 py-0.5 rounded border border-[#E7E0D2]">.env</code>{" "}
-                    or deployment dashboard):
-                  </p>
-                  <pre className="bg-[#1C1B19] text-[#E4D3A6] p-3 rounded-xl overflow-x-auto text-[11px] font-mono leading-relaxed">
-{`GOOGLE_CLIENT_ID=your_client_id_here
-GOOGLE_CLIENT_SECRET=your_client_secret_here
-GOOGLE_REDIRECT_URI=http://localhost:5173/api/auth/google/callback`}
-                  </pre>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-semibold text-[#2B2B2B]">2. Google Cloud Console Configuration</p>
-                  <ul className="list-disc pl-5 space-y-1 text-[#6F6A62]">
-                    <li>Enable <strong>My Business Account Management API</strong> & <strong>My Business Business Information API</strong>.</li>
-                    <li>Configure your OAuth Consent Screen with scope: <code className="bg-[#F8F6F2] px-1 py-0.5 rounded">https://www.googleapis.com/auth/business.manage</code>.</li>
-                    <li>Create an OAuth 2.0 Web Application Client ID.</li>
-                    <li>Add your authorized redirect URI: <code className="bg-[#F8F6F2] px-1 py-0.5 rounded">/api/auth/google/callback</code>.</li>
-                  </ul>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-semibold text-[#2B2B2B]">3. Connect &amp; Moderate</p>
-                  <p className="text-[#6F6A62] leading-relaxed">
-                    Once environment variables are supplied, reload the page and click <strong>&ldquo;Connect Google Business Profile&rdquo;</strong>.
-                    Imported reviews default to <em>Pending</em> so the studio director can approve or feature them before they appear on the homepage carousel.
-                  </p>
-                </div>
-              </div>
-
-              {/* Pinned Footer */}
-              <div className="px-6 sm:px-8 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex justify-end shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setSetupModalOpen(false)}
-                  className="px-5 py-2.5 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl font-semibold transition-colors"
-                >
-                  Got It
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
       {/* Manual Add / Edit Modal */}
       <AnimatePresence>
         {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="admin-modal-overlay">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setModalOpen(false)}
+              onClick={handleCloseModal}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-lg bg-white rounded-xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[90vh] flex flex-col overflow-hidden"
+              className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] flex flex-col overflow-hidden"
             >
               {/* Fixed Header */}
               <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
@@ -814,7 +615,7 @@ GOOGLE_REDIRECT_URI=http://localhost:5173/api/auth/google/callback`}
                 </div>
                 <button
                   type="button"
-                  onClick={() => setModalOpen(false)}
+                  onClick={handleCloseModal}
                   className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
                   aria-label="Close modal"
                 >
@@ -823,7 +624,7 @@ GOOGLE_REDIRECT_URI=http://localhost:5173/api/auth/google/callback`}
               </div>
 
               {/* Form with scrollable body & pinned footer */}
-              <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0">
+              <form onSubmit={handleSave} autoComplete="off" className="flex flex-col flex-1 min-h-0">
                 <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-4 text-xs modal-scrollbar">
                   <ImageUploader
                     value={formData.customerImage}
@@ -930,7 +731,7 @@ GOOGLE_REDIRECT_URI=http://localhost:5173/api/auth/google/callback`}
                 <div className="px-6 sm:px-8 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setModalOpen(false)}
+                    onClick={handleCloseModal}
                     className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold transition-colors"
                   >
                     Cancel

@@ -24,12 +24,26 @@ export async function getAllPortfolio(options = false) {
   const where = {};
   if (!includeUnpublished) {
     where.published = true;
+    const inactiveCats = await prisma.category.findMany({
+      where: { type: "PORTFOLIO", active: false },
+      select: { name: true },
+    });
+    const inactiveNames = new Set(inactiveCats.map((c) => c.name.toLowerCase()));
+    if (category && category !== "ALL" && category !== "all") {
+      if (inactiveNames.has(category.toLowerCase())) {
+        return [];
+      }
+      where.category = category;
+    } else if (inactiveCats.length > 0) {
+      where.category = {
+        notIn: Array.from(new Set(inactiveCats.flatMap((c) => [c.name, c.name.toLowerCase(), c.name.toUpperCase()]))),
+      };
+    }
+  } else if (category && category !== "ALL" && category !== "all") {
+    where.category = category;
   }
   if (featuredOnly) {
     where.featured = true;
-  }
-  if (category && category !== "ALL" && category !== "all") {
-    where.category = category;
   }
 
   const items = await prisma.portfolioProject.findMany({

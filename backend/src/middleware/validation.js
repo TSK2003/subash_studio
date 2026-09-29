@@ -22,16 +22,28 @@ const VALID_FRAME_ORDER_STATUSES = [
   "CANCELLED",
 ];
 
+const EXACT_PHONE_10_REGEX = /^\d{10}$/;
+
 /**
- * Validates payload for public booking creation
+ * Validates payload for booking creation (all 13 fields mandatory)
  */
 export function validateCreateBooking(req, res, next) {
   const {
     customerName,
     clientName,
-    email,
     phone,
+    email,
+    eventType,
+    eventDate,
+    date,
+    numberOfDays,
+    budget,
+    requiredService,
+    service,
+    branch,
     status,
+    location,
+    venue,
     photographyRequirement,
     cinematographyRequirement,
     adminNotes,
@@ -39,37 +51,114 @@ export function validateCreateBooking(req, res, next) {
   } = req.body || {};
 
   const name = (customerName || clientName || "").trim();
-  if (!name || name.length < 2 || name.length > 100) {
+  if (!name) {
     return res.status(400).json({
       success: false,
-      error: "Please provide a valid client name (between 2 and 100 characters).",
+      error: "Customer name is required.",
+    });
+  }
+
+  const cleanPhone = (phone || "").toString().trim();
+  if (!cleanPhone || !EXACT_PHONE_10_REGEX.test(cleanPhone)) {
+    return res.status(400).json({
+      success: false,
+      error: "Phone number must be exactly 10 digits.",
     });
   }
 
   const cleanEmail = (email || "").trim();
-  if (!cleanEmail || !EMAIL_REGEX.test(cleanEmail) || cleanEmail.length > 120) {
+  if (!cleanEmail || !EMAIL_REGEX.test(cleanEmail)) {
     return res.status(400).json({
       success: false,
       error: "Please provide a valid email address.",
     });
   }
 
-  const cleanPhone = (phone || "").trim();
-  if (!cleanPhone || !PHONE_REGEX.test(cleanPhone)) {
+  const cleanEventType = (eventType || "").trim();
+  if (!cleanEventType) {
     return res.status(400).json({
       success: false,
-      error: "Please provide a valid phone number (between 7 and 20 digits).",
+      error: "Event type is required.",
     });
   }
 
-  if (status) {
-    const upperStatus = status.toString().trim().toUpperCase().replace(/\s+/g, "_");
-    if (!VALID_BOOKING_STATUSES.includes(upperStatus)) {
-      return res.status(400).json({
-        success: false,
-        error: `Invalid status. Must be one of: ${VALID_BOOKING_STATUSES.join(", ")}`,
-      });
-    }
+  const cleanDate = (eventDate || date || "").trim();
+  if (!cleanDate) {
+    return res.status(400).json({
+      success: false,
+      error: "Event date is required.",
+    });
+  }
+
+  const cleanDays = (numberOfDays || "").trim();
+  if (!cleanDays) {
+    return res.status(400).json({
+      success: false,
+      error: "Duration / Days is required.",
+    });
+  }
+
+  const cleanBudget = (budget || "").trim();
+  if (!cleanBudget) {
+    return res.status(400).json({
+      success: false,
+      error: "Package budget is required.",
+    });
+  }
+
+  const cleanService = (requiredService || service || "").trim();
+  if (!cleanService) {
+    return res.status(400).json({
+      success: false,
+      error: "Primary service is required.",
+    });
+  }
+
+  const cleanBranch = (branch || "").trim();
+  if (!cleanBranch) {
+    return res.status(400).json({
+      success: false,
+      error: "Studio branch is required.",
+    });
+  }
+
+  const cleanStatus = (status || "").toString().trim();
+  if (!cleanStatus) {
+    return res.status(400).json({
+      success: false,
+      error: "Status is required.",
+    });
+  }
+  const upperStatus = cleanStatus.toUpperCase().replace(/\s+/g, "_");
+  if (!VALID_BOOKING_STATUSES.includes(upperStatus)) {
+    return res.status(400).json({
+      success: false,
+      error: `Invalid status. Must be one of: ${VALID_BOOKING_STATUSES.join(", ")}`,
+    });
+  }
+
+  const cleanLocation = (location || venue || "").trim();
+  if (!cleanLocation) {
+    return res.status(400).json({
+      success: false,
+      error: "Venue location is required.",
+    });
+  }
+
+  const cleanPhoto = (photographyRequirement || "").trim();
+  if (!cleanPhoto) {
+    return res.status(400).json({
+      success: false,
+      error: "Photography details are required.",
+    });
+  }
+
+  const cleanCinema = (cinematographyRequirement || "").trim();
+  if (!cleanCinema) {
+    return res.status(400).json({
+      success: false,
+      error: "Cinematography details are required.",
+    });
   }
 
   // Check maximum lengths for notes/requirements to prevent payload bloat
@@ -85,6 +174,104 @@ export function validateCreateBooking(req, res, next) {
         error: `${item.name} exceeds maximum permitted length of ${item.max} characters.`,
       });
     }
+  }
+
+  next();
+}
+
+/**
+ * Validates payload for booking updates
+ */
+export function validateUpdateBooking(req, res, next) {
+  const {
+    customerName,
+    clientName,
+    phone,
+    email,
+    eventType,
+    eventDate,
+    date,
+    numberOfDays,
+    budget,
+    requiredService,
+    service,
+    branch,
+    status,
+    location,
+    venue,
+    photographyRequirement,
+    cinematographyRequirement,
+  } = req.body || {};
+
+  if (customerName !== undefined || clientName !== undefined) {
+    const name = (customerName || clientName || "").trim();
+    if (!name) {
+      return res.status(400).json({ success: false, error: "Customer name cannot be empty." });
+    }
+  }
+
+  if (phone !== undefined) {
+    const cleanPhone = (phone || "").toString().trim();
+    if (!cleanPhone || !EXACT_PHONE_10_REGEX.test(cleanPhone)) {
+      return res.status(400).json({ success: false, error: "Phone number must be exactly 10 digits." });
+    }
+  }
+
+  if (email !== undefined) {
+    const cleanEmail = (email || "").trim();
+    if (!cleanEmail || !EMAIL_REGEX.test(cleanEmail)) {
+      return res.status(400).json({ success: false, error: "Please provide a valid email address." });
+    }
+  }
+
+  if (eventType !== undefined && !(eventType || "").trim()) {
+    return res.status(400).json({ success: false, error: "Event type cannot be empty." });
+  }
+
+  if ((eventDate !== undefined || date !== undefined) && !(eventDate || date || "").trim()) {
+    return res.status(400).json({ success: false, error: "Event date cannot be empty." });
+  }
+
+  if (numberOfDays !== undefined && !(numberOfDays || "").trim()) {
+    return res.status(400).json({ success: false, error: "Duration / Days cannot be empty." });
+  }
+
+  if (budget !== undefined && !(budget || "").trim()) {
+    return res.status(400).json({ success: false, error: "Package budget cannot be empty." });
+  }
+
+  if ((requiredService !== undefined || service !== undefined) && !(requiredService || service || "").trim()) {
+    return res.status(400).json({ success: false, error: "Primary service cannot be empty." });
+  }
+
+  if (branch !== undefined && !(branch || "").trim()) {
+    return res.status(400).json({ success: false, error: "Studio branch cannot be empty." });
+  }
+
+  if (status !== undefined) {
+    const cleanStatus = (status || "").toString().trim();
+    if (!cleanStatus) {
+      return res.status(400).json({ success: false, error: "Status cannot be empty." });
+    }
+    const upperStatus = cleanStatus.toUpperCase().replace(/\s+/g, "_");
+    if (!VALID_BOOKING_STATUSES.includes(upperStatus)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid status. Must be one of: ${VALID_BOOKING_STATUSES.join(", ")}`,
+      });
+    }
+  }
+
+  if ((location !== undefined || venue !== undefined) && !(location || venue || "").trim()) {
+    return res.status(400).json({ success: false, error: "Venue location cannot be empty." });
+  }
+
+  if (photographyRequirement !== undefined && !(photographyRequirement || "").trim()) {
+    return res.status(400).json({ success: false, error: "Photography details cannot be empty." });
+  }
+
+  if (cinematographyRequirement !== undefined && !(cinematographyRequirement || "").trim()) {
+    return res.status(400).json({ success: false, error: "Cinematography details cannot be empty." });
   }
 
   next();
@@ -301,3 +488,214 @@ export function validateChangePassword(req, res, next) {
 
   next();
 }
+
+/**
+ * Validates payload for studio branch creation (all fields mandatory)
+ */
+export function validateCreateBranch(req, res, next) {
+  const { image, name, city, address, phone, hours, manager, mapsUrl } = req.body || {};
+
+  const cleanImage = (image || "").trim();
+  if (!cleanImage) {
+    return res.status(400).json({
+      success: false,
+      error: "Branch studio exterior photo is required.",
+    });
+  }
+
+  const cleanName = (name || "").trim();
+  if (!cleanName) {
+    return res.status(400).json({
+      success: false,
+      error: "Branch name is required.",
+    });
+  }
+
+  const cleanCity = (city || "").trim();
+  if (!cleanCity) {
+    return res.status(400).json({
+      success: false,
+      error: "City / Region is required.",
+    });
+  }
+
+  const cleanAddress = (address || "").trim();
+  if (!cleanAddress) {
+    return res.status(400).json({
+      success: false,
+      error: "Full postal address is required.",
+    });
+  }
+
+  const cleanPhone = (phone || "").trim();
+  if (!cleanPhone) {
+    return res.status(400).json({
+      success: false,
+      error: "Phone / Mobile number is required.",
+    });
+  }
+  if (/[a-zA-Z]/.test(cleanPhone)) {
+    return res.status(400).json({
+      success: false,
+      error: "Phone number must contain only numeric characters.",
+    });
+  }
+  if (!/^[+]?[\d\s-]+$/.test(cleanPhone)) {
+    return res.status(400).json({
+      success: false,
+      error: "Please enter a valid numeric phone number.",
+    });
+  }
+  const digits = cleanPhone.replace(/\D/g, "");
+  if (digits.length < 10 || digits.length > 13) {
+    return res.status(400).json({
+      success: false,
+      error: "Phone number must contain at least 10 digits.",
+    });
+  }
+
+  const cleanHours = (hours || "").trim();
+  if (!cleanHours) {
+    return res.status(400).json({
+      success: false,
+      error: "Working hours are required.",
+    });
+  }
+
+  const cleanManager = (manager || "").trim();
+  if (!cleanManager) {
+    return res.status(400).json({
+      success: false,
+      error: "Branch manager / lead is required.",
+    });
+  }
+
+  const cleanMapsUrl = (mapsUrl || "").trim();
+  if (!cleanMapsUrl) {
+    return res.status(400).json({
+      success: false,
+      error: "Google Maps URL is required.",
+    });
+  }
+  try {
+    const parsed = new URL(cleanMapsUrl);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return res.status(400).json({
+        success: false,
+        error: "Google Maps URL must start with http:// or https://",
+      });
+    }
+  } catch {
+    return res.status(400).json({
+      success: false,
+      error: "Please enter a valid Google Maps URL.",
+    });
+  }
+
+  next();
+}
+
+/**
+ * Validates payload for studio branch updates
+ */
+export function validateUpdateBranch(req, res, next) {
+  const { image, name, city, address, phone, hours, manager, mapsUrl } = req.body || {};
+
+  if (image !== undefined && !(image || "").trim()) {
+    return res.status(400).json({
+      success: false,
+      error: "Branch studio exterior photo cannot be empty.",
+    });
+  }
+
+  if (name !== undefined && !(name || "").trim()) {
+    return res.status(400).json({
+      success: false,
+      error: "Branch name cannot be empty.",
+    });
+  }
+
+  if (city !== undefined && !(city || "").trim()) {
+    return res.status(400).json({
+      success: false,
+      error: "City / Region cannot be empty.",
+    });
+  }
+
+  if (address !== undefined && !(address || "").trim()) {
+    return res.status(400).json({
+      success: false,
+      error: "Full postal address cannot be empty.",
+    });
+  }
+
+  if (phone !== undefined) {
+    const cleanPhone = (phone || "").trim();
+    if (!cleanPhone) {
+      return res.status(400).json({
+        success: false,
+        error: "Phone / Mobile number cannot be empty.",
+      });
+    }
+    if (/[a-zA-Z]/.test(cleanPhone)) {
+      return res.status(400).json({
+        success: false,
+        error: "Phone number must contain only numeric characters.",
+      });
+    }
+    if (!/^[+]?[\d\s-]+$/.test(cleanPhone)) {
+      return res.status(400).json({
+        success: false,
+        error: "Please enter a valid numeric phone number.",
+      });
+    }
+    const digits = cleanPhone.replace(/\D/g, "");
+    if (digits.length < 10 || digits.length > 13) {
+      return res.status(400).json({
+        success: false,
+        error: "Phone number must contain at least 10 digits.",
+      });
+    }
+  }
+
+  if (hours !== undefined && !(hours || "").trim()) {
+    return res.status(400).json({
+      success: false,
+      error: "Working hours cannot be empty.",
+    });
+  }
+
+  if (manager !== undefined && !(manager || "").trim()) {
+    return res.status(400).json({
+      success: false,
+      error: "Branch manager / lead cannot be empty.",
+    });
+  }
+
+  if (mapsUrl !== undefined) {
+    const cleanMapsUrl = (mapsUrl || "").trim();
+    if (!cleanMapsUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "Google Maps URL cannot be empty.",
+      });
+    }
+    try {
+      const parsed = new URL(cleanMapsUrl);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        return res.status(400).json({
+          success: false,
+          error: "Google Maps URL must start with http:// or https://",
+        });
+      }
+    } catch {
+      return res.status(400).json({
+        success: false,
+        error: "Please enter a valid Google Maps URL.",
+      });
+    }
+  }
+
+  next();
+}
+

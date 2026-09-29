@@ -19,13 +19,16 @@ import {
   ImageDown,
   Loader2,
   Check,
+  AlertCircle,
 } from "lucide-react";
 import StatCard from "../components/StatCard";
+import AdminStatusBadge from "../components/AdminStatusBadge";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
 import { formatRupee, parsePrice } from "../../lib/framePricing";
 import FrameImageUploader from "../components/FrameImageUploader";
 import FramePrintReceipt from "../../components/FramePrintReceipt";
+import { isValidRatioName, normalizeRatioName } from "../../lib/frameDimensions";
 import FrameOrderPreview, {
   exportFrameImage,
   downloadOriginalFrameOrderImage,
@@ -452,13 +455,7 @@ export default function FramesManager() {
                   <div className="relative h-40 rounded-xl overflow-hidden bg-[#ECE7DC] border border-[#E7E0D2]">
                     <img src={wood.image} alt={wood.name} className="w-full h-full object-cover" />
                     <div className="absolute top-2 right-2">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                          wood.active !== false ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {wood.active !== false ? "Active" : "Inactive"}
-                      </span>
+                      <AdminStatusBadge active={wood.active !== false} size="sm" />
                     </div>
                   </div>
 
@@ -536,13 +533,7 @@ export default function FramesManager() {
                   <div className="relative h-36 rounded-xl overflow-hidden bg-[#ECE7DC] border border-[#E7E0D2]">
                     <img src={design.image} alt={design.name} className="w-full h-full object-cover" />
                     <div className="absolute top-2 right-2">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                          design.active !== false ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {design.active !== false ? "Active" : "Inactive"}
-                      </span>
+                      <AdminStatusBadge active={design.active !== false} size="sm" />
                     </div>
                   </div>
 
@@ -618,8 +609,9 @@ export default function FramesManager() {
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-display font-bold text-lg text-[#1C1B19]">{ratio.name}</h4>
+                      <AdminStatusBadge active={ratio.active !== false} size="xs" />
                       <span className="px-2 py-0.5 rounded-full bg-[#FAF8F5] text-[#8C6D32] border border-[#E7E0D2] text-[10px] font-bold capitalize">
                         {ratio.orientation || "portrait"}
                       </span>
@@ -674,12 +666,12 @@ export default function FramesManager() {
         createPortal(
           <AnimatePresence>
             {selectedOrder && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-8 bg-black/60 backdrop-blur-sm">
+              <div className="admin-modal-overlay bg-black/60 backdrop-blur-sm">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.96, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                  className="relative bg-white rounded-2xl max-w-4xl lg:max-w-5xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-[#E7E0D2] overflow-hidden my-auto"
+                  className="relative bg-white rounded-2xl max-w-4xl lg:max-w-5xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-[#E7E0D2] overflow-hidden"
                 >
                   {/* Modal Top Pinned Header */}
                   <div className="flex items-center justify-between px-5 sm:px-6 md:px-8 py-4 sm:py-5 border-b border-[#E7E0D2] bg-white shrink-0 z-10">
@@ -1134,6 +1126,7 @@ export default function FramesManager() {
             isOpen={ratioModal.open}
             mode={ratioModal.mode}
             initialData={ratioModal.data}
+            existingRatios={frameRatios}
             onClose={() => setRatioModal({ open: false, mode: "add", data: null })}
             onSave={async (payload) => {
               if (ratioModal.mode === "add") {
@@ -1164,7 +1157,7 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
 
   useEffect(() => {
     if (isOpen) {
-      setImage(initialData?.image || (mode === "add" ? "" : "/images/frames/teak-wood.jpg"));
+      setImage(initialData?.image || "");
       setImageError("");
       setSaveError("");
       setIsSaving(false);
@@ -1182,12 +1175,12 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
       setSaveError("Wood name is required.");
       return;
     }
-    const finalImage = image || "/images/frames/teak-wood.jpg";
+    const finalImage = image || (mode === "edit" ? (initialData?.image || "") : "");
     const inStock = form.inStock ? form.inStock.value === "true" : true;
     const payload = {
       name,
       basePrice: parseFloat(form.basePrice.value) || 0,
-      grain: (form.grain?.value || "").trim() || "Natural Timber Grain",
+      grain: (form.grain?.value || "").trim(),
       description: form.description.value.trim(),
       image: finalImage,
       active: inStock,
@@ -1213,12 +1206,12 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="admin-modal-overlay bg-black/60 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
+        className="relative bg-white rounded-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
       >
         <div className="flex items-center justify-between border-b border-[#E7E0D2] px-5 py-4 shrink-0 bg-white">
           <h3 className="font-display font-bold text-lg text-[#1C1B19]">
@@ -1234,7 +1227,7 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+        <form onSubmit={handleSubmit} autoComplete="off" className="flex flex-col flex-1 min-h-0">
           <div className="overflow-y-auto flex-1 p-5 space-y-3.5 text-xs modal-scrollbar">
             {saveError && (
               <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
@@ -1261,7 +1254,8 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
                 type="number"
                 min="0"
                 step="1"
-                defaultValue={initialData?.basePrice ?? 800}
+                defaultValue={initialData?.basePrice ?? ""}
+                placeholder="e.g. 800"
                 required
                 className="w-full p-2.5 rounded-xl border border-[#E7E0D2] text-xs focus:ring-2 focus:ring-[#C9A669] outline-none"
               />
@@ -1346,7 +1340,7 @@ function FrameDesignModal({ isOpen, mode, initialData, onClose, onSave }) {
 
   useEffect(() => {
     if (isOpen) {
-      setImage(initialData?.image || (mode === "add" ? "" : "/images/frames/classic-gold.jpg"));
+      setImage(initialData?.image || "");
       setImageError("");
     }
   }, [isOpen, mode, initialData]);
@@ -1356,8 +1350,8 @@ function FrameDesignModal({ isOpen, mode, initialData, onClose, onSave }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const form = e.target;
-    const finalImage = image || "/images/frames/classic-gold.jpg";
-    const rawWoods = form.compatibleWoods.value || "All";
+    const finalImage = image || (mode === "edit" ? (initialData?.image || "") : "");
+    const rawWoods = form.compatibleWoods.value || "";
     const compatibleWoods = rawWoods
       .split(",")
       .map((s) => s.trim())
@@ -1376,12 +1370,12 @@ function FrameDesignModal({ isOpen, mode, initialData, onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="admin-modal-overlay bg-black/60 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
+        className="relative bg-white rounded-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
       >
         <div className="flex items-center justify-between border-b border-[#E7E0D2] px-5 py-4 shrink-0 bg-white">
           <h3 className="font-display font-bold text-lg text-[#1C1B19]">
@@ -1397,7 +1391,7 @@ function FrameDesignModal({ isOpen, mode, initialData, onClose, onSave }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+        <form onSubmit={handleSubmit} autoComplete="off" className="flex flex-col flex-1 min-h-0">
           <div className="overflow-y-auto flex-1 p-5 space-y-3.5 text-xs modal-scrollbar">
             <div>
               <label className="font-bold text-[#1C1B19] block mb-1">Profile Name</label>
@@ -1417,7 +1411,8 @@ function FrameDesignModal({ isOpen, mode, initialData, onClose, onSave }) {
                 type="number"
                 min="0"
                 step="1"
-                defaultValue={initialData?.additionalPrice ?? 0}
+                defaultValue={initialData?.additionalPrice ?? ""}
+                placeholder="e.g. 200 (or 0 for included)"
                 required
                 className="w-full p-2.5 rounded-xl border border-[#E7E0D2] text-xs focus:ring-2 focus:ring-[#C9A669] outline-none"
               />
@@ -1425,11 +1420,11 @@ function FrameDesignModal({ isOpen, mode, initialData, onClose, onSave }) {
 
             <div>
               <label className="font-bold text-[#1C1B19] block mb-1">
-                Compatible Woods (comma-separated or &apos;All&apos;)
+                Compatible Woods (comma-separated or leave blank for All)
               </label>
               <input
                 name="compatibleWoods"
-                defaultValue={(initialData?.compatibleWoods || ["All"]).join(", ")}
+                defaultValue={initialData?.compatibleWoods ? initialData.compatibleWoods.join(", ") : ""}
                 placeholder="All, or Teak Wood, Rose Wood..."
                 className="w-full p-2.5 rounded-xl border border-[#E7E0D2] text-xs focus:ring-2 focus:ring-[#C9A669] outline-none"
               />
@@ -1484,7 +1479,7 @@ function FrameDesignModal({ isOpen, mode, initialData, onClose, onSave }) {
   );
 }
 
-function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
+function RatioModal({ isOpen, mode, initialData, existingRatios = [], onClose, onSave }) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
@@ -1501,11 +1496,35 @@ function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
     e.preventDefault();
     setSaveError("");
     const form = e.target;
-    const name = form.name.value.trim();
-    if (!name) {
+    const rawName = form.name?.value?.trim() || "";
+    if (!rawName) {
       setSaveError("Ratio / Size name is required.");
       return;
     }
+
+    if (!isValidRatioName(rawName)) {
+      setSaveError("Invalid ratio format. Please enter a valid dimension such as 10 × 12.");
+      return;
+    }
+
+    const normalizedName = normalizeRatioName(rawName);
+    if (!normalizedName) {
+      setSaveError("Invalid ratio format. Please enter a valid dimension such as 10 × 12.");
+      return;
+    }
+
+    // Check duplicate against existing ratios
+    const isDuplicate = (existingRatios || []).some(
+      (r) =>
+        r.id !== initialData?.id &&
+        r.name &&
+        r.name.trim().toLowerCase() === normalizedName.toLowerCase()
+    );
+    if (isDuplicate) {
+      setSaveError(`A frame ratio/size with dimensions '${normalizedName}' already exists.`);
+      return;
+    }
+
     const rawPrice = parseFloat(form.price.value);
     if (isNaN(rawPrice) || rawPrice < 0) {
       setSaveError("Price must be a valid non-negative number.");
@@ -1513,11 +1532,11 @@ function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
     }
 
     const payload = {
-      name,
-      label: form.label.value.trim() || name,
+      name: normalizedName,
+      label: form.label.value.trim() || `${normalizedName} inches`,
       orientation: form.orientation.value,
       price: rawPrice,
-      dimensions: form.dimensions.value.trim(),
+      dimensions: form.dimensions.value.trim() || `${normalizedName} inches`,
       popular: form.popular.checked,
     };
 
@@ -1527,26 +1546,26 @@ function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
       onClose();
     } catch (err) {
       console.error("Failed to save ratio:", err);
-      setSaveError(
-        err.response?.data?.message ||
-        err.response?.data?.error ||
+      const errMsg =
         err.data?.message ||
         err.data?.error ||
+        err.response?.data?.message ||
+        err.response?.data?.error ||
         err.message ||
-        "Failed to save frame ratio."
-      );
+        "Failed to save frame ratio.";
+      setSaveError(errMsg);
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="admin-modal-overlay bg-black/60 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
+        className="relative bg-white rounded-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
       >
         <div className="flex items-center justify-between border-b border-[#E7E0D2] px-5 py-4 shrink-0 bg-white">
           <h3 className="font-display font-bold text-lg text-[#1C1B19]">
@@ -1562,7 +1581,7 @@ function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+        <form onSubmit={handleSubmit} autoComplete="off" className="flex flex-col flex-1 min-h-0">
           <div className="overflow-y-auto flex-1 p-5 space-y-3.5 text-xs modal-scrollbar">
             {saveError && (
               <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
@@ -1614,7 +1633,8 @@ function RatioModal({ isOpen, mode, initialData, onClose, onSave }) {
                 type="number"
                 min="0"
                 step="1"
-                defaultValue={initialData?.price ?? 600}
+                defaultValue={initialData?.price ?? ""}
+                placeholder="e.g. 600"
                 required
                 className="w-full p-2.5 rounded-xl border border-[#E7E0D2] text-xs focus:ring-2 focus:ring-[#C9A669] outline-none"
               />

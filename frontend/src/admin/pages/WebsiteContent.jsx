@@ -28,6 +28,7 @@ export default function WebsiteContent() {
   const [homeForm, setHomeForm] = useState(websiteContent?.home || {});
   const [aboutForm, setAboutForm] = useState(websiteContent?.about || {});
   const [contactForm, setContactForm] = useState(websiteContent?.contact || {});
+  const [formErrors, setFormErrors] = useState({});
 
   // Keep local tabs synced when context updates
   useEffect(() => {
@@ -36,11 +37,57 @@ export default function WebsiteContent() {
     if (websiteContent?.contact) setContactForm(websiteContent.contact);
   }, [websiteContent]);
 
+  const headlineChars = (homeForm.heroHeading || "").length;
+  const subtitleChars = (homeForm.heroTagline || "").length;
+
+  const handleHeadlineChange = (e) => {
+    // Limit typed or pasted content to maximum 20 characters
+    const val = e.target.value.slice(0, 20);
+    setHomeForm((prev) => ({ ...prev, heroHeading: val }));
+    if (formErrors.heroHeading && val.length <= 20) {
+      setFormErrors((prev) => ({ ...prev, heroHeading: null }));
+    }
+  };
+
+  const handleTaglineChange = (e) => {
+    // Limit typed or pasted content to maximum 150 characters
+    const val = e.target.value.slice(0, 150);
+    setHomeForm((prev) => ({ ...prev, heroTagline: val }));
+    if (formErrors.heroTagline && val.length <= 150) {
+      setFormErrors((prev) => ({ ...prev, heroTagline: null }));
+    }
+  };
+
   const handleSaveHome = async (e) => {
     e.preventDefault();
+    const heading = homeForm.heroHeading !== undefined ? String(homeForm.heroHeading) : "";
+    const tagline = homeForm.heroTagline !== undefined ? String(homeForm.heroTagline) : "";
+
+    const errors = {};
+    if (heading.length > 20) {
+      errors.heroHeading = `Hero Main Headline cannot exceed 20 characters (currently ${heading.length}).`;
+    }
+
+    if (tagline.length > 150) {
+      errors.heroTagline = `Hero Subtitle / Tagline cannot exceed 150 characters (currently ${tagline.length}).`;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      addToast("Please satisfy the character count limits before saving.", "error");
+      return;
+    }
+
+    setFormErrors({});
     try {
       setSavingSection("home");
-      const updated = await updateWebsiteContent("home", homeForm);
+      const payload = {
+        ...homeForm,
+        heroHeading: heading,
+        heroTagline: tagline,
+        heroCtaText: "BOOK A SHOOT",
+      };
+      const updated = await updateWebsiteContent("home", payload);
       if (updated) setHomeForm(updated);
       addToast("Homepage CMS content saved successfully.", "success");
     } catch (err) {
@@ -161,39 +208,65 @@ export default function WebsiteContent() {
 
             <div className="space-y-4 text-xs">
               <div className="space-y-1.5">
-                <label className="font-semibold text-[#6F6A62]">Hero Main Headline</label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="cms-heroHeading" className="font-semibold text-[#6F6A62]">
+                    Hero Main Headline
+                  </label>
+                  <span
+                    className={`text-[11px] font-medium transition-colors ${
+                      headlineChars > 20
+                        ? "text-rose-600 font-semibold"
+                        : "text-[#9C7B3D]"
+                    }`}
+                  >
+                    {headlineChars} / 20
+                  </span>
+                </div>
                 <input
+                  id="cms-heroHeading"
                   type="text"
+                  maxLength={20}
+                  placeholder="e.g. Subash Photography"
                   value={homeForm.heroHeading || ""}
-                  onChange={(e) =>
-                    setHomeForm({ ...homeForm, heroHeading: e.target.value })
-                  }
-                  className="w-full p-3 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-sm font-display font-bold text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                  onChange={handleHeadlineChange}
+                  className={`w-full p-3 bg-[#F8F6F2] border ${
+                    formErrors.heroHeading ? "border-rose-400" : "border-[#E7E0D2]"
+                  } rounded-xl text-sm font-display font-bold text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none transition-colors`}
                 />
+                {formErrors.heroHeading && (
+                  <p className="text-[11px] text-rose-600 mt-1">{formErrors.heroHeading}</p>
+                )}
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-[#6F6A62]">Hero Subtitle / Tagline</label>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="cms-heroTagline" className="font-semibold text-[#6F6A62]">
+                    Hero Subtitle / Tagline
+                  </label>
+                  <span
+                    className={`text-[11px] font-medium transition-colors ${
+                      subtitleChars > 150
+                        ? "text-rose-600 font-semibold"
+                        : "text-[#9C7B3D]"
+                    }`}
+                  >
+                    {subtitleChars} / 150
+                  </span>
+                </div>
                 <textarea
-                  rows={2}
+                  id="cms-heroTagline"
+                  rows={4}
+                  maxLength={150}
+                  placeholder="Enter a descriptive subtitle (up to 150 characters)..."
                   value={homeForm.heroTagline || ""}
-                  onChange={(e) =>
-                    setHomeForm({ ...homeForm, heroTagline: e.target.value })
-                  }
-                  className="w-full p-3 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                  onChange={handleTaglineChange}
+                  className={`w-full p-3 bg-[#F8F6F2] border ${
+                    formErrors.heroTagline ? "border-rose-400" : "border-[#E7E0D2]"
+                  } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none leading-relaxed resize-none transition-colors`}
                 />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="font-semibold text-[#6F6A62]">Primary Call to Action (CTA) Text</label>
-                <input
-                  type="text"
-                  value={homeForm.heroCtaText || ""}
-                  onChange={(e) =>
-                    setHomeForm({ ...homeForm, heroCtaText: e.target.value })
-                  }
-                  className="w-full p-3 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                />
+                {formErrors.heroTagline && (
+                  <p className="text-[11px] text-rose-600 mt-1">{formErrors.heroTagline}</p>
+                )}
               </div>
             </div>
 

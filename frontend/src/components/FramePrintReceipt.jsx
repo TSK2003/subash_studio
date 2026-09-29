@@ -45,6 +45,13 @@ export default function FramePrintReceipt({ order }) {
             RECEIPT HEADER
         ========================================================== */}
         <div className="text-center space-y-1.5 border-b border-gray-200 pb-5 print:border-gray-300">
+          <div className="flex justify-center pb-1">
+            <img
+              src="/logo.png"
+              alt="SUBASH STUDIO Logo"
+              className="h-12 w-12 object-contain"
+            />
+          </div>
           <div className="text-[10px] tracking-[0.25em] font-semibold text-[#8C6D32] uppercase">
             ATELIER WOODCRAFT &amp; FRAMING
           </div>

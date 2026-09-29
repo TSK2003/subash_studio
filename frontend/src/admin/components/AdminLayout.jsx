@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
@@ -7,6 +7,28 @@ import PremiumPageBackground from "../../components/PremiumPageBackground";
 export default function AdminLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const updateSidebarWidth = () => {
+      if (typeof window !== "undefined") {
+        if (window.innerWidth >= 1024) {
+          document.documentElement.style.setProperty(
+            "--admin-sidebar-w",
+            isCollapsed ? "5rem" : "14rem"
+          );
+        } else {
+          document.documentElement.style.setProperty("--admin-sidebar-w", "0px");
+        }
+      }
+    };
+
+    updateSidebarWidth();
+    window.addEventListener("resize", updateSidebarWidth);
+    return () => {
+      window.removeEventListener("resize", updateSidebarWidth);
+      document.documentElement.style.removeProperty("--admin-sidebar-w");
+    };
+  }, [isCollapsed]);
 
   return (
     <div className="min-h-screen bg-[#F8F6F2] flex flex-row font-body text-[#2B2B2B] antialiased selection:bg-[#C9A669] selection:text-white relative">

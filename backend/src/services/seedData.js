@@ -646,7 +646,7 @@ export const initialFrameDesigns = [
     additionalPrice: 180,
     description: "Distressed antique patina frame with artisan heritage craftsmanship feel.",
     image: "/images/frames/vintage-brown.jpg",
-    compatibleWoods: ["Teak Wood", "Rose Wood", "Walnut Wood"],
+    compatibleWoods: ["Teak Wood", "Rose Wood", "Walnut Wood", "Pine Wood"],
     active: true,
   },
   {

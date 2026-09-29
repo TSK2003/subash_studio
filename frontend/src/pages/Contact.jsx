@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Send, Check, ExternalLink, Navigation } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Phone, MapPin, Send, Check, ExternalLink, Navigation, ChevronLeft, ChevronRight } from "lucide-react";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
 import Seo from "../components/Seo";
 import Reveal from "../components/Reveal";
@@ -66,38 +66,123 @@ export default function Contact() {
   const [selectedService, setSelectedService] = useState("");
   const lastAppliedQueryRef = useRef(null);
 
-  const studioLocations = useMemo(() => {
-    return STUDIO_LOCATIONS.map((baseLoc) => {
-      const match = (branches || []).find((b) => {
-        if (b.active === false) return false;
-        const cityLower = (b.city || "").toLowerCase();
-        const nameLower = (b.name || "").toLowerCase();
-        return (
-          cityLower.includes(baseLoc.id) ||
-          baseLoc.id.includes(cityLower) ||
-          nameLower.includes(baseLoc.id)
-        );
-      });
+  // Future-only date calculation (dynamically resolved to local current day YYYY-MM-DD)
+  const todayDate = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
 
-      if (match) {
-        return {
-          ...baseLoc,
-          branchDbId: match.id,
-          name: match.name || baseLoc.name,
-          city: match.city || baseLoc.city,
-          tag: match.tag || baseLoc.tag,
-          address: match.address || baseLoc.address,
-          phone: match.phone || "+91 93457 06609",
-          mapsUrl: match.mapsUrl || baseLoc.mapsUrl,
-          embedUrl: baseLoc.embedUrl,
-        };
+  // Dynamic studio locations from database/admin, mapped & fallback to default locations
+  const activeBranches = useMemo(() => {
+    if (branches && branches.length > 0) {
+      const active = branches.filter((b) => b.active !== false);
+      if (active.length > 0) {
+        return active.map((b) => {
+          const baseMatch = STUDIO_LOCATIONS.find((loc) => {
+            const cityLower = (b.city || "").toLowerCase();
+            const nameLower = (b.name || "").toLowerCase();
+            const bIdLower = (b.id || "").toLowerCase();
+            return (
+              cityLower.includes(loc.id) ||
+              loc.id.includes(cityLower) ||
+              nameLower.includes(loc.id) ||
+              bIdLower.includes(loc.id)
+            );
+          });
+
+          const branchId = b.id || baseMatch?.id || (b.city || "branch").toLowerCase().replace(/\s+/g, "-");
+          const address = b.address || baseMatch?.address || "";
+          const name = b.name || baseMatch?.name || `${b.city} Studio`;
+          const city = b.city || baseMatch?.city || "Tamil Nadu";
+
+          const embedUrl =
+            b.embedUrl ||
+            baseMatch?.embedUrl ||
+            `https://maps.google.com/maps?q=${encodeURIComponent(address || name || city)}&t=m&hl=en&z=15&output=embed`;
+
+          const mapsUrl =
+            b.mapsUrl ||
+            baseMatch?.mapsUrl ||
+            `https://maps.google.com/?q=${encodeURIComponent(`Subash Studio, ${address || name}`)}`;
+
+          return {
+            id: branchId,
+            branchDbId: b.id,
+            name,
+            city,
+            tag: b.tag || baseMatch?.tag || "Studio & Consultation Lounge",
+            address,
+            phone: b.phone || baseMatch?.phone || "+91 93457 06609",
+            whatsapp: b.whatsapp || b.phone || "+91 93457 06609",
+            email: b.email || "hello@subashstudio.com",
+            mapsUrl,
+            embedUrl,
+            image: b.image || baseMatch?.image || "/images/gallery/branches/kalladaikurichi.jpg",
+          };
+        });
       }
-      return baseLoc;
-    });
+    }
+    return STUDIO_LOCATIONS;
   }, [branches]);
 
+  // Keep selected branch valid when active branches load/update
+  useEffect(() => {
+    if (activeBranches.length > 0) {
+      if (!selectedBranchId || !activeBranches.some((b) => b.id === selectedBranchId)) {
+        setSelectedBranchId(activeBranches[0].id);
+      }
+    }
+  }, [activeBranches, selectedBranchId]);
+
+  const currentBranch = useMemo(() => {
+    return activeBranches.find((loc) => loc.id === selectedBranchId) || activeBranches[0] || STUDIO_LOCATIONS[0];
+  }, [activeBranches, selectedBranchId]);
+
+  // Slideshow controller when more than 3 active branches exist
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(1);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const ITEMS_PER_SLIDE = 3;
+  const isSlideshow = activeBranches.length > 3;
+  const totalSlides = isSlideshow ? Math.ceil(activeBranches.length / ITEMS_PER_SLIDE) : 1;
+
+  const displayedBranches = useMemo(() => {
+    if (!isSlideshow) return activeBranches;
+    const start = currentSlide * ITEMS_PER_SLIDE;
+    return activeBranches.slice(start, start + ITEMS_PER_SLIDE);
+  }, [activeBranches, currentSlide, isSlideshow]);
+
+  const handlePrevSlide = (e) => {
+    if (e) e.stopPropagation();
+    setSlideDirection(-1);
+    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : totalSlides - 1));
+  };
+
+  const handleNextSlide = (e) => {
+    if (e) e.stopPropagation();
+    setSlideDirection(1);
+    setCurrentSlide((prev) => (prev < totalSlides - 1 ? prev + 1 : 0));
+  };
+
+  const handleBranchSelect = (branchId) => {
+    setSelectedBranchId(branchId);
+    if (isSlideshow) {
+      const idx = activeBranches.findIndex((b) => b.id === branchId);
+      if (idx !== -1) {
+        const targetPage = Math.floor(idx / ITEMS_PER_SLIDE);
+        if (targetPage !== currentSlide) {
+          setSlideDirection(targetPage > currentSlide ? 1 : -1);
+          setCurrentSlide(targetPage);
+        }
+      }
+    }
+  };
+
   const servicesList = adminServices && adminServices.length > 0 ? adminServices : defaultServices;
-  const currentBranch = studioLocations.find((loc) => loc.id === selectedBranchId) || studioLocations[0];
 
   // Resolve service query parameter against available services
   const matchedService = useMemo(() => {
@@ -157,9 +242,11 @@ export default function Contact() {
     const rawName = formData.get("name") || "";
     const rawPhone = `+91 ${cleanPhone}`;
     const rawEmail = formData.get("email") || "";
+    const rawBranchId = formData.get("branch") || selectedBranchId;
+    const chosenBranch = activeBranches.find((b) => b.id === rawBranchId) || currentBranch;
     const rawService = formData.get("service") || "General Inquiry";
     const rawDate = formData.get("date") || "";
-    const rawLocation = formData.get("location") || currentBranch?.city || "Tirunelveli";
+    const rawLocation = chosenBranch?.city || chosenBranch?.name || "Tirunelveli";
     const rawMessage = formData.get("message") || formData.get("notes") || "";
 
     const enquiryData = {
@@ -169,6 +256,7 @@ export default function Contact() {
       email: rawEmail,
       service: rawService,
       interestedService: rawService,
+      branch: chosenBranch?.name || chosenBranch?.city || rawLocation,
       eventDate: rawDate,
       proposedDate: rawDate,
       location: rawLocation,
@@ -254,7 +342,29 @@ export default function Contact() {
                     <p className="text-xs text-red-500 font-medium">{phoneError}</p>
                   )}
                 </div>
+                
                 <Field label="Email" name="email" type="email" placeholder="you@example.com" required className="md:col-span-2" />
+
+                {/* Dynamic Studio Branch Selection */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs tracking-[0.08em] uppercase text-ink-soft font-semibold">
+                    Select Branch
+                  </label>
+                  <select
+                    name="branch"
+                    value={selectedBranchId}
+                    onChange={(e) => handleBranchSelect(e.target.value)}
+                    className="bg-bg-soft border border-line rounded-sm px-4 py-3 text-sm text-ink focus:outline-none focus:border-gold transition-colors"
+                  >
+                    {activeBranches.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name || `${b.city} Studio`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Service Selection */}
                 <div className="flex flex-col gap-2">
                   <label className="text-xs tracking-[0.08em] uppercase text-ink-soft font-semibold">Service</label>
                   <select
@@ -271,7 +381,16 @@ export default function Contact() {
                     ))}
                   </select>
                 </div>
-                <Field label="Event Date" name="date" type="date" />
+
+                {/* Event Date — Past dates disabled via dynamic min */}
+                <Field
+                  label="Event Date"
+                  name="date"
+                  type="date"
+                  min={todayDate}
+                  className="md:col-span-2"
+                />
+
                 <input type="hidden" name="location" value={currentBranch?.city || "Tirunelveli"} />
                 <div className="md:col-span-2 flex flex-col gap-2">
                   <label className="text-xs tracking-[0.08em] uppercase text-ink-soft font-semibold">Tell us about your day</label>
@@ -306,38 +425,108 @@ export default function Contact() {
                 <Mail size={17} className="text-gold shrink-0" /> {studioEmail}
               </a>
 
-              <div className="pt-3 border-t border-bg-soft/10 space-y-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-gold-light/75 font-semibold">Our Studio Locations</p>
-                {studioLocations.map((loc) => {
-                  const isSelected = currentBranch?.id === loc.id;
-                  return (
-                    <button
-                      key={loc.id}
-                      type="button"
-                      onClick={() => setSelectedBranchId(loc.id)}
-                      className={`w-full text-left p-3 rounded transition-all border ${
-                        isSelected
-                          ? "bg-bg-soft/10 border-gold text-bg-soft shadow-xs ring-1 ring-gold/40"
-                          : "bg-bg-soft/5 border-bg-soft/10 hover:border-bg-soft/30 text-bg-soft/80"
-                      }`}
+              {/* Dynamic Studio Locations / Slideshow when > 3 */}
+              <div
+                className="pt-3 border-t border-bg-soft/10 space-y-3"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-gold-light/75 font-semibold">
+                    Our Studio Locations {isSlideshow && `(${activeBranches.length})`}
+                  </p>
+                  {isSlideshow && totalSlides > 1 && (
+                    <div className="flex items-center gap-1.5 z-10 relative">
+                      <button
+                        type="button"
+                        onClick={handlePrevSlide}
+                        aria-label="Previous studio locations"
+                        className="w-7 h-7 rounded-full border border-bg-soft/20 text-bg-soft/80 hover:text-gold hover:border-gold active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+                      >
+                        <ChevronLeft size={14} />
+                      </button>
+                      <span className="text-[10px] font-mono text-gold-light/75 px-1 select-none">
+                        {currentSlide + 1} / {totalSlides}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleNextSlide}
+                        aria-label="Next studio locations"
+                        className="w-7 h-7 rounded-full border border-bg-soft/20 text-bg-soft/80 hover:text-gold hover:border-gold active:scale-95 flex items-center justify-center transition-all cursor-pointer"
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative overflow-hidden">
+                  <AnimatePresence mode="wait" custom={slideDirection}>
+                    <motion.div
+                      key={`slide-${currentSlide}`}
+                      custom={slideDirection}
+                      initial={{ opacity: 0, x: slideDirection > 0 ? 15 : -15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: slideDirection > 0 ? -15 : 15 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      className="space-y-3"
                     >
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="font-semibold text-xs tracking-wider uppercase text-gold">
-                          {loc.city}
-                        </span>
-                        <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full ${
-                          isSelected ? "bg-gold/25 text-gold-light" : "bg-bg-soft/10 text-bg-soft/60"
-                        }`}>
-                          {isSelected ? "Active On Map" : "View On Map"}
-                        </span>
-                      </div>
-                      <div className="flex items-start gap-2 text-xs text-bg-soft/80 leading-relaxed">
-                        <MapPin size={13} className="text-gold shrink-0 mt-0.5" />
-                        <span>{loc.address}</span>
-                      </div>
-                    </button>
-                  );
-                })}
+                      {displayedBranches.map((loc) => {
+                        const isSelected = currentBranch?.id === loc.id;
+                        return (
+                          <button
+                            key={loc.id}
+                            type="button"
+                            onClick={() => handleBranchSelect(loc.id)}
+                            className={`w-full text-left p-3 rounded transition-all border ${
+                              isSelected
+                                ? "bg-bg-soft/10 border-gold text-bg-soft shadow-xs ring-1 ring-gold/40"
+                                : "bg-bg-soft/5 border-bg-soft/10 hover:border-bg-soft/30 text-bg-soft/80"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="font-semibold text-xs tracking-wider uppercase text-gold">
+                                {loc.city}
+                              </span>
+                              <span className={`text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full ${
+                                isSelected ? "bg-gold/25 text-gold-light" : "bg-bg-soft/10 text-bg-soft/60"
+                              }`}>
+                                {isSelected ? "Active On Map" : "View On Map"}
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-2 text-xs text-bg-soft/80 leading-relaxed">
+                              <MapPin size={13} className="text-gold shrink-0 mt-0.5" />
+                              <span>{loc.address}</span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Slideshow pagination indicator dots */}
+                {isSlideshow && totalSlides > 1 && (
+                  <div className="flex items-center justify-center gap-1.5 pt-2">
+                    {Array.from({ length: totalSlides }).map((_, idx) => (
+                      <button
+                        key={`branch-slide-dot-${idx}`}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSlideDirection(idx > currentSlide ? 1 : -1);
+                          setCurrentSlide(idx);
+                        }}
+                        aria-label={`Go to slide ${idx + 1}`}
+                        className={`transition-all duration-300 rounded-full cursor-pointer ${
+                          idx === currentSlide
+                            ? "w-4 h-1.5 bg-gold"
+                            : "w-1.5 h-1.5 bg-bg-soft/30 hover:bg-gold/50"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -376,13 +565,13 @@ export default function Contact() {
 
           <div className="rounded-md overflow-hidden shadow-card border border-line/60 bg-card flex flex-col">
             <div className="p-3 bg-bg-soft border-b border-line flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1 bg-card p-1 rounded border border-line">
-                {studioLocations.map((loc) => (
+              <div className="flex items-center gap-1 bg-card p-1 rounded border border-line overflow-x-auto max-w-[70%] custom-scrollbar">
+                {activeBranches.map((loc) => (
                   <button
                     key={loc.id}
                     type="button"
                     onClick={() => setSelectedBranchId(loc.id)}
-                    className={`px-3 py-1.5 rounded text-xs font-semibold transition-all ${
+                    className={`px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap transition-all ${
                       currentBranch?.id === loc.id
                         ? "bg-ink text-bg-soft shadow-xs"
                         : "text-ink-soft hover:text-ink hover:bg-bg-soft"
@@ -397,7 +586,7 @@ export default function Contact() {
                 href={currentBranch.mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gold-dark hover:text-ink transition-colors px-2 py-1"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-gold-dark hover:text-ink transition-colors px-2 py-1 shrink-0"
               >
                 <span>Open in Maps</span>
                 <ExternalLink size={12} />
@@ -421,7 +610,7 @@ export default function Contact() {
   );
 }
 
-function Field({ label, name, type = "text", placeholder, required, className = "" }) {
+function Field({ label, name, type = "text", placeholder, required, min, className = "" }) {
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       <label className="text-xs tracking-[0.08em] uppercase text-ink-soft font-semibold">{label}</label>
@@ -430,6 +619,7 @@ function Field({ label, name, type = "text", placeholder, required, className = 
         name={name}
         placeholder={placeholder}
         required={required}
+        min={min}
         className="bg-bg-soft border border-line rounded-sm px-4 py-3 text-sm text-ink focus:outline-none focus:border-gold transition-colors"
       />
     </div>

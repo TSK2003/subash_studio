@@ -9,14 +9,37 @@ import {
 import { useAdminData } from "../admin/context/AdminDataContext";
 
 export default function Portfolio() {
-  const { portfolio } = useAdminData();
+  const { portfolio, portfolioCategories } = useAdminData();
   const [active, setActive] = useState("All");
   const [lightbox, setLightbox] = useState(null);
+
+  // Active category names from database
+  const activeCategories = useMemo(() => {
+    if (portfolioCategories && portfolioCategories.length > 0) {
+      return portfolioCategories.filter((c) => c.active !== false).map((c) => c.name);
+    }
+    return null;
+  }, [portfolioCategories]);
+
+  // Set of active category names for fast case-insensitive lookup
+  const activeCategorySet = useMemo(() => {
+    if (activeCategories) {
+      return new Set(activeCategories.map((c) => c.toLowerCase()));
+    }
+    return null;
+  }, [activeCategories]);
 
   const projects = useMemo(() => {
     if (portfolio && portfolio.length > 0) {
       return portfolio
-        .filter((item) => item.published !== false)
+        .filter((item) => {
+          if (item.published === false) return false;
+          // Hide items whose category is inactive
+          if (activeCategorySet && item.category) {
+            return activeCategorySet.has(item.category.trim().toLowerCase());
+          }
+          return true;
+        })
         .map((item) => ({
           ...item,
           image: item.coverImage || item.image || item.imageUrl || "/public/images/gallery/wedding-1.jpg",
@@ -25,21 +48,26 @@ export default function Portfolio() {
         }));
     }
     return defaultProjects;
-  }, [portfolio]);
+  }, [portfolio, activeCategorySet]);
 
   const categories = useMemo(() => {
+    if (activeCategories && activeCategories.length > 0) {
+      return ["All", ...activeCategories];
+    }
     if (portfolio && portfolio.length > 0) {
       const cats = Array.from(new Set(projects.map((p) => p.category).filter(Boolean)));
       return ["All", ...cats];
     }
     return defaultCategories;
-  }, [portfolio, projects]);
+  }, [activeCategories, portfolio, projects]);
 
   const filtered = useMemo(() => {
     if (active === "All") {
       return projects;
     }
-    return projects.filter((project) => project.category === active);
+    return projects.filter(
+      (project) => (project.category || "").toLowerCase() === active.toLowerCase()
+    );
   }, [active, projects]);
 
 

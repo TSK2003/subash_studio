@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { useToast } from "../context/ToastContext";
+import { ADMIN_ROUTES } from "../constants/adminRoutes";
 import PremiumPageBackground from "../../components/PremiumPageBackground";
 
 export default function AdminLogin() {
@@ -27,7 +28,7 @@ export default function AdminLogin() {
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const from = location.state?.from?.pathname || "/admin/dashboard";
+  const from = location.state?.from?.pathname || ADMIN_ROUTES.DASHBOARD;
 
   const handleLogin = async (e) => {
     e.preventDefault();
