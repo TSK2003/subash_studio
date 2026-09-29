@@ -115,7 +115,8 @@ export default function App() {
         <AdminDataProvider>
           <Suspense fallback={<LuxuryLoader />}>
             <Routes>
-              {/* Opaque Admin Login */}
+              {/* Admin Login (Direct Alias & Opaque Path) */}
+              <Route path="/login" element={<AdminLogin />} />
               <Route path={ADMIN_ROUTES.LOGIN} element={<AdminLogin />} />
 
               {/* Opaque Admin Root Redirect */}
