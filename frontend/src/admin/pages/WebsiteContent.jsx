@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { FaInstagram, FaFacebookF, FaYoutube } from "react-icons/fa6";
 import ImageUploader from "../components/ImageUploader";
+import HeroVideoManager from "../components/HeroVideoManager";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
 
@@ -23,6 +24,7 @@ export default function WebsiteContent() {
 
   const [activeTab, setActiveTab] = useState("home");
   const [savingSection, setSavingSection] = useState(null);
+  const [isVideoUploading, setIsVideoUploading] = useState(false);
 
   // Local editable copies
   const [homeForm, setHomeForm] = useState(websiteContent?.home || {});
@@ -78,6 +80,11 @@ export default function WebsiteContent() {
       return;
     }
 
+    if (isVideoUploading) {
+      addToast("Please wait for all video uploads to finish before saving.", "warning");
+      return;
+    }
+
     setFormErrors({});
     try {
       setSavingSection("home");
@@ -85,6 +92,8 @@ export default function WebsiteContent() {
         ...homeForm,
         heroHeading: heading,
         heroTagline: tagline,
+        heroVideos: Array.isArray(homeForm.heroVideos) ? homeForm.heroVideos : [],
+        heroVideoLoop: homeForm.heroVideoLoop !== false,
         heroCtaText: "BOOK A SHOOT",
       };
       const updated = await updateWebsiteContent("home", payload);
@@ -133,7 +142,7 @@ export default function WebsiteContent() {
           Website Content Management (CMS)
         </h2>
         <p className="text-xs text-[#6F6A62] mt-0.5">
-          Edit headlines, hero banners, studio story paragraphs, stats, and contact information displayed across the public website.
+          Edit headlines, hero banners, studio story paragraphs, and contact information displayed across the public website.
         </p>
       </div>
 
@@ -149,7 +158,7 @@ export default function WebsiteContent() {
           }`}
         >
           <Home className="w-4 h-4" />
-          <span>Homepage Hero &amp; Stats</span>
+          <span>Homepage Hero</span>
         </button>
 
         <button
@@ -268,77 +277,20 @@ export default function WebsiteContent() {
                   <p className="text-[11px] text-rose-600 mt-1">{formErrors.heroTagline}</p>
                 )}
               </div>
-            </div>
 
-            {/* Studio Metrics / Statistics */}
-            <div className="pt-6 border-t border-[#E7E0D2] space-y-4">
-              <h4 className="font-display font-semibold text-sm text-[#2B2B2B]">
-                Studio Milestone Counters (Stats Bar)
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-                <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Weddings Captured</label>
-                  <input
-                    type="text"
-                    value={homeForm.stats?.weddingsCaptured || "1,200+"}
-                    onChange={(e) =>
-                      setHomeForm({
-                        ...homeForm,
-                        stats: {
-                          ...homeForm.stats,
-                          weddingsCaptured: e.target.value,
-                        },
-                      })
-                    }
-                    className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-bold"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Years of Craft</label>
-                  <input
-                    type="text"
-                    value={homeForm.stats?.yearsOfCraft || "18+"}
-                    onChange={(e) =>
-                      setHomeForm({
-                        ...homeForm,
-                        stats: { ...homeForm.stats, yearsOfCraft: e.target.value },
-                      })
-                    }
-                    className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-bold"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Signature Films</label>
-                  <input
-                    type="text"
-                    value={homeForm.stats?.signatureFilms || "450+"}
-                    onChange={(e) =>
-                      setHomeForm({
-                        ...homeForm,
-                        stats: { ...homeForm.stats, signatureFilms: e.target.value },
-                      })
-                    }
-                    className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-bold"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Happy Families</label>
-                  <input
-                    type="text"
-                    value={homeForm.stats?.happyFamilies || "2,800+"}
-                    onChange={(e) =>
-                      setHomeForm({
-                        ...homeForm,
-                        stats: { ...homeForm.stats, happyFamilies: e.target.value },
-                      })
-                    }
-                    className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-bold"
-                  />
-                </div>
-              </div>
+              {/* HERO VIDEOS SECTION */}
+              <HeroVideoManager
+                videos={Array.isArray(homeForm.heroVideos) ? homeForm.heroVideos : []}
+                onChange={(updatedVideos) =>
+                  setHomeForm((prev) => ({ ...prev, heroVideos: updatedVideos }))
+                }
+                loopEnabled={homeForm.heroVideoLoop !== false}
+                onLoopChange={(loop) =>
+                  setHomeForm((prev) => ({ ...prev, heroVideoLoop: loop }))
+                }
+                disabled={savingSection !== null}
+                onUploadingStateChange={setIsVideoUploading}
+              />
             </div>
           </div>
         </form>

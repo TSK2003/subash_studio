@@ -310,11 +310,6 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/portfolio" className="hover:text-[#C9A669] transition-colors">
-                Portfolio
-              </Link>
-            </li>
-            <li>
               <Link to="/gallery" className="hover:text-[#C9A669] transition-colors">
                 Gallery
               </Link>

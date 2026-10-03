@@ -1,53 +1,42 @@
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowRight, ArrowDown } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowDown } from "lucide-react";
 import { useAdminData } from "../../admin/context/AdminDataContext";
 
 /**
  * HomeHero
  *
- * Recreates the exact visual composition of the uploaded Subash Studio reference:
- * - 1600x800 style desktop editorial hero composition
- * - Warm ivory canvas (#FAF7F2) with subtle organic texture
- * - Authentic outer-edge heritage artwork layers from /images/backgrounds/subash-bg-wide.webp
- *   (film strips, vintage photographer, DSLR camera, polaroids, botanical leaves)
- * - Large, dominant Subash Studio storefront photograph on the right, seamlessly blended
- *   into the scene (NO card frame, NO rigid box borders, natural atmospheric edge fade)
- * - True editorial typography hierarchy:
- *   "Subash" (Fraunces bold charcoal) + "Photography" (Fraunces italic champagne gold)
- *   with "Photography" extending generously across into the center space
- * - Minimal gold diamond ornament (── ◆ ──)
- * - Pill buttons: BOOK A SHOOT (~210px x 52px) & EXPLORE OUR WORK (~235px x 52px)
- * - SCROLL DOWN indicator with circular downward arrow
- * - Fully responsive from 375px mobile up to 1920px widescreen desktop
+ * CMS-managed Hero Video System for SUBASH STUDIO Landing Page.
+ *
+ * Strict 3-Layer Architecture:
+ * - Layer 0 (z-0):   Background Video playlist with smooth playback and safe image fallback
+ * - Layer 1 (z-[1]): Cinematic Contrast Gradient & Vignette Overlay (preserves text readability across bright/dark video frames)
+ * - Layer 2 (z-[2]): Centered Hero Content (Emblem logo, SUBASH STUDIO typography, WEDDING FILM COMPANY, SINCE 1933, Promise on Time Delivery, Tagline, Scroll indicator)
+ *
+ * Navigation Header (z-50) is strictly ABOVE Section 1.
+ * Section 2 (Why Choose Us) is completely separate; video NEVER bleeds or remains fixed behind Section 2.
  */
 export default function HomeHero() {
   const { websiteContent } = useAdminData();
   const homeData = websiteContent?.home || {};
 
-  const rawHeading = (homeData.heroHeading || "Subash Photography").trim();
-  let line1 = rawHeading;
-  let line2 = "";
+  // Extract Headline
+  const rawHeading = (homeData.heroHeading || "Subash Studio").trim();
+  let word1 = "SUBASH";
+  let word2 = "STUDIO";
 
   if (rawHeading.includes("\n")) {
     const parts = rawHeading.split("\n");
-    line1 = parts[0].trim();
-    line2 = parts.slice(1).join(" ").trim();
-  } else if (rawHeading.includes("&")) {
-    const parts = rawHeading.split("&");
-    line1 = parts[0].trim() + " &";
-    line2 = parts.slice(1).join("&").trim();
+    word1 = parts[0].trim();
+    word2 = parts.slice(1).join(" ").trim();
   } else {
     const words = rawHeading.split(/\s+/);
     if (words.length > 1) {
-      if (words[0].toLowerCase() === "subash") {
-        line1 = words[0];
-        line2 = words.slice(1).join(" ");
-      } else {
-        const splitIndex = Math.ceil(words.length / 2);
-        line1 = words.slice(0, splitIndex).join(" ");
-        line2 = words.slice(splitIndex).join(" ");
-      }
+      word1 = words[0];
+      word2 = words.slice(1).join(" ");
+    } else if (words.length === 1 && words[0]) {
+      word1 = words[0];
+      word2 = "";
     }
   }
 
@@ -55,227 +44,275 @@ export default function HomeHero() {
     homeData.heroTagline ||
     "Preserving timeless heritage, profound emotions, and authentic human celebrations across generations.";
 
+  const fallbackImage =
+    homeData.heroImage || homeData.image || "/images/storefront.webp";
+
+  // CMS Hero Videos & Loop setting
+  const videos = useMemo(() => {
+    if (!Array.isArray(homeData.heroVideos)) return [];
+    return homeData.heroVideos
+      .filter((v) => v && v.url && v.active !== false)
+      .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+  }, [homeData.heroVideos]);
+
+  const loopEnabled = homeData.heroVideoLoop !== false;
+
+  // Video Playlist Sequencer state
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef(null);
+
+  // Keep index within bounds if videos array changes
+  useEffect(() => {
+    if (currentIndex >= videos.length && videos.length > 0) {
+      setCurrentIndex(0);
+    }
+    setVideoError(false);
+  }, [videos.length, currentIndex]);
+
+  // Autoplay current video whenever index changes
+  useEffect(() => {
+    if (videoRef.current && videos.length > 0) {
+      videoRef.current.load();
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Browser prevented autoplay or switching source
+        });
+      }
+    }
+  }, [currentIndex, videos]);
+
+  /**
+   * Video Sequencer Handler:
+   * LOOP ENABLED:
+   *   1 video  -> loops continuously
+   *   3 videos -> 1 -> 2 -> 3 -> 1 -> 2 -> 3 -> ...
+   * LOOP DISABLED:
+   *   1 video  -> plays once, stops on final frame
+   *   3 videos -> 1 -> 2 -> 3 -> stops on final frame of video 3
+   */
+  const handleVideoEnded = () => {
+    if (videos.length === 0) return;
+
+    if (videos.length === 1) {
+      if (loopEnabled && videoRef.current) {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play().catch(() => {});
+      }
+      // If !loopEnabled, video naturally remains paused on its final frame
+      return;
+    }
+
+    // Multiple videos
+    if (currentIndex < videos.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    } else {
+      // Reached the last video
+      if (loopEnabled) {
+        setCurrentIndex(0);
+      }
+      // If !loopEnabled, stay on the last frame of the final video
+    }
+  };
+
   const handleScrollDown = () => {
-    const nextSection = document.getElementById("home-stats-section");
+    const nextSection = document.getElementById("why-choose-us-section");
     if (nextSection) {
       nextSection.scrollIntoView({ behavior: "smooth" });
     }
   };
 
+  const hasVideos = videos.length > 0 && !videoError;
+  const currentVideo = hasVideos ? videos[currentIndex] : null;
+
   return (
     <section
-      className="relative w-full min-h-[auto] lg:min-h-[600px] lg:h-[clamp(620px,46vw,840px)] flex flex-col justify-start overflow-hidden bg-[#FAF7F2] border-b border-[#E7E0D2]/70"
-      aria-label="Subash Studio Welcome"
+      className="relative w-full min-h-[calc(100vh-84px)] flex flex-col items-center justify-center overflow-hidden bg-[#141311] border-b border-[#E7E0D2]/20 py-12 sm:py-16 lg:py-20"
+      aria-label="SUBASH STUDIO Welcome"
     >
       {/* =========================================================
-          LAYER 1: OUTER-EDGE HERITAGE COLLAGE ARTWORK (z-[1])
-          Anchors film strips, vintage photographer & leaves on the left flank,
-          and polaroid photo wall, DSLR camera & leaves on the right flank,
-          positioned BEHIND the storefront image (z-[1]).
+          LAYER 0: VIDEO BACKGROUND LAYER (z-0)
+          object-fit: cover, strictly scoped to Section 1
+          Autoplay, muted, playsInline, no browser controls.
+          If 0 videos exist, cleanly falls back to storefront image.
       ========================================================= */}
-      <div
-        className="absolute inset-0 pointer-events-none select-none z-[1] overflow-hidden"
-        aria-hidden="true"
-      >
-        {/* Left Flank Collage: Top leaves, film strip arch, photographer profile, circular photo, bottom leaves - Fully visible on outer edge only */}
-        <div
-          className="hidden lg:block absolute top-0 bottom-0 left-0 w-[260px] lg:w-[280px] xl:w-[320px] 2xl:w-[360px] bg-no-repeat bg-left-top opacity-100 transition-opacity duration-700"
-          style={{
-            backgroundImage: "url('/images/backgrounds/subash-bg-wide.webp')",
-            backgroundSize: "auto 100%",
-            WebkitMaskImage:
-              "linear-gradient(to right, black 0%, black clamp(42px, 4vw, 56px), rgba(0,0,0,0.65) clamp(65px, 6.2vw, 86px), rgba(0,0,0,0.15) clamp(82px, 7.8vw, 108px), transparent clamp(96px, 9.2vw, 126px))",
-            maskImage:
-              "linear-gradient(to right, black 0%, black clamp(42px, 4vw, 56px), rgba(0,0,0,0.65) clamp(65px, 6.2vw, 86px), rgba(0,0,0,0.15) clamp(82px, 7.8vw, 108px), transparent clamp(96px, 9.2vw, 126px))",
-          }}
-        />
-
-        {/* Mobile / Tablet Portrait Artwork Layer */}
-        <div
-          className="lg:hidden absolute inset-0 bg-cover bg-top bg-no-repeat opacity-40"
-          style={{
-            backgroundImage: "url('/images/backgrounds/subash-bg-tall.webp')",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, black 0%, black 15%, transparent 35%, transparent 70%, black 90%, black 100%)",
-            maskImage:
-              "linear-gradient(to bottom, black 0%, black 15%, transparent 35%, transparent 70%, black 90%, black 100%)",
-          }}
-        />
-      </div>
-
-      {/* =========================================================
-          LAYER 2: DESKTOP RIGHT-SIDE STOREFRONT PHOTO (z-10)
-          Dominant architectural visual spanning the right side of the hero canvas.
-          Calibrated with responsive widths (w-[50%] xl:w-[46%] 2xl:w-[42%] max-w-[840px])
-          so that on both Laptop and PC screens:
-          - Words never collide with the photo (comfortable breathing room)
-          - No excessive empty gap on laptops
-          - Storefront building, signage, couple photo, and right trees remain fully visible
-      ========================================================= */}
-      <div
-        className="hidden lg:flex absolute top-0 bottom-0 right-0 w-[50%] xl:w-[46%] 2xl:w-[42%] max-w-[840px] items-end justify-end z-10 pointer-events-none select-none overflow-hidden"
-        aria-hidden="true"
-      >
-        <div className="relative h-full w-full flex items-end justify-end">
-          {/* Main Storefront Photograph anchored flush to the right edge */}
-          <img
-            src="/images/storefront.jpg"
-            alt="Subash Studio storefront"
-            loading="eager"
-            fetchPriority="high"
-            className="h-full w-full object-cover object-[right_top]"
-            style={{
-              WebkitMaskImage:
-                "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 3%, black 9%, black 100%)",
-              maskImage:
-                "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 3%, black 9%, black 100%)",
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+        {hasVideos && currentVideo ? (
+          <video
+            ref={videoRef}
+            key={currentVideo.url}
+            src={currentVideo.url}
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            loop={loopEnabled && videos.length === 1}
+            onEnded={handleVideoEnded}
+            onError={() => {
+              // Gracefully fall back if video file fails to load
+              setVideoError(true);
             }}
+            className="w-full h-full object-cover object-center"
           />
-        </div>
+        ) : (
+          <img
+            src={fallbackImage}
+            alt="SUBASH STUDIO Heritage"
+            fetchPriority="high"
+            decoding="async"
+            onError={(e) => {
+              if (e.currentTarget.src !== "/images/storefront.jpg") {
+                e.currentTarget.src = "/images/storefront.jpg";
+              }
+            }}
+            className="w-full h-full object-cover object-center"
+          />
+        )}
       </div>
 
       {/* =========================================================
-          LAYER 3: HERO EDITORIAL CONTENT (Left Column on Desktop) (z-20)
+          LAYER 1: CINEMATIC CONTRAST OVERLAY LAYER (z-[1])
+          Dark transparent gradient + radial vignette
+          Ensures logo emblem, gold accents and white typography
+          remain 100% visible and readable over any bright or dark frame,
+          while preserving cinematic video vibrancy.
       ========================================================= */}
-      <div className="relative z-20 w-full max-w-[1600px] mx-auto px-6 sm:px-10 lg:pl-[10%] lg:pr-8 xl:pl-[10.5%] 2xl:pl-[11%] pt-6 sm:pt-8 lg:pt-16 xl:pt-20 2xl:pt-24 pb-6 sm:pb-8 lg:pb-8 xl:pb-10 flex-1 flex flex-col justify-start">
-        <div className="w-full lg:w-[48%] xl:w-[46%] 2xl:w-[44%] flex flex-col justify-start text-left">
-          
-          {/* Main Editorial Content Group */}
-          <div className="flex flex-col justify-start">
-            {/* Eyebrow */}
-            <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-              className="text-[12px] sm:text-[13px] xl:text-[14px] tracking-[0.28em] font-medium text-[#B38F4D] uppercase mb-2.5 sm:mb-3 xl:mb-3.5"
-            >
-              FINE PHOTOGRAPHY &amp; CINEMATIC FILMS
-            </motion.p>
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none select-none"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(16,15,13,0.38) 0%, rgba(16,15,13,0.65) 70%, rgba(10,9,8,0.88) 100%), linear-gradient(to bottom, rgba(0,0,0,0.58) 0%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.68) 100%)",
+        }}
+      />
 
-            {/* Main Headline with clamp typography */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.08, ease: [0.25, 1, 0.5, 1] }}
-              className="font-display tracking-tight leading-[0.92]"
-            >
-              <span
-                className="block text-[#1C1B19] font-bold"
-                style={{ fontSize: "clamp(2.4rem, 5.2vw, 5.6rem)" }}
-              >
-                {line1}
-              </span>
-              {line2 && (
-                <span
-                  className="block text-[#B38F4D] font-normal italic mt-1 sm:mt-1.5 lg:whitespace-nowrap"
-                  style={{ fontSize: "clamp(2.4rem, 5.2vw, 5.6rem)" }}
-                >
-                  {line2}
-                </span>
-              )}
-            </motion.h1>
-
-            {/* Editorial Gold Ornament: ── ◆ ── */}
-            <motion.div
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={{ duration: 0.6, delay: 0.16, ease: [0.25, 1, 0.5, 1] }}
-              className="flex items-center gap-3 my-4 sm:my-5 xl:my-5 origin-left"
-              aria-hidden="true"
-            >
-              <span className="h-[1px] w-12 sm:w-14 bg-[#B38F4D]/50" />
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 10 10"
-                className="text-[#B38F4D] shrink-0 fill-current"
-              >
-                <path d="M5 0 L10 5 L5 10 L0 5 Z" />
-              </svg>
-              <span className="h-[1px] w-12 sm:w-14 bg-[#B38F4D]/50" />
-            </motion.div>
-
-            {/* Supporting Copy */}
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, delay: 0.22, ease: [0.25, 1, 0.5, 1] }}
-              className="text-[#6F6A62] text-[15px] sm:text-[16px] xl:text-[17px] leading-[1.65] max-w-[490px] xl:max-w-[530px] font-normal"
-            >
-              {heroTagline}
-            </motion.p>
-
-            {/* Action Buttons: BOOK A SHOOT & EXPLORE OUR WORK */}
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.28, ease: [0.25, 1, 0.5, 1] }}
-              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 lg:gap-5 mt-6 sm:mt-7 xl:mt-8 w-full sm:w-fit sm:mx-auto lg:mx-0"
-            >
-              {/* Primary: BOOK A SHOOT (~210px-225px x 52px-58px) */}
-              <Link
-                to="/contact"
-                className="group w-full sm:w-[210px] xl:w-[220px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#B38F4D] hover:bg-[#9C7B3D] text-white rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-[0_8px_20px_-4px_rgba(179,143,77,0.38)] hover:shadow-lg hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0 px-4 text-center"
-              >
-                <span className="truncate">BOOK A SHOOT</span>
-                <ArrowRight
-                  size={14}
-                  className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
-                />
-              </Link>
-
-              {/* Secondary: EXPLORE OUR WORK (~230px-245px x 52px-58px) */}
-              <Link
-                to="/portfolio"
-                className="group w-full sm:w-[230px] xl:w-[240px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#FAF7F2]/80 hover:bg-[#1C1B19] border border-[#B38F4D]/70 hover:border-[#1C1B19] text-[#1C1B19] hover:text-[#F8F6F2] rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0"
-              >
-                <span>EXPLORE OUR WORK</span>
-                <ArrowRight
-                  size={14}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                />
-              </Link>
-            </motion.div>
-          </div>
-
-          {/* =========================================================
-              MOBILE / TABLET STOREFRONT PHOTO
-              Clean architectural presentation embedded below buttons on small devices.
-          ========================================================= */}
-          <div className="lg:hidden mt-6 sm:mt-8 relative w-full max-w-md sm:max-w-lg mx-auto overflow-hidden rounded-2xl shadow-xl bg-[#FAF8F5]">
+      {/* =========================================================
+          LAYER 2: HERO CONTENT LAYER (z-[2])
+          - SUBASH STUDIO logo emblem
+          - WEDDING FILM COMPANY
+          - SUBASH STUDIO Headline (Prominently on one line on desktop)
+          - Delicate Gold Divider (── ◆ ──)
+          - SINCE 1933 • We Promise on Time Delivery
+          - Editorial Tagline from CMS
+          - Centered Scroll-down Indicator
+      ========================================================= */}
+      <div className="relative z-[2] w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
+        {/* 1. SUBASH STUDIO Logo Emblem */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.88, y: -10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: [0.25, 1, 0.5, 1] }}
+          className="mb-3 sm:mb-4"
+        >
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-2 bg-black/40 backdrop-blur-md border border-[#E4D3A6]/40 shadow-[0_8px_24px_rgba(0,0,0,0.55)] flex items-center justify-center mx-auto transition-transform hover:scale-105 duration-300">
             <img
-              src="/images/storefront.jpg"
-              alt="Subash Studio storefront"
-              className="w-full aspect-square object-cover object-center"
+              src="/logo.png"
+              alt="SUBASH STUDIO Crest"
+              className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
             />
           </div>
+        </motion.div>
 
-          {/* Scroll Down Indicator - Horizontally centered across mobile/tablet and aligned under buttons on desktop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.36 }}
-            className="w-full lg:w-[456px] xl:w-[480px] flex flex-col items-center mx-auto lg:mx-0 gap-2 mt-8 sm:mt-9 xl:mt-10 select-none"
+        {/* 2. WEDDING FILM COMPANY Category Tag */}
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 1, 0.5, 1] }}
+          className="text-[10.5px] sm:text-[12px] md:text-[13px] tracking-[0.32em] sm:tracking-[0.40em] font-bold text-[#E4D3A6] uppercase mb-2 sm:mb-2.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]"
+        >
+          WEDDING FILM COMPANY
+        </motion.p>
+
+        {/* 3. Headline: SUBASH STUDIO (Prominent on one line on desktop) */}
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.16, ease: [0.25, 1, 0.5, 1] }}
+          className="font-display tracking-tight leading-none text-center"
+        >
+          <span
+            className="text-[#FAF7F2] font-bold uppercase inline-block drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)]"
+            style={{ fontSize: "clamp(2.4rem, 6.2vw, 5.8rem)" }}
           >
-            <span className="text-[10px] xl:text-[11px] tracking-[0.28em] uppercase font-semibold text-[#8C8275]">
-              SCROLL DOWN
-            </span>
-            <button
-              type="button"
-              onClick={handleScrollDown}
-              aria-label="Scroll down to statistics and overview"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[#B38F4D]/60 flex items-center justify-center text-[#B38F4D] hover:bg-[#B38F4D] hover:text-white transition-all duration-300 group cursor-pointer"
+            {word1}
+          </span>
+          {word2 && (
+            <span
+              className="text-[#E4D3A6] font-normal italic uppercase inline-block ml-3 sm:ml-4 md:ml-5 drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)]"
+              style={{ fontSize: "clamp(2.4rem, 6.2vw, 5.8rem)" }}
             >
-              <motion.div
-                animate={{ y: [0, 4, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <ArrowDown size={13} className="sm:w-3.5 sm:h-3.5" />
-              </motion.div>
-            </button>
-          </motion.div>
+              {word2}
+            </span>
+          )}
+        </motion.h1>
 
-        </div>
+        {/* 4. Delicate Gold Horizontal Lines & Central Diamond (── ◆ ──) */}
+        <motion.div
+          initial={{ opacity: 0, scaleX: 0 }}
+          animate={{ opacity: 1, scaleX: 1 }}
+          transition={{ duration: 0.6, delay: 0.22, ease: [0.25, 1, 0.5, 1] }}
+          className="flex items-center justify-center gap-3 my-3 sm:my-4"
+          aria-hidden="true"
+        >
+          <span className="h-[1px] w-12 sm:w-16 md:w-20 bg-[#E4D3A6]/60 shadow-[0_1px_4px_rgba(0,0,0,0.5)]" />
+          <svg
+            width="9"
+            height="9"
+            viewBox="0 0 10 10"
+            className="text-[#E4D3A6] shrink-0 fill-current drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]"
+          >
+            <path d="M5 0 L10 5 L5 10 L0 5 Z" />
+          </svg>
+          <span className="h-[1px] w-12 sm:w-16 md:w-20 bg-[#E4D3A6]/60 shadow-[0_1px_4px_rgba(0,0,0,0.5)]" />
+        </motion.div>
+
+        {/* 5. Heritage Badge: SINCE 1933 • We Promise on Time Delivery */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, delay: 0.28, ease: [0.25, 1, 0.5, 1] }}
+          className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[10.5px] sm:text-[12px] tracking-[0.24em] uppercase font-semibold text-[#FAF7F2] mb-4 sm:mb-5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+        >
+          <span className="text-[#E4D3A6] font-bold">SINCE 1933</span>
+          <span className="text-[#E4D3A6]/60 select-none">•</span>
+          <span className="text-[#FAF7F2]/90">We Promise on Time Delivery</span>
+        </motion.div>
+
+        {/* 6. Editorial Description / Tagline from CMS */}
+        <motion.p
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, delay: 0.34, ease: [0.25, 1, 0.5, 1] }}
+          className="text-[#E8E3D8] text-[14px] sm:text-[16px] md:text-[17px] leading-[1.65] max-w-xl sm:max-w-2xl mx-auto font-normal text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+        >
+          {heroTagline}
+        </motion.p>
+
+        {/* 7. Centered Scroll Down Indicator (Balanced, natural spacing) */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.42 }}
+          className="flex flex-col items-center justify-center gap-2 mt-8 sm:mt-10 select-none"
+        >
+          <span className="text-[10px] sm:text-[11px] tracking-[0.28em] uppercase font-semibold text-[#E4D3A6] drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">
+            SCROLL DOWN
+          </span>
+          <button
+            type="button"
+            onClick={handleScrollDown}
+            aria-label="Scroll down to overview"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[#E4D3A6]/80 bg-black/40 backdrop-blur-sm flex items-center justify-center text-[#E4D3A6] hover:bg-[#E4D3A6] hover:text-[#1C1B19] transition-all duration-300 group cursor-pointer shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
+          >
+            <motion.div
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <ArrowDown size={13} className="sm:w-3.5 sm:h-3.5" />
+            </motion.div>
+          </button>
+        </motion.div>
       </div>
     </section>
   );

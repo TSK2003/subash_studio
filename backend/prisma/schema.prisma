@@ -395,3 +395,44 @@ model Category {
   @@map("categories")
 }
 
+/// Event / client photo albums in Gallery
+model GalleryAlbum {
+  id          String         @id
+  title       String         // Lead / Event Name (e.g. "Arun & Priya")
+  slug        String         @unique
+  category    String
+  coverImage  String         @db.Text
+  description String?        @db.Text
+  featured    Boolean        @default(false)
+  published   Boolean        @default(true)
+  order       Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  photos      GalleryPhoto[]
+
+  @@index([category])
+  @@index([published])
+  @@index([slug])
+  @@map("gallery_albums")
+}
+
+/// Photos contained within an album
+model GalleryPhoto {
+  id        String       @id
+  albumId   String
+  album     GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  url       String       @db.Text
+  caption   String?
+  width     Int?
+  height    Int?
+  aspect    String?      @default("portrait")
+  order     Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([albumId])
+  @@index([order])
+  @@map("gallery_photos")
+}
+
+

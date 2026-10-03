@@ -9,14 +9,13 @@ const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About" },
   { to: "/order-booking", label: "Services", hasDropdown: true },
-  { to: "/portfolio", label: "Portfolio" },
   { to: "/gallery", label: "Gallery" },
   { to: "/films", label: "Films" },
   { to: "/branches", label: "Branches" },
   { to: "/contact", label: "Contact" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ introActive = false, brandReady = false }) {
   const { websiteContent } = useAdminData();
   const contactData = websiteContent?.contact || {};
   const instagramHref = contactData.instagram || "https://www.instagram.com/subash_studio/";
@@ -62,21 +61,33 @@ export default function Navbar() {
     location.pathname === "/services" ||
     location.pathname === "/frames";
 
+  const isIntroHidden = introActive && !brandReady;
+
   return (
     <>
       <AnimatePresence>
         {visible && (
           <motion.header
-            initial={{ y: -100, opacity: 0 }}
+            initial={introActive ? { y: 0, opacity: 1 } : { y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
-            className={`fixed top-0 left-0 right-0 z-50 bg-[#FAF7F2]/95 backdrop-blur-md border-b transition-shadow duration-300 ${
-              scrolled ? "border-line/70 shadow-sm" : "border-transparent"
+            className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-500 ${
+              isIntroHidden
+                ? "bg-transparent border-transparent shadow-none backdrop-blur-none"
+                : `bg-[#FAF7F2]/95 backdrop-blur-md ${
+                    scrolled ? "border-line/70 shadow-sm" : "border-transparent"
+                  }`
             }`}
           >
             <div className="w-full px-4 sm:px-6 lg:px-10 h-[84px] flex items-center justify-between">
-              <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+              <Link
+                to="/"
+                id="navbar-brand-logo"
+                className={`flex items-center gap-2.5 sm:gap-3 group shrink-0 transition-opacity duration-300 ${
+                  isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+              >
                 <img
                   src="/logo.png"
                   alt="SUBASH STUDIO"
@@ -97,7 +108,11 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              <nav className="hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8">
+              <nav
+                className={`hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 transition-opacity duration-700 ${
+                  isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+              >
                 {NAV_LINKS.map((l) => {
                   if (l.hasDropdown) {
                     return (
@@ -219,7 +234,11 @@ export default function Navbar() {
                 })}
               </nav>
 
-              <div className="hidden lg:flex items-center gap-5">
+              <div
+                className={`hidden lg:flex items-center gap-5 transition-opacity duration-700 ${
+                  isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+              >
                 <Link
                   to="/contact"
                   className="w-[160px] h-[45px] flex items-center justify-center bg-[#1C1B19] text-[#F8F6F2] hover:bg-black text-[12px] tracking-[0.14em] uppercase font-bold rounded-full transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-95"
@@ -229,7 +248,9 @@ export default function Navbar() {
               </div>
 
               <button
-                className="lg:hidden text-ink"
+                className={`lg:hidden text-ink transition-opacity duration-700 ${
+                  isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-label="Toggle menu"
               >

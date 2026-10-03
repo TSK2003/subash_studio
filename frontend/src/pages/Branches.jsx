@@ -51,6 +51,8 @@ function BranchCard({ branch, index }) {
         <img
           src={branch.image}
           alt={`SUBASH STUDIO ${branch.city} branch`}
+          loading="lazy"
+          decoding="async"
           className="w-full h-auto object-contain block transition-transform duration-700 hover:scale-105"
           onError={(e) => {
             e.currentTarget.src = "/images/gallery/branches/kalladaikurichi.jpg";
