@@ -16,7 +16,7 @@ const NAV_LINKS = [
   { to: "/contact", label: "Contact" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ isHomeIntro = false, isIntroRevealing = false }) {
   const { websiteContent } = useAdminData();
   const contactData = websiteContent?.contact || {};
   const instagramHref = contactData.instagram || "https://www.instagram.com/subash_studio/";
@@ -67,7 +67,7 @@ export default function Navbar() {
       <AnimatePresence>
         {visible && (
           <motion.header
-            initial={{ y: -100, opacity: 0 }}
+            initial={isHomeIntro ? { y: 0, opacity: 1 } : { y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
@@ -76,8 +76,15 @@ export default function Navbar() {
             }`}
           >
             <div className="w-full px-4 sm:px-6 lg:px-10 h-[84px] flex items-center justify-between">
-              <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+              <Link
+                to="/"
+                id="navbar-brand-link"
+                className={`flex items-center gap-2.5 sm:gap-3 group shrink-0 transition-opacity duration-300 ${
+                  isHomeIntro && !isIntroRevealing ? "opacity-0" : "opacity-100"
+                }`}
+              >
                 <img
+                  id="navbar-logo-img"
                   src="/logo.png"
                   alt="SUBASH STUDIO"
                   className="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0"
@@ -97,7 +104,11 @@ export default function Navbar() {
                 </div>
               </Link>
 
-              <nav className="hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8">
+              <nav
+                className={`hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 transition-opacity duration-500 ${
+                  isHomeIntro && !isIntroRevealing ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+              >
                 {NAV_LINKS.map((l) => {
                   if (l.hasDropdown) {
                     return (
@@ -219,7 +230,11 @@ export default function Navbar() {
                 })}
               </nav>
 
-              <div className="hidden lg:flex items-center gap-5">
+              <div
+                className={`hidden lg:flex items-center gap-5 transition-opacity duration-500 ${
+                  isHomeIntro && !isIntroRevealing ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+              >
                 <Link
                   to="/contact"
                   className="w-[160px] h-[45px] flex items-center justify-center bg-[#1C1B19] text-[#F8F6F2] hover:bg-black text-[12px] tracking-[0.14em] uppercase font-bold rounded-full transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-95"
@@ -229,7 +244,9 @@ export default function Navbar() {
               </div>
 
               <button
-                className="lg:hidden text-ink"
+                className={`lg:hidden text-ink transition-opacity duration-500 ${
+                  isHomeIntro && !isIntroRevealing ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-label="Toggle menu"
               >

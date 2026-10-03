@@ -1,10 +1,11 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import FloatingButtons from "./components/FloatingButtons";
 import LuxuryLoader from "./components/LuxuryLoader";
+import HomeIntroAnimation from "./components/HomeIntroAnimation";
 import { useLenis, scrollToTop } from "./lib/useLenis";
 
 // Critical landing page loaded synchronously for optimal FCP
@@ -70,11 +71,52 @@ function PublicWebsiteLayout() {
   const location = useLocation();
   useLenis();
 
+  const isHome = location.pathname === "/";
+  const [introState, setIntroState] = useState({
+    active: isHome,
+    revealing: false,
+    key: location.key || "home-init",
+  });
+
+  useEffect(() => {
+    if (location.pathname === "/") {
+      setIntroState({
+        active: true,
+        revealing: false,
+        key: location.key || String(Date.now()),
+      });
+    } else {
+      setIntroState({
+        active: false,
+        revealing: false,
+        key: "",
+      });
+    }
+  }, [location.pathname, location.key]);
+
+  const handleRevealing = () => {
+    setIntroState((prev) => ({ ...prev, revealing: true }));
+  };
+
+  const handleComplete = () => {
+    setIntroState((prev) => ({ ...prev, active: false }));
+  };
+
   return (
     <div className="min-h-screen flex flex-col relative text-ink">
+      {introState.active && (
+        <HomeIntroAnimation
+          key={introState.key}
+          onRevealing={handleRevealing}
+          onComplete={handleComplete}
+        />
+      )}
       <PremiumPageBackground />
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+        <Navbar
+          isHomeIntro={introState.active}
+          isIntroRevealing={introState.revealing}
+        />
         <div className="flex-1">
           <Suspense fallback={<LuxuryLoader />}>
             <AnimatePresence mode="wait">
