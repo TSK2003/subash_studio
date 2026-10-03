@@ -7,7 +7,53 @@ const ToastContext = createContext(null);
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = useCallback((message, type = "success", duration = 4000) => {
+  const addToast = useCallback((firstArg, secondArg = "success", durationArg = 4000) => {
+    let message = "";
+    let type = "info";
+    let duration = 4000;
+
+    if (typeof firstArg === "string" || typeof firstArg === "number") {
+      message = String(firstArg).trim();
+      type = typeof secondArg === "string" ? secondArg : "success";
+      duration = typeof durationArg === "number" ? durationArg : 4000;
+    } else if (firstArg instanceof Error) {
+      message = firstArg.message || "An unexpected error occurred.";
+      type = typeof secondArg === "string" && secondArg !== "success" ? secondArg : "error";
+      duration = typeof durationArg === "number" ? durationArg : 5000;
+    } else if (typeof firstArg === "object" && firstArg !== null) {
+      // Structured payload: { message, type, duration, error, ... }
+      type = firstArg.type || (firstArg.error ? "error" : "success");
+      duration = typeof firstArg.duration === "number" ? firstArg.duration : 4000;
+
+      if (typeof firstArg.message === "string") {
+        message = firstArg.message.trim();
+      } else if (typeof firstArg.text === "string") {
+        message = firstArg.text.trim();
+      } else if (typeof firstArg.title === "string") {
+        message = firstArg.title.trim();
+      } else if (firstArg.error && typeof firstArg.error === "string") {
+        message = firstArg.error.trim();
+      } else if (firstArg.error?.message && typeof firstArg.error.message === "string") {
+        message = firstArg.error.message.trim();
+      } else {
+        message = type === "error" ? "An error occurred. Please try again." : "Operation completed successfully.";
+      }
+    } else {
+      message = "Notification";
+      type = "info";
+    }
+
+    // Safety fallback: ensure message is strictly a non-empty string
+    if (!message || typeof message !== "string") {
+      message = type === "error" ? "An unexpected error occurred." : "Operation completed.";
+    }
+
+    // Normalize type to supported styles
+    const validTypes = ["success", "error", "warning", "info"];
+    if (!validTypes.includes(type)) {
+      type = type === "danger" ? "error" : "info";
+    }
+
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 5);
     setToasts((prev) => [...prev, { id, message, type }]);
 
@@ -25,7 +71,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ addToast, removeToast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 max-w-md w-full pointer-events-none px-4 sm:px-0">
+      <div className="fixed bottom-6 right-6 z-[100000] flex flex-col gap-2 max-w-md w-full pointer-events-none px-4 sm:px-0">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
@@ -51,7 +97,7 @@ export function ToastProvider({ children }) {
                 {toast.type === "info" && <Info className="w-5 h-5 text-[#6B7280]" />}
               </div>
               <div className="flex-1 text-sm font-medium leading-relaxed">
-                {toast.message}
+                {typeof toast.message === "string" ? toast.message : String(toast.message || "")}
               </div>
               <button
                 onClick={() => removeToast(toast.id)}

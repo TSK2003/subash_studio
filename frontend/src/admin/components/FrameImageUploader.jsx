@@ -66,6 +66,7 @@ export default function FrameImageUploader({
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processStatus, setProcessStatus] = useState("");
   const [displayFileName, setDisplayFileName] = useState(
     fileName || extractFileName(value, "frame-texture.jpg")
   );
@@ -94,14 +95,24 @@ export default function FrameImageUploader({
 
     try {
       setIsProcessing(true);
+      setProcessStatus("Uploading...");
       setDisplayFileName(file.name);
 
       // Attempt backend API upload
       try {
         const formData = new FormData();
         formData.append("file", file);
-        const res = await api.upload("/api/uploads?category=frames/catalog", formData);
+        const res = await api.uploadWithProgress("/api/uploads?category=frames/catalog", formData, {
+          onProgress: ({ percent }) => {
+            if (percent < 100) {
+              setProcessStatus(`Uploading (${percent}%)...`);
+            } else {
+              setProcessStatus("Optimizing image...");
+            }
+          },
+        });
         if (res && res.url) {
+          setProcessStatus("Upload complete");
           if (onChange) {
             onChange(res.url, file.name);
           }
@@ -111,6 +122,7 @@ export default function FrameImageUploader({
         console.warn("Backend frame image upload failed, falling back to local canvas:", uploadErr.message);
       }
 
+      setProcessStatus("Optimizing image...");
       const compressedDataUrl = await compressImage(file, 800, 0.82);
       if (onChange) {
         onChange(compressedDataUrl, file.name);
@@ -119,7 +131,10 @@ export default function FrameImageUploader({
       console.error("Image processing error:", err);
       setError("Could not process image. Please try another file.");
     } finally {
-      setIsProcessing(false);
+      setTimeout(() => {
+        setIsProcessing(false);
+        setProcessStatus("");
+      }, 500);
     }
   };
 
@@ -240,7 +255,7 @@ export default function FrameImageUploader({
             <Upload className="w-5 h-5 text-[#9C7B3D]" />
           </div>
           <p className="text-xs sm:text-sm font-bold text-[#1C1B19]">
-            {isProcessing ? "Optimizing image..." : "Upload Image"}
+            {isProcessing ? (processStatus || "Optimizing image...") : "Upload Image"}
           </p>
           <p className="text-[11px] text-[#6F6A62] mt-0.5">
             Click to select or drag &amp; drop file

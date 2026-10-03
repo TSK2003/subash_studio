@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { upload, videoUpload } from "../middleware/upload.js";
-import { handleUpload, handleVideoUpload } from "../controllers/uploadController.js";
+import { handleUpload, handleVideoUpload, handleDeleteUpload } from "../controllers/uploadController.js";
 import { authenticateAdmin } from "../middleware/auth.js";
 
 const router = Router();
@@ -62,6 +62,9 @@ router.post(
   },
   handleVideoUpload
 );
+
+// Protected admin file deletion endpoint
+router.delete("/", authenticateAdmin, handleDeleteUpload);
 
 export default router;
 

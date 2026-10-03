@@ -2,6 +2,7 @@ import app from "./app.js";
 import ENV from "./config/env.js";
 import prisma from "./config/prisma.js";
 import { seedInitialDataIfNeeded } from "./services/seedService.js";
+import { seedInitialAlbumsIfNeeded } from "./services/galleryService.js";
 import { backfillRecentNotificationsIfEmpty } from "./services/notificationService.js";
 import { ensureDatabaseTablesExist } from "./services/dbInitService.js";
 import { ensurePortAvailable } from "./utils/portManager.js";
@@ -20,6 +21,7 @@ async function startServer() {
 
     // 4. Automatically seed default admin and catalog if empty
     await seedInitialDataIfNeeded();
+    await seedInitialAlbumsIfNeeded();
     await backfillRecentNotificationsIfEmpty();
 
     // 5. Start HTTP server

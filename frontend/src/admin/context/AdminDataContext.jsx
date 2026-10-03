@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import api from "../../lib/api.js";
 import { useAdminAuth } from "./AdminAuthContext.jsx";
 import useRealtimeSync from "../../hooks/useRealtimeSync.js";
@@ -284,6 +284,7 @@ export function AdminDataProvider({ children }) {
   const [bookings, setBookings] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [gallery, setGallery] = useState([]);
+  const [albums, setAlbums] = useState([]);
   const [portfolio, setPortfolio] = useState([]);
   const [featuredPortfolio, setFeaturedPortfolio] = useState([]);
   const [portfolioCategories, setPortfolioCategories] = useState([]);
@@ -335,8 +336,8 @@ export function AdminDataProvider({ children }) {
     try {
       const publicRequests = [
         api.get(adminMode ? "/api/gallery?all=true" : "/api/gallery"),
-        api.get(adminMode ? "/api/portfolio?all=true" : "/api/portfolio"),
-        api.get("/api/portfolio?featured=true"),
+        Promise.resolve([]),
+        Promise.resolve([]),
         api.get(adminMode ? "/api/services?all=true" : "/api/services"),
         api.get(adminMode ? "/api/films?all=true" : "/api/films"),
         api.get(adminMode ? "/api/branches?all=true" : "/api/branches"),
@@ -345,8 +346,9 @@ export function AdminDataProvider({ children }) {
         api.get(adminMode ? "/api/frames/wood-types?all=true" : "/api/frames/wood-types"),
         api.get(adminMode ? "/api/frames/designs?all=true" : "/api/frames/designs"),
         api.get(adminMode ? "/api/frames/ratios?all=true" : "/api/frames/ratios"),
-        api.get(adminMode ? "/api/portfolio/categories?all=true" : "/api/portfolio/categories"),
+        Promise.resolve([]),
         api.get(adminMode ? "/api/gallery/categories?all=true" : "/api/gallery/categories"),
+        api.get(adminMode ? "/api/gallery/albums?all=true" : "/api/gallery/albums"),
       ];
 
       const adminRequests = adminMode
@@ -366,8 +368,11 @@ export function AdminDataProvider({ children }) {
         Promise.allSettled(adminRequests),
       ]);
 
-      const [gal, port, featPort, srv, flm, br, tst, cnt, woods, designs, ratios, portCats, galCats] = publicResults;
+      const [gal, port, featPort, srv, flm, br, tst, cnt, woods, designs, ratios, portCats, galCats, albs] = publicResults;
 
+      if (albs && albs.status === "fulfilled" && Array.isArray(albs.value)) {
+        setAlbums(albs.value);
+      }
       if (gal && gal.status === "fulfilled" && Array.isArray(gal.value)) {
         setGallery(gal.value.map(normalizeGalleryItem));
       }
@@ -470,6 +475,17 @@ export function AdminDataProvider({ children }) {
       }
     } catch (err) {
       console.error("[Realtime] Failed to refetch gallery:", err);
+    }
+  }, [isAuthenticated]);
+
+  const refetchAlbums = useCallback(async () => {
+    try {
+      const res = await api.get(isAuthenticated ? "/api/gallery/albums?all=true" : "/api/gallery/albums");
+      if (Array.isArray(res)) {
+        setAlbums(res);
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch albums:", err);
     }
   }, [isAuthenticated]);
 
@@ -613,6 +629,7 @@ export function AdminDataProvider({ children }) {
         break;
       case "gallery":
         refetchGallery();
+        refetchAlbums();
         break;
       case "portfolio_categories":
         refetchPortfolioCategories();
@@ -621,6 +638,7 @@ export function AdminDataProvider({ children }) {
       case "gallery_categories":
         refetchGalleryCategories();
         refetchGallery();
+        refetchAlbums();
         break;
       case "services":
         refetchServices();
@@ -648,6 +666,7 @@ export function AdminDataProvider({ children }) {
     refetchEnquiries,
     refetchPortfolio,
     refetchGallery,
+    refetchAlbums,
     refetchPortfolioCategories,
     refetchGalleryCategories,
     refetchServices,
@@ -755,6 +774,76 @@ export function AdminDataProvider({ children }) {
     const normalized = normalizeGalleryItem(updated);
     setGallery((prev) => prev.map((item) => (item.id === id ? normalized : item)));
     return normalized;
+  }, []);
+
+  // 3b. Gallery Albums
+  const addAlbum = useCallback(async (albumData) => {
+    const created = await api.post("/api/gallery/albums", albumData);
+    setAlbums((prev) => [created, ...prev]);
+    return created;
+  }, []);
+
+  const updateAlbum = useCallback(async (id, updatedFields) => {
+    const updated = await api.put(`/api/gallery/albums/${id}`, updatedFields);
+    setAlbums((prev) => prev.map((item) => (item.id === id ? updated : item)));
+    return updated;
+  }, []);
+
+  const deleteAlbum = useCallback(async (id) => {
+    await api.delete(`/api/gallery/albums/${id}`);
+    setAlbums((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
+  const toggleAlbumPublished = useCallback(async (id) => {
+    const updated = await api.patch(`/api/gallery/albums/${id}/toggle-published`);
+    setAlbums((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, published: updated.published } : item))
+    );
+    return updated;
+  }, []);
+
+  const addPhotosToAlbum = useCallback(async (albumId, photos) => {
+    const res = await api.post(`/api/gallery/albums/${albumId}/photos`, { photos });
+    await refetchAlbums();
+    return res;
+  }, [refetchAlbums]);
+
+  const updateAlbumPhoto = useCallback(async (albumId, photoId, data) => {
+    const res = await api.put(`/api/gallery/albums/${albumId}/photos/${photoId}`, data);
+    await refetchAlbums();
+    return res;
+  }, [refetchAlbums]);
+
+  const removePhotoFromAlbum = useCallback(async (albumId, photoId) => {
+    const res = await api.delete(`/api/gallery/albums/${albumId}/photos/${photoId}`);
+    await refetchAlbums();
+    return res;
+  }, [refetchAlbums]);
+
+  const reorderAlbumPhotos = useCallback(async (albumId, photoOrders) => {
+    const res = await api.put(`/api/gallery/albums/${albumId}/photos/reorder`, { photoOrders });
+    await refetchAlbums();
+    return res;
+  }, [refetchAlbums]);
+
+  const setAlbumCover = useCallback(async (albumId, coverUrl) => {
+    const res = await api.patch(`/api/gallery/albums/${albumId}/set-cover`, { coverUrl });
+    setAlbums((prev) =>
+      prev.map((item) => (item.id === albumId ? { ...item, coverImage: coverUrl } : item))
+    );
+    return res;
+  }, []);
+
+  const getAlbumDetail = useCallback(async (slugOrId) => {
+    return api.get(`/api/gallery/albums/${slugOrId}?all=true`);
+  }, []);
+
+  const getMediaLibrary = useCallback(async (category) => {
+    const url =
+      category && category !== "All"
+        ? `/api/gallery/media-library?category=${encodeURIComponent(category)}`
+        : "/api/gallery/media-library";
+    return api.get(url);
   }, []);
 
   // 4. Portfolio
@@ -1156,152 +1245,280 @@ export function AdminDataProvider({ children }) {
     refreshData();
   }, [refreshData]);
 
+  const contextValue = useMemo(
+    () => ({
+      loading,
+      error,
+      refreshData,
+      refetchPortfolio,
+      refetchGallery,
+      refetchPortfolioCategories,
+      refetchGalleryCategories,
+      refetchServices,
+      refetchFilms,
+      refetchBranches,
+      refetchTestimonials,
+      refetchWebsiteContent,
+      refetchFramesCatalog,
+      refetchBookings,
+      refetchEnquiries,
+
+      // Bookings
+      bookings,
+      addBooking,
+      updateBooking,
+      deleteBooking,
+
+      // Enquiries
+      enquiries,
+      addEnquiry,
+      updateEnquiry,
+      updateEnquiryStatus,
+      deleteEnquiry,
+
+      // Gallery
+      gallery,
+      addGalleryImage,
+      addGalleryItem: addGalleryImage,
+      updateGalleryImage,
+      updateGalleryItem: updateGalleryImage,
+      deleteGalleryImage,
+      deleteGalleryItem: deleteGalleryImage,
+      toggleGalleryFeatured,
+      toggleGalleryPublished,
+
+      // Gallery Categories
+      galleryCategories,
+      addGalleryCategory,
+      toggleGalleryCategoryStatus,
+
+      // Gallery Albums
+      albums,
+      refetchAlbums,
+      addAlbum,
+      updateAlbum,
+      deleteAlbum,
+      toggleAlbumPublished,
+      addPhotosToAlbum,
+      updateAlbumPhoto,
+      removePhotoFromAlbum,
+      reorderAlbumPhotos,
+      setAlbumCover,
+      getAlbumDetail,
+      getMediaLibrary,
+
+      // Portfolio
+      portfolio,
+      featuredPortfolio,
+      addPortfolio,
+      addPortfolioItem: addPortfolio,
+      updatePortfolio,
+      updatePortfolioItem: updatePortfolio,
+      deletePortfolio,
+      deletePortfolioItem: deletePortfolio,
+      togglePortfolioFeatured,
+      togglePortfolioPublished,
+
+      // Portfolio Categories
+      portfolioCategories,
+      addPortfolioCategory,
+      togglePortfolioCategoryStatus,
+
+      // Services
+      services,
+      addService,
+      updateService,
+      deleteService,
+      toggleServiceStatus,
+
+      // Films
+      films,
+      addFilm,
+      updateFilm,
+      deleteFilm,
+      toggleFilmFeatured,
+      toggleFilmPublished,
+
+      // Branches
+      branches,
+      addBranch,
+      updateBranch,
+      deleteBranch,
+      toggleBranchStatus,
+
+      // Testimonials
+      testimonials,
+      addTestimonial,
+      updateTestimonial,
+      deleteTestimonial,
+      toggleTestimonialApproved,
+      toggleTestimonialFeatured,
+      toggleTestimonialHidden,
+      syncGoogleReviews,
+      googleReviewsMeta,
+      setGoogleReviewsMeta,
+
+      // Website Content
+      websiteContent,
+      updateWebsiteContent,
+
+      // Settings
+      settings,
+      updateSettings,
+
+      // Frame Wood Types
+      frameWoodTypes,
+      addFrameWoodType,
+      updateFrameWoodType,
+      deleteFrameWoodType,
+      toggleFrameWoodTypeStatus,
+
+      // Frame Designs
+      frameDesigns,
+      addFrameDesign,
+      updateFrameDesign,
+      deleteFrameDesign,
+      toggleFrameDesignStatus,
+
+      // Frame Ratios
+      frameRatios,
+      addFrameRatio,
+      updateFrameRatio,
+      deleteFrameRatio,
+      toggleFrameRatioStatus,
+
+      // Frame Orders
+      frameOrders,
+      addFrameOrder,
+      updateFrameOrderStatus,
+      updateFrameOrder,
+      deleteFrameOrder,
+
+      // Notifications
+      notifications,
+      unreadNotificationCount,
+      markNotificationAsRead,
+      markAllNotificationsAsRead,
+      refreshNotifications,
+      resetAllDemoData,
+    }),
+    [
+      loading,
+      error,
+      refreshData,
+      refetchPortfolio,
+      refetchGallery,
+      refetchPortfolioCategories,
+      refetchGalleryCategories,
+      refetchServices,
+      refetchFilms,
+      refetchBranches,
+      refetchTestimonials,
+      refetchWebsiteContent,
+      refetchFramesCatalog,
+      refetchBookings,
+      refetchEnquiries,
+      bookings,
+      addBooking,
+      updateBooking,
+      deleteBooking,
+      enquiries,
+      addEnquiry,
+      updateEnquiry,
+      updateEnquiryStatus,
+      deleteEnquiry,
+      gallery,
+      addGalleryImage,
+      updateGalleryImage,
+      deleteGalleryImage,
+      toggleGalleryFeatured,
+      toggleGalleryPublished,
+      galleryCategories,
+      addGalleryCategory,
+      toggleGalleryCategoryStatus,
+      albums,
+      refetchAlbums,
+      addAlbum,
+      updateAlbum,
+      deleteAlbum,
+      toggleAlbumPublished,
+      addPhotosToAlbum,
+      updateAlbumPhoto,
+      removePhotoFromAlbum,
+      reorderAlbumPhotos,
+      setAlbumCover,
+      getAlbumDetail,
+      getMediaLibrary,
+      portfolio,
+      featuredPortfolio,
+      addPortfolio,
+      updatePortfolio,
+      deletePortfolio,
+      togglePortfolioFeatured,
+      togglePortfolioPublished,
+      portfolioCategories,
+      addPortfolioCategory,
+      togglePortfolioCategoryStatus,
+      services,
+      addService,
+      updateService,
+      deleteService,
+      toggleServiceStatus,
+      films,
+      addFilm,
+      updateFilm,
+      deleteFilm,
+      toggleFilmFeatured,
+      toggleFilmPublished,
+      branches,
+      addBranch,
+      updateBranch,
+      deleteBranch,
+      toggleBranchStatus,
+      testimonials,
+      addTestimonial,
+      updateTestimonial,
+      deleteTestimonial,
+      toggleTestimonialApproved,
+      toggleTestimonialFeatured,
+      toggleTestimonialHidden,
+      syncGoogleReviews,
+      googleReviewsMeta,
+      websiteContent,
+      updateWebsiteContent,
+      settings,
+      updateSettings,
+      frameWoodTypes,
+      addFrameWoodType,
+      updateFrameWoodType,
+      deleteFrameWoodType,
+      toggleFrameWoodTypeStatus,
+      frameDesigns,
+      addFrameDesign,
+      updateFrameDesign,
+      deleteFrameDesign,
+      toggleFrameDesignStatus,
+      frameRatios,
+      addFrameRatio,
+      updateFrameRatio,
+      deleteFrameRatio,
+      toggleFrameRatioStatus,
+      frameOrders,
+      addFrameOrder,
+      updateFrameOrderStatus,
+      updateFrameOrder,
+      deleteFrameOrder,
+      notifications,
+      unreadNotificationCount,
+      markNotificationAsRead,
+      markAllNotificationsAsRead,
+      refreshNotifications,
+      resetAllDemoData,
+    ]
+  );
+
   return (
-    <AdminDataContext.Provider
-      value={{
-        loading,
-        error,
-        refreshData,
-        refetchPortfolio,
-        refetchGallery,
-        refetchPortfolioCategories,
-        refetchGalleryCategories,
-        refetchServices,
-        refetchFilms,
-        refetchBranches,
-        refetchTestimonials,
-        refetchWebsiteContent,
-        refetchFramesCatalog,
-        refetchBookings,
-        refetchEnquiries,
-
-        // Bookings
-        bookings,
-        addBooking,
-        updateBooking,
-        deleteBooking,
-
-        // Enquiries
-        enquiries,
-        addEnquiry,
-        updateEnquiry,
-        updateEnquiryStatus,
-        deleteEnquiry,
-
-        // Gallery
-        gallery,
-        addGalleryImage,
-        addGalleryItem: addGalleryImage,
-        updateGalleryImage,
-        updateGalleryItem: updateGalleryImage,
-        deleteGalleryImage,
-        deleteGalleryItem: deleteGalleryImage,
-        toggleGalleryFeatured,
-        toggleGalleryPublished,
-
-        // Gallery Categories
-        galleryCategories,
-        addGalleryCategory,
-        toggleGalleryCategoryStatus,
-
-        // Portfolio
-        portfolio,
-        featuredPortfolio,
-        addPortfolio,
-        addPortfolioItem: addPortfolio,
-        updatePortfolio,
-        updatePortfolioItem: updatePortfolio,
-        deletePortfolio,
-        deletePortfolioItem: deletePortfolio,
-        togglePortfolioFeatured,
-        togglePortfolioPublished,
-
-        // Portfolio Categories
-        portfolioCategories,
-        addPortfolioCategory,
-        togglePortfolioCategoryStatus,
-
-        // Services
-        services,
-        addService,
-        updateService,
-        deleteService,
-        toggleServiceStatus,
-
-        // Films
-        films,
-        addFilm,
-        updateFilm,
-        deleteFilm,
-        toggleFilmFeatured,
-        toggleFilmPublished,
-
-        // Branches
-        branches,
-        addBranch,
-        updateBranch,
-        deleteBranch,
-        toggleBranchStatus,
-
-        // Testimonials
-        testimonials,
-        addTestimonial,
-        updateTestimonial,
-        deleteTestimonial,
-        toggleTestimonialApproved,
-        toggleTestimonialFeatured,
-        toggleTestimonialHidden,
-        syncGoogleReviews,
-        googleReviewsMeta,
-        setGoogleReviewsMeta,
-
-        // Website Content
-        websiteContent,
-        updateWebsiteContent,
-
-        // Settings
-        settings,
-        updateSettings,
-
-        // Frame Wood Types
-        frameWoodTypes,
-        addFrameWoodType,
-        updateFrameWoodType,
-        deleteFrameWoodType,
-        toggleFrameWoodTypeStatus,
-
-        // Frame Designs
-        frameDesigns,
-        addFrameDesign,
-        updateFrameDesign,
-        deleteFrameDesign,
-        toggleFrameDesignStatus,
-
-        // Frame Ratios
-        frameRatios,
-        addFrameRatio,
-        updateFrameRatio,
-        deleteFrameRatio,
-        toggleFrameRatioStatus,
-
-        // Frame Orders
-        frameOrders,
-        addFrameOrder,
-        updateFrameOrderStatus,
-        updateFrameOrder,
-        deleteFrameOrder,
-
-        // Notifications
-        notifications,
-        unreadNotificationCount,
-        markNotificationAsRead,
-        markAllNotificationsAsRead,
-        refreshNotifications,
-
-        resetAllDemoData,
-        refreshData,
-      }}
-    >
+    <AdminDataContext.Provider value={contextValue}>
       {children}
     </AdminDataContext.Provider>
   );

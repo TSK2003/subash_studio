@@ -1,11 +1,13 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import FloatingButtons from "./components/FloatingButtons";
 import LuxuryLoader from "./components/LuxuryLoader";
+import HomeIntroAnimation from "./components/HomeIntroAnimation";
 import { useLenis, scrollToTop } from "./lib/useLenis";
+import { shouldPlayIntro } from "./lib/introLifecycle";
 
 // Critical landing page loaded synchronously for optimal FCP
 import Home from "./pages/Home";
@@ -13,8 +15,8 @@ import Home from "./pages/Home";
 // Public Pages (Lazy Loaded)
 const About = lazy(() => import("./pages/About"));
 const Services = lazy(() => import("./pages/Services"));
-const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Gallery = lazy(() => import("./pages/Gallery"));
+const AlbumDetail = lazy(() => import("./pages/AlbumDetail"));
 const Films = lazy(() => import("./pages/Films"));
 const Branches = lazy(() => import("./pages/Branches"));
 const Reviews = lazy(() => import("./pages/Reviews"));
@@ -35,7 +37,6 @@ const Bookings = lazy(() => import("./admin/pages/Bookings"));
 const Enquiries = lazy(() => import("./admin/pages/Enquiries"));
 const FramesManager = lazy(() => import("./admin/pages/FramesManager"));
 const GalleryManager = lazy(() => import("./admin/pages/GalleryManager"));
-const PortfolioManager = lazy(() => import("./admin/pages/PortfolioManager"));
 const ServicesManager = lazy(() => import("./admin/pages/ServicesManager"));
 const FilmsManager = lazy(() => import("./admin/pages/FilmsManager"));
 const BranchesManager = lazy(() => import("./admin/pages/BranchesManager"));
@@ -70,11 +71,24 @@ function PublicWebsiteLayout() {
   const location = useLocation();
   useLenis();
 
+  // Authoritatively initialize intro playback state from lifecycle manager
+  const [introActive, setIntroActive] = useState(() => shouldPlayIntro());
+  const [brandReady, setBrandReady] = useState(() => !shouldPlayIntro());
+
+  const handleBrandReady = useCallback(() => {
+    setBrandReady(true);
+  }, []);
+
+  const handleIntroComplete = useCallback(() => {
+    setBrandReady(true);
+    setIntroActive(false);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col relative text-ink">
       <PremiumPageBackground />
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+        <Navbar introActive={introActive} brandReady={brandReady} />
         <div className="flex-1">
           <Suspense fallback={<LuxuryLoader />}>
             <AnimatePresence mode="wait">
@@ -84,8 +98,10 @@ function PublicWebsiteLayout() {
                 <Route path="/order-booking" element={<PageWrapper><Services /></PageWrapper>} />
                 <Route path="/services" element={<Navigate to="/order-booking" replace />} />
                 <Route path="/frames" element={<PageWrapper><OrderFrames /></PageWrapper>} />
-                <Route path="/portfolio" element={<PageWrapper><Portfolio /></PageWrapper>} />
+                <Route path="/portfolio" element={<Navigate to="/gallery" replace />} />
+                <Route path="/portfolio/*" element={<Navigate to="/gallery" replace />} />
                 <Route path="/gallery" element={<PageWrapper><Gallery /></PageWrapper>} />
+                <Route path="/gallery/:albumSlug" element={<PageWrapper><AlbumDetail /></PageWrapper>} />
                 <Route path="/films" element={<PageWrapper><Films /></PageWrapper>} />
                 <Route path="/branches" element={<PageWrapper><Branches /></PageWrapper>} />
                 <Route path="/reviews" element={<PageWrapper><Reviews /></PageWrapper>} />
@@ -96,8 +112,15 @@ function PublicWebsiteLayout() {
           </Suspense>
         </div>
         <Footer />
-        <FloatingButtons />
+        <FloatingButtons introActive={introActive} />
       </div>
+
+      {introActive && (
+        <HomeIntroAnimation
+          onBrandReady={handleBrandReady}
+          onComplete={handleIntroComplete}
+        />
+      )}
     </div>
   );
 }
@@ -139,7 +162,7 @@ export default function App() {
                 <Route path={ADMIN_SUBPATHS.ENQUIRIES} element={<Enquiries />} />
                 <Route path={ADMIN_SUBPATHS.FRAMES} element={<FramesManager />} />
                 <Route path={ADMIN_SUBPATHS.GALLERY} element={<GalleryManager />} />
-                <Route path={ADMIN_SUBPATHS.PORTFOLIO} element={<PortfolioManager />} />
+                <Route path={ADMIN_SUBPATHS.PORTFOLIO} element={<Navigate to={ADMIN_ROUTES.GALLERY} replace />} />
                 <Route path={ADMIN_SUBPATHS.SERVICES} element={<ServicesManager />} />
                 <Route path={ADMIN_SUBPATHS.FILMS} element={<FilmsManager />} />
                 <Route path={ADMIN_SUBPATHS.BRANCHES} element={<BranchesManager />} />

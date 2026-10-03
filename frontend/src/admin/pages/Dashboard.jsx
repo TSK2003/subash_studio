@@ -52,38 +52,65 @@ export default function Dashboard() {
     return "Good Evening";
   };
 
-  // Metrics directly derived from AdminDataContext with normalized canonical statuses
-  const totalBookings = bookings.length;
-  const pendingBookings = bookings.filter((b) => {
-    const s = normalizeBookingStatus(b.status);
-    return s === "NEW" || s === "CONTACTED";
-  }).length;
-  const confirmedBookings = bookings.filter(
-    (b) => normalizeBookingStatus(b.status) === "CONFIRMED"
-  ).length;
-  const completedShoots = bookings.filter(
-    (b) => normalizeBookingStatus(b.status) === "COMPLETED"
-  ).length;
-  const cancelledBookings = bookings.filter(
-    (b) => normalizeBookingStatus(b.status) === "CANCELLED"
-  ).length;
+  // Metrics directly derived from AdminDataContext with single-pass memoization
+  const {
+    totalBookings,
+    pendingBookings,
+    confirmedBookings,
+    completedShoots,
+    cancelledBookings,
+    totalEnquiries,
+    newEnquiries,
+    totalGallery,
+    totalPortfolio,
+    totalServices,
+    totalFilms,
+    totalBranches,
+    totalTestimonials,
+    totalFrameOrders,
+    newFrameOrders,
+  } = useMemo(() => {
+    let pending = 0;
+    let confirmed = 0;
+    let completed = 0;
+    let cancelled = 0;
 
-  const totalEnquiries = enquiries.length;
-  const newEnquiries = enquiries.filter(
-    (e) => (e.status || "").toString().trim().toUpperCase() === "NEW"
-  ).length;
+    for (const b of bookings) {
+      const s = normalizeBookingStatus(b.status);
+      if (s === "NEW" || s === "CONTACTED") pending++;
+      else if (s === "CONFIRMED") confirmed++;
+      else if (s === "COMPLETED") completed++;
+      else if (s === "CANCELLED") cancelled++;
+    }
 
-  const totalGallery = gallery.length;
-  const totalPortfolio = (portfolio || []).length;
-  const totalServices = services.length;
-  const totalFilms = (films || []).length;
-  const totalBranches = branches.length;
-  const totalTestimonials = (testimonials || []).length;
+    const totalEnq = enquiries.length;
+    let newEnq = 0;
+    for (const e of enquiries) {
+      if ((e.status || "").toString().trim().toUpperCase() === "NEW") newEnq++;
+    }
 
-  const totalFrameOrders = (frameOrders || []).length;
-  const newFrameOrders = (frameOrders || []).filter(
-    (o) => (o.status || "").toString().trim().toUpperCase() === "NEW"
-  ).length;
+    const newOrders = (frameOrders || []).filter(
+      (o) => (o.status || "").toString().trim().toUpperCase() === "NEW"
+    ).length;
+
+    return {
+      totalBookings: bookings.length,
+      pendingBookings: pending,
+      confirmedBookings: confirmed,
+      completedShoots: completed,
+      cancelledBookings: cancelled,
+      totalEnquiries: totalEnq,
+      newEnquiries: newEnq,
+      totalGallery: gallery.length,
+      totalPortfolio: (portfolio || []).length,
+      totalServices: services.length,
+      totalFilms: (films || []).length,
+      totalBranches: branches.length,
+      totalTestimonials: (testimonials || []).length,
+      totalFrameOrders: (frameOrders || []).length,
+      newFrameOrders: newOrders,
+    };
+  }, [bookings, enquiries, gallery, portfolio, services, films, branches, testimonials, frameOrders]);
 
   // Upcoming shoots: actual future or today bookings, sorted nearest-date first, excluding COMPLETED and CANCELLED
   const upcomingShoots = useMemo(() => {
