@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 import { useAdminData } from "../../admin/context/AdminDataContext";
+import { scrollToTop } from "../../lib/useLenis";
 
 /**
  * HomeHero
@@ -157,9 +158,13 @@ export default function HomeHero() {
     touchStartXRef.current = null;
   };
 
+  useEffect(() => {
+    scrollToTop();
+  }, []);
+
   return (
     <section
-      className="relative w-full h-screen min-h-[640px] max-h-[1100px] flex flex-col justify-between overflow-hidden bg-[#12110F] select-none"
+      className="relative w-full min-h-screen min-h-[100dvh] h-screen h-[100dvh] flex flex-col justify-between overflow-hidden bg-[#12110F] select-none"
       aria-label="SUBASH STUDIO Hero"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

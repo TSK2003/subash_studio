@@ -36,8 +36,13 @@ async function startServer() {
         console.warn(`\n[Server Warning] Port ${ENV.PORT} is already in use.`);
         console.log(`Attempting automatic recovery by terminating stale process on port ${ENV.PORT}...`);
         await ensurePortAvailable(ENV.PORT);
+        try {
+          server.close();
+        } catch {}
         setTimeout(() => {
-          server.listen(ENV.PORT);
+          app.listen(ENV.PORT, () => {
+            console.log(`✓ Subash Studio API listening on http://localhost:${ENV.PORT}`);
+          });
         }, 500);
       } else {
         console.error("[Server Error]", err.message);

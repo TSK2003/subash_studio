@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   Bell,
+  Plus,
   ExternalLink,
   Calendar,
   MessageSquare,
@@ -83,6 +84,7 @@ export default function AdminHeader({ onMobileMenuClick }) {
       case ADMIN_ROUTES.ENQUIRIES:
         return { title: "Lead Inquiries", subtitle: "Track and follow up on client contact messages" };
       case ADMIN_ROUTES.GALLERY:
+      case ADMIN_ROUTES.PORTFOLIO:
         return { title: "Gallery Albums", subtitle: "Curate event and client photo albums with category filters" };
       case ADMIN_ROUTES.SERVICES:
         return { title: "Studio Offerings", subtitle: "Configure photography packages, pricing & descriptions" };
@@ -138,6 +140,14 @@ export default function AdminHeader({ onMobileMenuClick }) {
 
       {/* Right Controls */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Quick Add Booking */}
+        <Link
+          to={`${ADMIN_ROUTES.BOOKINGS}?new=true`}
+          className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0"
+        >
+          <Plus className="w-4 h-4 text-[#E4D3A6]" />
+          <span>New Booking</span>
+        </Link>
         {/* Live Site Link */}
         <a
           href="/"

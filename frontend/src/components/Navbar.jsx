@@ -15,7 +15,12 @@ const NAV_LINKS = [
   { to: "/contact", label: "Contact" },
 ];
 
-export default function Navbar({ introActive = false, brandReady = false }) {
+export default function Navbar({
+  isHomeIntro = false,
+  isIntroRevealing = false,
+  introActive = false,
+  brandReady = false,
+}) {
   const { websiteContent } = useAdminData();
   const contactData = websiteContent?.contact || {};
   const instagramHref = contactData.instagram || "https://www.instagram.com/subash_studio/";
@@ -61,14 +66,16 @@ export default function Navbar({ introActive = false, brandReady = false }) {
     location.pathname === "/services" ||
     location.pathname === "/frames";
 
-  const isIntroHidden = introActive && !brandReady;
+  const activeIntro = isHomeIntro || introActive;
+  const readyBrand = isIntroRevealing || brandReady;
+  const isIntroHidden = activeIntro && !readyBrand;
 
   return (
     <>
       <AnimatePresence>
         {visible && (
           <motion.header
-            initial={introActive ? { y: 0, opacity: 1 } : { y: -100, opacity: 0 }}
+            initial={activeIntro ? { y: 0, opacity: 1 } : { y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
@@ -91,22 +98,39 @@ export default function Navbar({ introActive = false, brandReady = false }) {
               {/* Brand Logo & Name (Screenshot 1) */}
               <Link
                 to="/"
-                id="navbar-brand-logo"
+                id="navbar-brand-link"
+                data-id="navbar-brand-logo"
                 className={`flex items-center gap-2.5 sm:gap-3 group shrink-0 transition-opacity duration-300 select-none ${
                   isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
                 }`}
               >
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg border border-[#FAF7F2]/40 flex items-center justify-center text-[#FAF7F2] shrink-0 bg-black/20 group-hover:border-[#E4D3A6] transition-colors">
-                  <Camera size={18} strokeWidth={1.75} className="text-[#FAF7F2]" />
+                <div id="navbar-brand-logo" className="flex items-center gap-2.5 sm:gap-3">
+                  <img
+                    id="navbar-logo-img"
+                    src="/logo.png"
+                    alt="SUBASH STUDIO"
+                    className="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0"
+                    style={{ filter: "brightness(0) invert(1)" }}
+                  />
+                  <div className="h-7 sm:h-8 w-[1px] bg-white/60 shrink-0" aria-hidden="true" />
+                  <div className="flex flex-col justify-center select-none">
+                    <span className="font-display text-[15px] sm:text-[17px] font-bold tracking-[0.22em] text-[#FAF7F2] uppercase leading-none drop-shadow-sm">
+                      SUBASH
+                    </span>
+                    <div className="flex items-center justify-between w-full mt-1">
+                      <span className="h-[1px] flex-1 bg-white/60" />
+                      <span className="text-[8.5px] sm:text-[9.5px] font-bold tracking-[0.24em] text-[#FAF7F2] uppercase leading-none px-1 drop-shadow-sm">
+                        STUDIO
+                      </span>
+                      <span className="h-[1px] flex-1 bg-white/60" />
+                    </div>
+                  </div>
                 </div>
-                <span className="font-display text-[15px] sm:text-[17px] font-bold tracking-[0.24em] text-[#FAF7F2] uppercase leading-none drop-shadow-sm">
-                  SUBASH STUDIO
-                </span>
               </Link>
 
               {/* Desktop Nav Links */}
               <nav
-                className={`hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 transition-opacity duration-700 ${
+                className={`hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 transition-opacity duration-500 ${
                   isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
                 }`}
               >
@@ -235,7 +259,7 @@ export default function Navbar({ introActive = false, brandReady = false }) {
 
               {/* Book a Shoot Outlined Button (Screenshot 1) */}
               <div
-                className={`hidden lg:flex items-center gap-5 transition-opacity duration-700 ${
+                className={`hidden lg:flex items-center gap-5 transition-opacity duration-500 ${
                   isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
                 }`}
               >
@@ -250,7 +274,7 @@ export default function Navbar({ introActive = false, brandReady = false }) {
 
               {/* Mobile Menu Toggle Button */}
               <button
-                className={`lg:hidden text-[#FAF7F2] transition-opacity duration-700 p-1.5 rounded-lg hover:bg-white/10 ${
+                className={`lg:hidden text-[#FAF7F2] transition-opacity duration-500 p-1.5 rounded-lg hover:bg-white/10 ${
                   isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
                 }`}
                 onClick={() => setMenuOpen((v) => !v)}

@@ -48,9 +48,9 @@ import PremiumPageBackground from "./components/PremiumPageBackground";
 import { ADMIN_BASE_PATH, ADMIN_ROUTES, ADMIN_SUBPATHS } from "./admin/constants/adminRoutes";
 
 const pageVariants = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -16 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 function PageWrapper({ children }) {
@@ -61,6 +61,7 @@ function PageWrapper({ children }) {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
+      className="w-full flex-1"
     >
       {children}
     </motion.main>
@@ -71,24 +72,56 @@ function PublicWebsiteLayout() {
   const location = useLocation();
   useLenis();
 
-  // Authoritatively initialize intro playback state from lifecycle manager
-  const [introActive, setIntroActive] = useState(() => shouldPlayIntro());
-  const [brandReady, setBrandReady] = useState(() => !shouldPlayIntro());
+  const isHome = location.pathname === "/";
+  const [introState, setIntroState] = useState({
+    active: isHome,
+    revealing: false,
+    key: location.key || "home-init",
+  });
 
-  const handleBrandReady = useCallback(() => {
-    setBrandReady(true);
+  useEffect(() => {
+    if (location.pathname === "/") {
+      scrollToTop();
+      setIntroState({
+        active: true,
+        revealing: false,
+        key: location.key || String(Date.now()),
+      });
+    } else {
+      setIntroState({
+        active: false,
+        revealing: false,
+        key: "",
+      });
+    }
+  }, [location.pathname, location.key]);
+
+  const handleRevealing = useCallback(() => {
+    scrollToTop();
+    setIntroState((prev) => ({ ...prev, revealing: true }));
   }, []);
 
-  const handleIntroComplete = useCallback(() => {
-    setBrandReady(true);
-    setIntroActive(false);
+  const handleComplete = useCallback(() => {
+    setIntroState((prev) => ({ ...prev, active: false }));
+    scrollToTop();
+    requestAnimationFrame(() => scrollToTop());
   }, []);
 
   return (
     <div className="min-h-screen flex flex-col relative text-ink">
+      {introState.active && (
+        <HomeIntroAnimation
+          key={introState.key}
+          onRevealing={handleRevealing}
+          onComplete={handleComplete}
+        />
+      )}
       <PremiumPageBackground />
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar introActive={introActive} brandReady={brandReady} />
+        <Navbar
+          isHomeIntro={introState.active}
+          isIntroRevealing={introState.revealing}
+        />
         <div className="flex-1">
           <Suspense fallback={<LuxuryLoader />}>
             <AnimatePresence mode="wait">
@@ -112,15 +145,8 @@ function PublicWebsiteLayout() {
           </Suspense>
         </div>
         <Footer />
-        <FloatingButtons introActive={introActive} />
+        <FloatingButtons introActive={introState.active} />
       </div>
-
-      {introActive && (
-        <HomeIntroAnimation
-          onBrandReady={handleBrandReady}
-          onComplete={handleIntroComplete}
-        />
-      )}
     </div>
   );
 }
@@ -129,6 +155,9 @@ export default function App() {
   const location = useLocation();
 
   useEffect(() => {
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
     scrollToTop();
   }, [location.pathname]);
 
