@@ -140,15 +140,8 @@ function PublicWebsiteLayout() {
           </Suspense>
         </div>
         <Footer />
-        <FloatingButtons introActive={introActive} />
+        <FloatingButtons introActive={introState.active} />
       </div>
-
-      {introActive && (
-        <HomeIntroAnimation
-          onBrandReady={handleBrandReady}
-          onComplete={handleIntroComplete}
-        />
-      )}
     </div>
   );
 }
