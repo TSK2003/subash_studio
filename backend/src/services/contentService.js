@@ -17,14 +17,18 @@ function validateSectionData(section, data) {
   const result = {};
 
   if (section === "home") {
-    if (data.heroEyebrow !== undefined) {
-      if (typeof data.heroEyebrow !== "string") {
-        throw new Error("Hero Eyebrow must be a string.");
+    // 1. Main Title
+    if (data.heroMainTitle !== undefined || data.heroTitle !== undefined) {
+      const val = data.heroMainTitle !== undefined ? data.heroMainTitle : data.heroTitle;
+      if (typeof val !== "string") {
+        throw new Error("Main Title must be a string.");
       }
-      result.heroEyebrow = sanitizeString(data.heroEyebrow, 120);
-    }
-
-    if (data.heroHeading !== undefined) {
+      if (val.length > 150) {
+        throw new Error(`Main Title cannot exceed 150 characters (received ${val.length} characters).`);
+      }
+      result.heroMainTitle = sanitizeString(val, 150);
+      result.heroHeading = result.heroMainTitle;
+    } else if (data.heroHeading !== undefined) {
       if (typeof data.heroHeading !== "string") {
         throw new Error("Hero Main Headline must be a string.");
       }
@@ -33,19 +37,56 @@ function validateSectionData(section, data) {
           `Hero Main Headline cannot exceed 250 characters (received ${data.heroHeading.length} characters).`
         );
       }
-      result.heroHeading = data.heroHeading.replace(/<[^>]*>?/gm, "").trim();
+      result.heroHeading = sanitizeString(data.heroHeading, 250);
+      result.heroMainTitle = result.heroHeading;
     }
 
-    if (data.heroTagline !== undefined) {
+    // 2. Subtitle
+    if (data.heroSubtitle !== undefined) {
+      if (typeof data.heroSubtitle !== "string") {
+        throw new Error("Subtitle must be a string.");
+      }
+      if (data.heroSubtitle.length > 150) {
+        throw new Error(`Subtitle cannot exceed 150 characters (received ${data.heroSubtitle.length} characters).`);
+      }
+      result.heroSubtitle = sanitizeString(data.heroSubtitle, 150);
+      result.heroEyebrow = result.heroSubtitle;
+    } else if (data.heroEyebrow !== undefined) {
+      if (typeof data.heroEyebrow !== "string") {
+        throw new Error("Hero Eyebrow must be a string.");
+      }
+      result.heroEyebrow = sanitizeString(data.heroEyebrow, 120);
+      result.heroSubtitle = result.heroEyebrow;
+    }
+
+    // 3. Since Text
+    if (data.heroSinceText !== undefined || data.heroSince !== undefined) {
+      const val = data.heroSinceText !== undefined ? data.heroSinceText : data.heroSince;
+      if (typeof val !== "string") {
+        throw new Error("Since Text must be a string.");
+      }
+      if (val.length > 60) {
+        throw new Error(`Since Text cannot exceed 60 characters (received ${val.length} characters).`);
+      }
+      result.heroSinceText = sanitizeString(val, 60);
+    }
+
+    // 4. Delivery Tagline
+    if (data.heroDeliveryTagline !== undefined) {
+      if (typeof data.heroDeliveryTagline !== "string") {
+        throw new Error("Delivery Tagline must be a string.");
+      }
+      if (data.heroDeliveryTagline.length > 200) {
+        throw new Error(`Delivery Tagline cannot exceed 200 characters (received ${data.heroDeliveryTagline.length} characters).`);
+      }
+      result.heroDeliveryTagline = sanitizeString(data.heroDeliveryTagline, 200);
+      result.heroTagline = result.heroDeliveryTagline;
+    } else if (data.heroTagline !== undefined) {
       if (typeof data.heroTagline !== "string") {
         throw new Error("Hero Subtitle / Tagline must be a string.");
       }
-      if (data.heroTagline.length > 300) {
-        throw new Error(
-          `Hero Subtitle / Tagline cannot exceed 300 characters (received ${data.heroTagline.length} characters).`
-        );
-      }
-      result.heroTagline = data.heroTagline.replace(/<[^>]*>?/gm, "").trim();
+      result.heroTagline = sanitizeString(data.heroTagline, 300);
+      result.heroDeliveryTagline = result.heroTagline;
     }
 
     // Hero Images (Screenshot 2)

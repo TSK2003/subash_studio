@@ -524,9 +524,13 @@ export const initialTestimonials = [
 
 export const initialWebsiteContent = {
   home: {
-    heroEyebrow: "WEDDING PHOTOGRAPHY & FILMS",
-    heroHeading: "Real emotions.\nBeautiful stories.\nForever yours.",
-    heroTagline: "We capture the moments you feel, and the memories you keep.",
+    heroMainTitle: "SUBASH STUDIO",
+    heroHeading: "SUBASH STUDIO",
+    heroSubtitle: "WEDDING FILM COMPANY",
+    heroEyebrow: "WEDDING FILM COMPANY",
+    heroSinceText: "SINCE 1933",
+    heroDeliveryTagline: "WE PROMISE ON TIME DELIVERY",
+    heroTagline: "WE PROMISE ON TIME DELIVERY",
     heroImages: [],
     heroImageLoop: true,
     heroCtaText: "BOOK A SHOOT",

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+
 import { useAdminData } from "../../admin/context/AdminDataContext";
 
 /**
@@ -27,43 +27,40 @@ export default function HomeHero() {
   const homeData = websiteContent?.home || {};
   const prefersReducedMotion = useReducedMotion();
 
-  // 1. Text Content with defaults from Screenshot 1 & CMS support
-  const heroEyebrow = (
-    homeData.heroEyebrow || "WEDDING PHOTOGRAPHY & FILMS"
-  ).trim();
-
-  const rawHeading = (
+  // 1. Text Content with dynamic CMS support & requested luxury defaults
+  const heroMainTitle = (
+    homeData.heroMainTitle ||
     homeData.heroHeading ||
-    "Real emotions.\nBeautiful stories.\nForever yours."
+    "SUBASH STUDIO"
   ).trim();
 
-  const heroTagline = (
-    homeData.heroTagline ||
-    "We capture the moments you feel, and the memories you keep."
+  const heroSubtitle = (
+    homeData.heroSubtitle ||
+    homeData.heroEyebrow ||
+    "WEDDING FILM COMPANY"
   ).trim();
 
-  // Parse multi-line heading: last line has champagne-gold italic accent
-  const headingLines = useMemo(() => {
-    const lines = rawHeading
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
+  const heroSinceText = (
+    homeData.heroSinceText ||
+    "SINCE 1933"
+  ).trim();
 
-    if (lines.length <= 1) {
-      return { mainLines: lines, accentLine: null };
-    }
-    return {
-      mainLines: lines.slice(0, -1),
-      accentLine: lines[lines.length - 1],
-    };
-  }, [rawHeading]);
+  const heroDeliveryTagline = (
+    homeData.heroDeliveryTagline ||
+    (homeData.heroTagline && !homeData.heroTagline.includes("Preserving timeless heritage")
+      ? homeData.heroTagline
+      : "WE PROMISE ON TIME DELIVERY")
+  ).trim();
 
-  // 2. Saved Hero Images from Admin CMS (Screenshot 2)
+  // 2. Saved Hero Images from Admin CMS
+  // The image at sort-order index 1 (second position) is excluded as requested.
   const activeHeroImages = useMemo(() => {
     if (!Array.isArray(homeData.heroImages)) return [];
-    return homeData.heroImages
+    const sorted = homeData.heroImages
       .filter((img) => img && img.url && img.active !== false)
       .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+    // Remove the second image (index 1) — the unwanted slide
+    return sorted.filter((_, idx) => idx !== 1);
   }, [homeData.heroImages]);
 
   // Fallback wedding image if zero images uploaded
@@ -199,6 +196,89 @@ export default function HomeHero() {
       </div>
 
       {/* =========================================================
+          LAYER 0.5: CENTER-EDGE PREV / NEXT ARROW BUTTONS (z-[3])
+          Vertically centered on the left and right edges of the hero.
+          Only rendered when more than one slide is available.
+      ========================================================= */}
+      {hasMultipleSlides && (
+        <>
+          {/* Previous — Center Left */}
+          <button
+            type="button"
+            onClick={handlePrev}
+            aria-label="Previous hero image"
+            className="
+              absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-[3]
+              w-10 h-10 sm:w-12 sm:h-12
+              rounded-full
+              flex items-center justify-center
+              text-[#FAF7F2]
+              border border-white/25 hover:border-[#E4D3A6]
+              bg-black/30 hover:bg-[#1a1714]/70
+              backdrop-blur-sm
+              shadow-[0_4px_20px_rgba(0,0,0,0.45)]
+              transition-all duration-300
+              hover:scale-105 active:scale-95
+              hover:text-[#E4D3A6]
+              cursor-pointer
+            "
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="10,3 5,8 10,13" />
+            </svg>
+          </button>
+
+          {/* Next — Center Right */}
+          <button
+            type="button"
+            onClick={handleNext}
+            aria-label="Next hero image"
+            className="
+              absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-[3]
+              w-10 h-10 sm:w-12 sm:h-12
+              rounded-full
+              flex items-center justify-center
+              text-[#FAF7F2]
+              border border-white/25 hover:border-[#E4D3A6]
+              bg-black/30 hover:bg-[#1a1714]/70
+              backdrop-blur-sm
+              shadow-[0_4px_20px_rgba(0,0,0,0.45)]
+              transition-all duration-300
+              hover:scale-105 active:scale-95
+              hover:text-[#E4D3A6]
+              cursor-pointer
+            "
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6,3 11,8 6,13" />
+            </svg>
+          </button>
+        </>
+      )}
+
+      {/* =========================================================
           LAYER 1: STATIONARY DARK GRADIENT OVERLAYS (z-[1])
           Dark on the left to ensure crisp text readability,
           subtle vignette allowing the couple on the center-right
@@ -215,96 +295,53 @@ export default function HomeHero() {
 
       {/* =========================================================
           LAYER 2: HERO CONTENT (z-[2])
-          Left-aligned editorial typography matching Screenshot 1.
-          Overlays and text remain stationary while images transition.
+          Left-aligned editorial typography matching luxury wedding studio hierarchy.
+          1. SUBASH STUDIO (largest headline)
+          2. WEDDING FILM COMPANY (elegant secondary line)
+          3. SINCE 1933 (refined heritage accent line)
+          4. WE PROMISE ON TIME DELIVERY (supporting tagline)
       ========================================================= */}
-      <div className="relative z-[2] w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 flex-1 flex flex-col justify-between pt-28 sm:pt-36 pb-8 sm:pb-10">
-        {/* Main Content (Vertically centered within available upper area) */}
-        <div className="my-auto max-w-2xl text-left">
-          {/* Eyebrow */}
-          <motion.span
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-[11px] sm:text-xs tracking-[0.32em] font-semibold text-[#E4D3A6] uppercase mb-4 sm:mb-5 block drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
-          >
-            {heroEyebrow}
-          </motion.span>
-
-          {/* Heading with champagne-gold italic accent on the final line */}
+      <div className="relative z-[2] w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 flex-1 flex flex-col justify-center pt-24 sm:pt-28 pb-12 sm:pb-16">
+        <div className="max-w-4xl text-left space-y-3.5 sm:space-y-4">
+          {/* 1. Main Title — largest & strongest luxury headline */}
           <motion.h1
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.18 }}
-            className="font-display font-medium text-4xl sm:text-5xl md:text-6xl lg:text-[68px] xl:text-[74px] leading-[1.08] tracking-tight text-left"
+            transition={{ duration: 0.75, delay: 0.1 }}
+            className="font-display font-medium text-4xl sm:text-6xl md:text-7xl lg:text-[78px] xl:text-[86px] leading-[1.03] tracking-[0.05em] sm:tracking-[0.07em] uppercase text-[#FAF7F2] drop-shadow-[0_4px_28px_rgba(0,0,0,0.95)]"
           >
-            {headingLines.mainLines.map((line, idx) => (
-              <span
-                key={idx}
-                className="text-[#FAF7F2] block drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]"
-              >
-                {line}
-              </span>
-            ))}
-            {headingLines.accentLine && (
-              <span className="text-[#E4D3A6] italic font-normal block mt-1 drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]">
-                {headingLines.accentLine}
-              </span>
-            )}
+            {heroMainTitle}
           </motion.h1>
 
-          {/* Description */}
-          <motion.p
+          {/* 2. Subtitle — elegant secondary line */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="text-base sm:text-xl md:text-2xl lg:text-[25px] font-sans font-medium tracking-[0.24em] sm:tracking-[0.28em] uppercase text-[#E4D3A6] drop-shadow-[0_2px_14px_rgba(0,0,0,0.9)]"
+          >
+            {heroSubtitle}
+          </motion.div>
+
+          {/* 3. Since Text — smaller refined heritage/accent line */}
+          <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: 0.28 }}
-            className="mt-5 sm:mt-6 text-[#FAF7F2]/85 text-sm sm:text-base md:text-[17px] leading-relaxed max-w-xl font-light drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] text-left"
+            transition={{ duration: 0.65, delay: 0.3 }}
+            className="text-xs sm:text-sm md:text-[14px] font-sans font-light tracking-[0.32em] sm:tracking-[0.38em] uppercase text-[#FAF7F2]/75 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)]"
           >
-            {heroTagline}
-          </motion.p>
-        </div>
+            {heroSinceText}
+          </motion.div>
 
-        {/* =========================================================
-            BOTTOM BAR (Screenshot 1)
-            - Left: "A LOVE STORY, CAPTURED BY SUBASH"
-            - Right: Slideshow indicator ("01 / 03") & prev/next buttons
-        ========================================================= */}
-        <div className="w-full flex items-center justify-between pt-6 border-t border-white/10 select-none">
-          {/* Left: Editorial Subtitle */}
-          <div className="text-[10px] sm:text-[11px] tracking-[0.28em] uppercase font-medium text-[#FAF7F2]/75 drop-shadow-sm">
-            A LOVE STORY, CAPTURED BY SUBASH
-          </div>
-
-          {/* Right: Slideshow Navigation (Only rendered when > 1 slide) */}
-          {hasMultipleSlides && (
-            <div className="flex items-center gap-3 sm:gap-4">
-              {/* Slide Counter (e.g. 01 / 03) */}
-              <span className="text-xs sm:text-sm font-mono tracking-widest text-[#FAF7F2]/90 drop-shadow-sm">
-                {String(currentIndex + 1).padStart(2, "0")} /{" "}
-                {String(slideList.length).padStart(2, "0")}
-              </span>
-
-              {/* Prev / Next Discreet Circular Controls */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  aria-label="Previous image slide"
-                  className="w-8 h-8 rounded-full border border-white/35 hover:border-[#E4D3A6] hover:bg-[#E4D3A6]/20 text-[#FAF7F2] hover:text-[#E4D3A6] flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95"
-                >
-                  <ArrowLeft size={13} />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  aria-label="Next image slide"
-                  className="w-8 h-8 rounded-full border border-white/35 hover:border-[#E4D3A6] hover:bg-[#E4D3A6]/20 text-[#FAF7F2] hover:text-[#E4D3A6] flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95"
-                >
-                  <ArrowRight size={13} />
-                </button>
-              </div>
-            </div>
-          )}
+          {/* 4. Delivery Tagline — premium supporting tagline */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.4 }}
+            className="pt-1.5 sm:pt-2 text-xs sm:text-[13px] md:text-[14.5px] font-sans font-medium tracking-[0.18em] sm:tracking-[0.22em] uppercase text-[#FAF7F2]/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]"
+          >
+            {heroDeliveryTagline}
+          </motion.div>
         </div>
       </div>
     </section>

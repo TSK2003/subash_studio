@@ -9,7 +9,6 @@ const NAV_LINKS = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About" },
   { to: "/order-booking", label: "Services", hasDropdown: true },
-  { to: "/portfolio", label: "Portfolio" },
   { to: "/gallery", label: "Gallery" },
   { to: "/films", label: "Films" },
   { to: "/branches", label: "Branches" },

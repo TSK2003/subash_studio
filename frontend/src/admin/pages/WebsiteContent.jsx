@@ -11,6 +11,8 @@ import {
   Clock,
   Share2,
   Loader2,
+  ExternalLink,
+  Edit3,
 } from "lucide-react";
 import { FaInstagram, FaFacebookF, FaYoutube } from "react-icons/fa6";
 import ImageUploader from "../components/ImageUploader";
@@ -39,51 +41,132 @@ export default function WebsiteContent() {
     if (websiteContent?.contact) setContactForm(websiteContent.contact);
   }, [websiteContent]);
 
-  const eyebrowChars = (homeForm.heroEyebrow || "").length;
-  const headlineChars = (homeForm.heroHeading || "").length;
-  const subtitleChars = (homeForm.heroTagline || "").length;
+  const [editingField, setEditingField] = useState(null);
+  const [savingField, setSavingField] = useState(null);
 
-  const handleEyebrowChange = (e) => {
-    const val = e.target.value.slice(0, 100);
-    setHomeForm((prev) => ({ ...prev, heroEyebrow: val }));
+  const HERO_FIELDS = [
+    {
+      key: "heroMainTitle",
+      fallbackKey: "heroHeading",
+      label: "Main Title",
+      defaultValue: "SUBASH STUDIO",
+      max: 100,
+      description: "Primary headline for the studio (largest and strongest luxury headline).",
+    },
+    {
+      key: "heroSubtitle",
+      fallbackKey: "heroEyebrow",
+      label: "Subtitle",
+      defaultValue: "WEDDING FILM COMPANY",
+      max: 100,
+      description: "Elegant secondary line defining your atelier craft (use 'FILM', not 'FLIM').",
+    },
+    {
+      key: "heroSinceText",
+      fallbackKey: null,
+      label: "Since Text",
+      defaultValue: "SINCE 1933",
+      max: 50,
+      description: "Refined heritage accent line establishing studio legacy and trust.",
+    },
+    {
+      key: "heroDeliveryTagline",
+      fallbackKey: "heroTagline",
+      label: "Delivery Tagline",
+      defaultValue: "WE PROMISE ON TIME DELIVERY",
+      max: 120,
+      description: "Premium supporting brand promise, clearly visible on the hero.",
+    },
+  ];
+
+  const getFieldValue = (field) => {
+    if (homeForm[field.key] !== undefined && homeForm[field.key] !== null) {
+      return homeForm[field.key];
+    }
+    if (field.fallbackKey && homeForm[field.fallbackKey] !== undefined && homeForm[field.fallbackKey] !== null) {
+      if (field.key === "heroDeliveryTagline" && homeForm.heroTagline?.includes("Preserving timeless heritage")) {
+        return field.defaultValue;
+      }
+      return homeForm[field.fallbackKey];
+    }
+    return field.defaultValue;
   };
 
-  const handleHeadlineChange = (e) => {
-    // Limit typed or pasted content to maximum 250 characters
-    const val = e.target.value.slice(0, 250);
-    setHomeForm((prev) => ({ ...prev, heroHeading: val }));
-    if (formErrors.heroHeading && val.length <= 250) {
-      setFormErrors((prev) => ({ ...prev, heroHeading: null }));
+  const handleFieldChange = (key, val) => {
+    setHomeForm((prev) => ({
+      ...prev,
+      [key]: val,
+    }));
+    if (formErrors[key]) {
+      setFormErrors((prev) => ({ ...prev, [key]: null }));
     }
   };
 
-  const handleTaglineChange = (e) => {
-    // Limit typed or pasted content to maximum 300 characters
-    const val = e.target.value.slice(0, 300);
-    setHomeForm((prev) => ({ ...prev, heroTagline: val }));
-    if (formErrors.heroTagline && val.length <= 300) {
-      setFormErrors((prev) => ({ ...prev, heroTagline: null }));
+  const buildHomePayload = () => {
+    const mainTitle = (getFieldValue(HERO_FIELDS[0]) || "SUBASH STUDIO").trim();
+    const subtitle = (getFieldValue(HERO_FIELDS[1]) || "WEDDING FILM COMPANY").trim();
+    const sinceText = (getFieldValue(HERO_FIELDS[2]) || "SINCE 1933").trim();
+    const deliveryTagline = (getFieldValue(HERO_FIELDS[3]) || "WE PROMISE ON TIME DELIVERY").trim();
+
+    return {
+      ...homeForm,
+      heroMainTitle: mainTitle,
+      heroHeading: mainTitle,
+      heroSubtitle: subtitle,
+      heroEyebrow: subtitle,
+      heroSinceText: sinceText,
+      heroDeliveryTagline: deliveryTagline,
+      heroTagline: deliveryTagline,
+      heroImages: Array.isArray(homeForm.heroImages) ? homeForm.heroImages : [],
+      heroImageLoop: homeForm.heroImageLoop !== false,
+      heroCtaText: "BOOK A SHOOT",
+    };
+  };
+
+  const handleSaveIndividualField = async (fieldKey, fieldLabel) => {
+    const field = HERO_FIELDS.find((f) => f.key === fieldKey);
+    const val = getFieldValue(field);
+    if (!val || String(val).trim().length === 0) {
+      setFormErrors((prev) => ({ ...prev, [fieldKey]: `${fieldLabel} cannot be empty.` }));
+      addToast(`${fieldLabel} cannot be empty.`, "error");
+      return;
+    }
+    if (String(val).length > field.max) {
+      setFormErrors((prev) => ({ ...prev, [fieldKey]: `${fieldLabel} cannot exceed ${field.max} characters.` }));
+      addToast(`${fieldLabel} exceeds maximum character limit.`, "error");
+      return;
+    }
+
+    try {
+      setSavingField(fieldKey);
+      const payload = buildHomePayload();
+      const updated = await updateWebsiteContent("home", payload);
+      if (updated) setHomeForm(updated);
+      addToast(`${fieldLabel} updated successfully.`, "success");
+      setEditingField(null);
+    } catch (err) {
+      addToast(err?.message || `Failed to update ${fieldLabel}.`, "error");
+    } finally {
+      setSavingField(null);
     }
   };
 
   const handleSaveHome = async (e) => {
-    e.preventDefault();
-    const heading = homeForm.heroHeading !== undefined ? String(homeForm.heroHeading) : "";
-    const tagline = homeForm.heroTagline !== undefined ? String(homeForm.heroTagline) : "";
-    const eyebrow = homeForm.heroEyebrow !== undefined ? String(homeForm.heroEyebrow).trim() : "WEDDING PHOTOGRAPHY & FILMS";
+    if (e && e.preventDefault) e.preventDefault();
 
     const errors = {};
-    if (heading.length > 250) {
-      errors.heroHeading = `Hero Main Headline cannot exceed 250 characters (currently ${heading.length}).`;
-    }
-
-    if (tagline.length > 300) {
-      errors.heroTagline = `Hero Subtitle / Tagline cannot exceed 300 characters (currently ${tagline.length}).`;
-    }
+    HERO_FIELDS.forEach((field) => {
+      const val = getFieldValue(field);
+      if (!val || String(val).trim().length === 0) {
+        errors[field.key] = `${field.label} cannot be empty.`;
+      } else if (String(val).length > field.max) {
+        errors[field.key] = `${field.label} cannot exceed ${field.max} characters (currently ${val.length}).`;
+      }
+    });
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      addToast("Please satisfy the character count limits before saving.", "error");
+      addToast("Please satisfy character count limits before saving.", "error");
       return;
     }
 
@@ -95,18 +178,11 @@ export default function WebsiteContent() {
     setFormErrors({});
     try {
       setSavingSection("home");
-      const payload = {
-        ...homeForm,
-        heroEyebrow: eyebrow,
-        heroHeading: heading,
-        heroTagline: tagline,
-        heroImages: Array.isArray(homeForm.heroImages) ? homeForm.heroImages : [],
-        heroImageLoop: homeForm.heroImageLoop !== false,
-        heroCtaText: "BOOK A SHOOT",
-      };
+      const payload = buildHomePayload();
       const updated = await updateWebsiteContent("home", payload);
       if (updated) setHomeForm(updated);
-      addToast("Homepage CMS content saved successfully.", "success");
+      setEditingField(null);
+      addToast("Homepage Hero content saved successfully.", "success");
     } catch (err) {
       addToast(err?.message || "Failed to save Homepage content.", "error");
     } finally {
@@ -200,116 +276,175 @@ export default function WebsiteContent() {
       {activeTab === "home" && (
         <form onSubmit={handleSaveHome} className="space-y-6">
           <div className="bg-white rounded-xl border border-[#E7E0D2] p-5 sm:p-6 shadow-sm space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E7E0D2]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7E0D2] gap-3">
               <div>
-                <h3 className="text-lg font-display font-bold text-[#2B2B2B]">
-                  Hero Banner Section
+                <h3 className="text-lg font-display font-bold text-[#2B2B2B] flex items-center gap-2">
+                  <span>Hero Section Content</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E4D3A6]/25 text-[#9C7B3D] font-sans font-semibold uppercase tracking-wider">
+                    4 Core Fields
+                  </span>
                 </h3>
                 <p className="text-xs text-[#6F6A62]">
-                  The first visual headline brides and grooms see upon landing on SUBASH STUDIO.
+                  The first visual headlines brides and grooms see upon landing on SUBASH STUDIO.
                 </p>
               </div>
-              <button
-                type="submit"
-                disabled={savingSection !== null}
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60"
-              >
-                {savingSection === "home" ? (
-                  <Loader2 className="w-4 h-4 text-[#E4D3A6] animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4 text-[#E4D3A6]" />
-                )}
-                <span>{savingSection === "home" ? "Saving..." : "Save Homepage"}</span>
-              </button>
+
+              <div className="flex items-center gap-2.5">
+                <a
+                  href="/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3.5 py-2 rounded-xl border border-[#E7E0D2] bg-white hover:bg-[#F8F6F2] text-[#2B2B2B] text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all"
+                  title="Open public website in a new tab"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                  <span>Preview Website</span>
+                </a>
+
+                <button
+                  type="submit"
+                  disabled={savingSection !== null || savingField !== null}
+                  className="px-4 sm:px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60 cursor-pointer"
+                >
+                  {savingSection === "home" ? (
+                    <Loader2 className="w-4 h-4 text-[#E4D3A6] animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4 text-[#E4D3A6]" />
+                  )}
+                  <span>{savingSection === "home" ? "Saving..." : "Save Changes"}</span>
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-4 text-xs">
-              {/* Eyebrow Tag */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="cms-heroEyebrow" className="font-semibold text-[#6F6A62]">
-                    Hero Eyebrow Tag
-                  </label>
-                  <span className="text-[11px] font-medium text-[#9C7B3D]">
-                    {eyebrowChars} / 100
+            <div className="space-y-5 text-xs">
+              {/* HERO SECTION CONTENT (4 EDITABLE TEXT FIELDS) */}
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between pb-1 border-b border-[#E7E0D2]/60">
+                  <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-wider">
+                    Editorial Text Hierarchy
+                  </span>
+                  <span className="text-[11px] text-[#8C8275]">
+                    Click &ldquo;Edit&rdquo; on any field to modify or save independently
                   </span>
                 </div>
-                <input
-                  id="cms-heroEyebrow"
-                  type="text"
-                  maxLength={100}
-                  placeholder="e.g. WEDDING PHOTOGRAPHY & FILMS"
-                  value={homeForm.heroEyebrow !== undefined ? homeForm.heroEyebrow : "WEDDING PHOTOGRAPHY & FILMS"}
-                  onChange={handleEyebrowChange}
-                  className="w-full p-3 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs font-semibold text-[#2B2B2B] uppercase tracking-wider focus:border-[#C9A669] focus:outline-none transition-colors"
-                />
-              </div>
 
-              {/* Main Headline */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="cms-heroHeading" className="font-semibold text-[#6F6A62]">
-                    Hero Main Headline (Multi-line supported)
-                  </label>
-                  <span
-                    className={`text-[11px] font-medium transition-colors ${
-                      headlineChars > 250
-                        ? "text-rose-600 font-semibold"
-                        : "text-[#9C7B3D]"
-                    }`}
-                  >
-                    {headlineChars} / 250
-                  </span>
-                </div>
-                <textarea
-                  id="cms-heroHeading"
-                  rows={3}
-                  maxLength={250}
-                  placeholder={"Real emotions.\nBeautiful stories.\nForever yours."}
-                  value={homeForm.heroHeading !== undefined ? homeForm.heroHeading : "Real emotions.\nBeautiful stories.\nForever yours."}
-                  onChange={handleHeadlineChange}
-                  className={`w-full p-3 bg-[#F8F6F2] border ${
-                    formErrors.heroHeading ? "border-rose-400" : "border-[#E7E0D2]"
-                  } rounded-xl text-sm font-display font-bold text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none transition-colors resize-none leading-snug`}
-                />
-                <p className="text-[11px] text-[#8C8275]">
-                  Tip: Use line breaks to separate phrases. The final line is highlighted with a champagne-gold italic accent on the homepage.
-                </p>
-                {formErrors.heroHeading && (
-                  <p className="text-[11px] text-rose-600 mt-1">{formErrors.heroHeading}</p>
-                )}
-              </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {HERO_FIELDS.map((field, idx) => {
+                    const isEditing = editingField === field.key;
+                    const isSavingThis = savingField === field.key;
+                    const currentVal = getFieldValue(field);
+                    const charCount = (currentVal || "").length;
+                    const hasError = formErrors[field.key];
 
-              {/* Subtitle / Tagline */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="cms-heroTagline" className="font-semibold text-[#6F6A62]">
-                    Hero Description / Tagline
-                  </label>
-                  <span
-                    className={`text-[11px] font-medium transition-colors ${
-                      subtitleChars > 300
-                        ? "text-rose-600 font-semibold"
-                        : "text-[#9C7B3D]"
-                    }`}
-                  >
-                    {subtitleChars} / 300
-                  </span>
+                    return (
+                      <div
+                        key={field.key}
+                        className={`rounded-xl border transition-all ${
+                          isEditing
+                            ? "border-[#C9A669] bg-[#FAF8F5] shadow-xs p-4 sm:p-5"
+                            : "border-[#E7E0D2] bg-[#FBF9F6]/70 hover:bg-[#FBF9F6] p-4"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[11.5px] font-bold text-[#9C7B3D] tracking-wide uppercase">
+                                {idx + 1}. {field.label}
+                              </span>
+                              <span className="text-[10.5px] text-[#8C8275]">
+                                (Max {field.max} chars)
+                              </span>
+                            </div>
+
+                            {!isEditing ? (
+                              <div className="mt-1">
+                                <p className="text-sm font-semibold text-[#2B2B2B] tracking-wide break-words">
+                                  {currentVal || <span className="text-[#8C8275] italic">Not set</span>}
+                                </p>
+                                <p className="text-[11px] text-[#8C8275] mt-1">
+                                  {field.description}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="mt-2.5 space-y-2">
+                                <input
+                                  id={`cms-${field.key}`}
+                                  type="text"
+                                  maxLength={field.max}
+                                  value={currentVal}
+                                  onChange={(e) => handleFieldChange(field.key, e.target.value.slice(0, field.max))}
+                                  placeholder={field.defaultValue}
+                                  autoFocus
+                                  className="w-full p-2.5 bg-white border border-[#E7E0D2] rounded-lg text-xs font-semibold text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none transition-colors shadow-2xs"
+                                />
+                                <div className="flex items-center justify-between text-[11px]">
+                                  <span className="text-[#8C8275]">{field.description}</span>
+                                  <span
+                                    className={
+                                      charCount > field.max
+                                        ? "text-rose-600 font-semibold"
+                                        : "text-[#9C7B3D] font-medium"
+                                    }
+                                  >
+                                    {charCount} / {field.max}
+                                  </span>
+                                </div>
+                                {hasError && (
+                                  <p className="text-[11px] text-rose-600 font-medium">{hasError}</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="shrink-0 flex items-center gap-2 pt-0.5">
+                            {!isEditing ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingField(field.key);
+                                  if (homeForm[field.key] === undefined) {
+                                    setHomeForm((prev) => ({
+                                      ...prev,
+                                      [field.key]: getFieldValue(field),
+                                    }));
+                                  }
+                                }}
+                                className="px-3.5 py-1.5 rounded-lg border border-[#E7E0D2] bg-white hover:bg-[#F4EFE6] text-[#2B2B2B] hover:text-[#9C7B3D] text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                                <span>Edit</span>
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  disabled={isSavingThis}
+                                  onClick={() => handleSaveIndividualField(field.key, field.label)}
+                                  className="px-3 py-1.5 rounded-lg bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-60 cursor-pointer shadow-xs"
+                                >
+                                  {isSavingThis ? (
+                                    <Loader2 className="w-3.5 h-3.5 text-[#E4D3A6] animate-spin" />
+                                  ) : (
+                                    <Save className="w-3.5 h-3.5 text-[#E4D3A6]" />
+                                  )}
+                                  <span>Save</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingField(null)}
+                                  className="px-2.5 py-1.5 rounded-lg border border-[#E7E0D2] bg-white hover:bg-[#F4EFE6] text-[#6F6A62] text-xs font-medium transition-all cursor-pointer"
+                                >
+                                  Done
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <textarea
-                  id="cms-heroTagline"
-                  rows={3}
-                  maxLength={300}
-                  placeholder="We capture the moments you feel, and the memories you keep."
-                  value={homeForm.heroTagline !== undefined ? homeForm.heroTagline : "We capture the moments you feel, and the memories you keep."}
-                  onChange={handleTaglineChange}
-                  className={`w-full p-3 bg-[#F8F6F2] border ${
-                    formErrors.heroTagline ? "border-rose-400" : "border-[#E7E0D2]"
-                  } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none leading-relaxed resize-none transition-colors`}
-                />
-                {formErrors.heroTagline && (
-                  <p className="text-[11px] text-rose-600 mt-1">{formErrors.heroTagline}</p>
-                )}
               </div>
 
               {/* HERO IMAGES SECTION (Screenshot 2) */}
