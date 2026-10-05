@@ -32,6 +32,12 @@ function formatBranchTitle(branch) {
 function StudioCard({ branch }) {
   const imageSrc = getBranchImage(branch);
   const title = formatBranchTitle(branch);
+  const mapUrl =
+    branch.mapsUrl && branch.mapsUrl.trim() !== ""
+      ? branch.mapsUrl
+      : `https://maps.google.com/?q=${encodeURIComponent(
+          `Subash Studio, ${branch.address || branch.city || branch.name || ""}`
+        )}`;
 
   return (
     <div className="bg-[#171614] rounded-lg border border-[#E4D3A6]/15 hover:border-[#E4D3A6]/45 transition-all duration-300 overflow-hidden flex flex-col h-full shadow-[0_8px_24px_rgba(0,0,0,0.45)] group">
@@ -81,107 +87,157 @@ function StudioCard({ branch }) {
         </div>
 
         {/* View on Map Link */}
-        {branch.mapsUrl ? (
-          <a
-            href={branch.mapsUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-[#E4D3A6] hover:text-[#FAF8F5] transition-colors font-medium mt-auto group/map pt-1"
-          >
-            <span>View on Map</span>
-            <ExternalLink
-              size={11}
-              className="group-hover/map:translate-x-0.5 group-hover/map:-translate-y-0.5 transition-transform"
-            />
-          </a>
-        ) : (
-          <div className="mt-auto" />
-        )}
+        <a
+          href={mapUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-[#E4D3A6] hover:text-[#FAF8F5] transition-colors font-medium mt-auto group/map pt-1"
+        >
+          <span>View on Map</span>
+          <ExternalLink
+            size={11}
+            className="group-hover/map:translate-x-0.5 group-hover/map:-translate-y-0.5 transition-transform"
+          />
+        </a>
       </div>
     </div>
   );
 }
 
+const DEFAULT_BRANCHES_FALLBACK = [
+  {
+    id: "BR-01",
+    name: "Kalladaikurichi Studio (Headquarters)",
+    city: "Kalladaikurichi",
+    tag: "Flagship Studio & Production Atelier",
+    address: "88 Main Road, Kalladaikurichi, Tamil Nadu 627416",
+    hours: "Mon – Sun, 08:00 AM – 09:00 PM",
+    image: "/images/gallery/branches/kalladaikurichi.jpg",
+    mapsUrl: "https://maps.google.com/?q=Subash+Studio+Kalladaikurichi",
+  },
+  {
+    id: "BR-02",
+    name: "Tirunelveli Studio & Gallery",
+    city: "Tirunelveli",
+    tag: "Consultation & Portrait Studio",
+    address: "Ahil Complex, S Bypass Rd, next to Selam RR Briyani, Vasanth Nagar, Tirunelveli, Tamil Nadu 627005",
+    hours: "Mon – Sun, 08:00 AM – 09:00 PM",
+    image: "/images/gallery/branches/tirunelveli.jpg",
+    mapsUrl: "https://maps.app.goo.gl/hh7A1jwk1hhb8svr9",
+  },
+  {
+    id: "BR-03",
+    name: "Tenkasi Experience Centre",
+    city: "Tenkasi",
+    tag: "Client Consultation & Album Lounge",
+    address: "14 Royal Enclave, Courtallam Main Road, Tenkasi, Tamil Nadu 627811",
+    hours: "Tue – Sun, 09:00 AM – 08:30 PM",
+    image: "/images/storefront.jpg",
+    mapsUrl: "https://maps.google.com/?q=Subash+Studio+Tenkasi",
+  },
+];
+
 /**
  * Studio Locations Section & Dynamic Seamless Infinite Carousel
- * - Dynamically supports any number of branches (1, 2, 3, 4, 5, 6, 10, 20+).
- * - Desktop: Always displays exactly 3 cards at a time (when 3 or more branches exist).
- * - Tablet: Shows 2 cards. Mobile: Shows 1 card.
- * - Viewport clips track correctly with zero horizontal overflow or page widening.
- * - Uses pure CSS percentage calculation fallback & synchronous useLayoutEffect measurement for 100% stable card dimensions.
- * - Modulo-normalized infinite wrap ensures clicking < or > or auto-playing never hits a blank slide or index glitch.
- * - Clean text < and > navigation controls integrated before Multiple Locations text.
+ * - Seamless infinite wrapping carousel with smooth transitions.
+ * - Previous/Next buttons allow browsing through all locations.
+ * - Responsive: 3 cards on desktop, 2 on tablet, 1 on mobile.
  */
 function StudioLocations({ branches = [] }) {
-  // Filter active branches
+  // Filter active branches with fallback so container is never empty
   const activeList = useMemo(() => {
-    return (branches || []).filter((b) => b && b.active !== false);
+    const filtered = (branches || []).filter((b) => b && b.active !== false);
+    return filtered.length > 0 ? filtered : DEFAULT_BRANCHES_FALLBACK;
   }, [branches]);
 
   const N = activeList.length;
 
   const containerRef = useRef(null);
   const trackRef = useRef(null);
+  const roRef = useRef(null);
 
   // Responsive window & container measurement
-  const [windowWidth, setWindowWidth] = useState(
+  const [windowWidth, setWindowWidth] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth : 1200
   );
-  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(() =>
+    typeof window !== "undefined" ? Math.min(window.innerWidth * 0.58, 850) : 800
+  );
 
-  // Measure container width and window innerWidth synchronously before paint
-  useLayoutEffect(() => {
-    const updateDimensions = () => {
-      setWindowWidth(window.innerWidth);
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.getBoundingClientRect().width);
+  const measureWidth = useCallback(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const w = rect.width || containerRef.current.offsetWidth;
+      if (w > 0) {
+        setContainerWidth(w);
       }
-    };
-
-    updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-
-    let ro;
-    if (typeof ResizeObserver !== "undefined" && containerRef.current) {
-      ro = new ResizeObserver(() => {
-        if (containerRef.current) {
-          setContainerWidth(containerRef.current.getBoundingClientRect().width);
-        }
-      });
-      ro.observe(containerRef.current);
     }
-
-    return () => {
-      window.removeEventListener("resize", updateDimensions);
-      if (ro) ro.disconnect();
-    };
   }, []);
 
-  // Determine visible card count based on responsive viewport width and available branches
-  const visibleCount = useMemo(() => {
-    if (N === 0) return 1;
-    let maxVisible = 1;
-    if (windowWidth >= 1024) maxVisible = 3;
-    else if (windowWidth >= 640) maxVisible = 2;
-    else maxVisible = 1;
+  // Callback ref guarantees measurement as soon as DOM element mounts
+  const containerCallbackRef = useCallback(
+    (node) => {
+      if (roRef.current) {
+        roRef.current.disconnect();
+        roRef.current = null;
+      }
+      if (node) {
+        containerRef.current = node;
+        const rect = node.getBoundingClientRect();
+        const w = rect.width || node.offsetWidth;
+        if (w > 0) setContainerWidth(w);
 
-    return Math.min(maxVisible, N);
+        if (typeof ResizeObserver !== "undefined") {
+          const ro = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+              const rw = entry.contentRect?.width || entry.target?.getBoundingClientRect().width;
+              if (rw > 0) setContainerWidth(rw);
+            }
+          });
+          ro.observe(node);
+          roRef.current = ro;
+        }
+      } else {
+        containerRef.current = null;
+      }
+    },
+    []
+  );
+
+  // Measure container width and window innerWidth synchronously
+  useLayoutEffect(() => {
+    measureWidth();
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      measureWidth();
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [measureWidth, N]);
+
+  // Determine visible card count based on responsive viewport width
+  const visibleCount = useMemo(() => {
+    if (windowWidth >= 1024) return Math.min(3, N);
+    if (windowWidth >= 640) return Math.min(2, N);
+    return 1;
   }, [windowWidth, N]);
 
-  // Carousel is active only when total branches exceed visible slots
-  const isCarousel = N > visibleCount;
+  // Carousel is active whenever there are multiple branches
+  const isCarousel = N > 1;
 
   // Gap between cards (16px default, 20px on xl screens)
   const gap = windowWidth >= 1280 ? 20 : 16;
 
-  // Card width calculation (fallback to CSS percentage if containerWidth not measured yet)
-  const cardWidth = containerWidth > 0
-    ? (containerWidth - (visibleCount - 1) * gap) / visibleCount
-    : 0;
+  // Card width & step calculation
+  const cardWidth =
+    containerWidth > 0
+      ? (containerWidth - (visibleCount - 1) * gap) / visibleCount
+      : 240;
 
-  const step = cardWidth > 0 ? cardWidth + gap : 0;
+  const step = cardWidth + gap;
 
-  // Cloned array for seamless infinite looping
+  // Cloned array for seamless infinite looping (3 sets)
   const clonedBranches = useMemo(() => {
     if (!isCarousel) return activeList;
     return [...activeList, ...activeList, ...activeList];
@@ -213,7 +269,7 @@ function StudioLocations({ branches = [] }) {
     }
   }, [N, isCarousel]);
 
-  // Re-enable transition after silentModuloSnap
+  // Re-enable transition after silent modulo snap
   useEffect(() => {
     if (!withTransition) {
       const id = requestAnimationFrame(() => {
@@ -228,26 +284,38 @@ function StudioLocations({ branches = [] }) {
   // Navigation: Next
   const handleNext = useCallback(() => {
     if (!isCarousel) return;
+    measureWidth();
     setWithTransition(true);
-    setCurrentIndex((prev) => prev + 1);
-  }, [isCarousel]);
+    setCurrentIndex((prev) => {
+      if (prev >= 2 * N) {
+        return N + 1;
+      }
+      return prev + 1;
+    });
+  }, [isCarousel, measureWidth, N]);
 
   // Navigation: Prev
   const handlePrev = useCallback(() => {
     if (!isCarousel) return;
+    measureWidth();
     setWithTransition(true);
-    setCurrentIndex((prev) => prev - 1);
-  }, [isCarousel]);
+    setCurrentIndex((prev) => {
+      if (prev <= 0) {
+        return 2 * N - 1;
+      }
+      return prev - 1;
+    });
+  }, [isCarousel, measureWidth, N]);
 
-  // Handle transitionend: silently normalize index back to middle set [N, 2N-1]
+  // Handle transitionend: normalize index back to middle set [N, 2N-1]
   const handleTransitionEnd = useCallback(
     (e) => {
-      if (e.target !== trackRef.current || e.propertyName !== "transform") return;
+      if (e.target !== trackRef.current) return;
+      if (e.propertyName !== "transform" && e.propertyName !== "-webkit-transform") return;
       if (!isCarousel || N <= 0) return;
 
       if (currentIndex >= 2 * N || currentIndex < N) {
         setWithTransition(false);
-        // Universal modulo formula: maps any index directly into middle range [N, 2N-1]
         const normalized = (((currentIndex % N) + N) % N) + N;
         setCurrentIndex(normalized);
       }
@@ -255,16 +323,16 @@ function StudioLocations({ branches = [] }) {
     [currentIndex, isCarousel, N]
   );
 
-  // Auto-play interval: 4.5 seconds per slide, paused on hover/touch/tab hidden
+  // Auto-play interval: 5 seconds per slide, paused on hover/touch/tab hidden
   useEffect(() => {
     if (!isCarousel || isHovered || isDocHidden) return;
 
     const timer = setInterval(() => {
       handleNext();
-    }, 4500);
+    }, 5000);
 
     return () => clearInterval(timer);
-  }, [isCarousel, isHovered, isDocHidden, handleNext, currentIndex]);
+  }, [isCarousel, isHovered, isDocHidden, handleNext]);
 
   // Touch gesture support for mobile/tablet
   const touchStartX = useRef(0);
@@ -289,25 +357,6 @@ function StudioLocations({ branches = [] }) {
     }
   };
 
-  // Empty state handling
-  if (N === 0) {
-    return (
-      <div className="lg:col-span-7 flex flex-col justify-start min-w-0">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h4 className="text-xs uppercase font-semibold tracking-[0.22em] text-[#E4D3A6]">
-              STUDIO LOCATIONS
-            </h4>
-            <div className="w-10 h-[1.5px] bg-[#E4D3A6]/80 mt-2" />
-          </div>
-        </div>
-        <div className="p-6 rounded-lg bg-[#171614] border border-[#E4D3A6]/15 text-xs text-[#FAF8F5]/65">
-          Our studio locations are currently being updated. For bookings or consultations, please contact us.
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="lg:col-span-7 flex flex-col justify-start min-w-0">
       {/* Header Row */}
@@ -323,7 +372,7 @@ function StudioLocations({ branches = [] }) {
           {/* Functional minimalist < and > navigation controls placed directly before text */}
           {isCarousel && (
             <div
-              className="inline-flex items-center gap-2 mr-1"
+              className="inline-flex items-center gap-1.5 mr-2"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
@@ -331,8 +380,7 @@ function StudioLocations({ branches = [] }) {
                 type="button"
                 onClick={handlePrev}
                 aria-label="Previous studio location"
-                className="text-[#E4D3A6]/70 hover:text-[#FAF8F5] transition-colors duration-200 cursor-pointer p-0.5 font-mono text-sm sm:text-base leading-none focus:outline-none select-none inline-flex items-center justify-center hover:scale-110 active:scale-95"
-                style={{ pointerEvents: 'auto' }}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#E4D3A6]/35 bg-[#171614]/90 text-[#E4D3A6] hover:text-[#FAF8F5] hover:border-[#E4D3A6] hover:bg-[#E4D3A6]/20 transition-all duration-200 cursor-pointer flex items-center justify-center font-mono text-xs sm:text-sm select-none active:scale-95 shadow-sm"
               >
                 &lt;
               </button>
@@ -340,8 +388,7 @@ function StudioLocations({ branches = [] }) {
                 type="button"
                 onClick={handleNext}
                 aria-label="Next studio location"
-                className="text-[#E4D3A6]/70 hover:text-[#FAF8F5] transition-colors duration-200 cursor-pointer p-0.5 font-mono text-sm sm:text-base leading-none focus:outline-none select-none inline-flex items-center justify-center hover:scale-110 active:scale-95"
-                style={{ pointerEvents: 'auto' }}
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-[#E4D3A6]/35 bg-[#171614]/90 text-[#E4D3A6] hover:text-[#FAF8F5] hover:border-[#E4D3A6] hover:bg-[#E4D3A6]/20 transition-all duration-200 cursor-pointer flex items-center justify-center font-mono text-xs sm:text-sm select-none active:scale-95 shadow-sm"
               >
                 &gt;
               </button>
@@ -356,7 +403,7 @@ function StudioLocations({ branches = [] }) {
 
       {/* Cards Display Container: Viewport & Track */}
       <div
-        ref={containerRef}
+        ref={containerCallbackRef}
         className="relative w-full overflow-hidden"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -369,15 +416,11 @@ function StudioLocations({ branches = [] }) {
           className="flex items-stretch"
           style={{
             gap: `${gap}px`,
-            transform:
-              isCarousel && step > 0
-                ? `translateX(-${currentIndex * step}px)`
-                : "none",
-            transition:
-              isCarousel && withTransition
-                ? "transform 850ms cubic-bezier(0.25, 1, 0.5, 1)"
-                : "none",
-            willChange: isCarousel ? "transform" : "auto",
+            transform: `translateX(-${currentIndex * step}px)`,
+            transition: withTransition
+              ? "transform 500ms cubic-bezier(0.25, 1, 0.5, 1)"
+              : "none",
+            willChange: "transform",
           }}
           onTransitionEnd={handleTransitionEnd}
         >
@@ -385,10 +428,9 @@ function StudioLocations({ branches = [] }) {
             <div
               key={`${branch.id || branch.city || branch.name || "br"}-${idx}`}
               style={{
-                width:
-                  cardWidth > 0
-                    ? `${cardWidth}px`
-                    : `calc((100% - ${(visibleCount - 1) * gap}px) / ${visibleCount})`,
+                width: `${cardWidth}px`,
+                minWidth: `${cardWidth}px`,
+                maxWidth: `${cardWidth}px`,
                 flexShrink: 0,
               }}
               className="h-full flex flex-col"
@@ -432,7 +474,7 @@ export default function Footer() {
 
   // Filter only active branches
   const activeBranches = useMemo(
-    () => (branches || []).filter((branch) => branch && branch.active === true),
+    () => (branches || []).filter((branch) => branch && branch.active !== false),
     [branches]
   );
 
