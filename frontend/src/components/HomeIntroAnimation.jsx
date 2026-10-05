@@ -18,7 +18,7 @@ import { motion } from "framer-motion";
  * 8. Background overlay dissolves to reveal the existing homepage seamlessly.
  * 9. Seamless handover into the real Navbar logo with zero shift.
  */
-export default function HomeIntroAnimation({ onRevealing, onComplete }) {
+export default function HomeIntroAnimation({ onRevealing, onComplete, onBrandReady }) {
   const [layout, setLayout] = useState(null);
   // step:
   // 0 = init
@@ -34,8 +34,8 @@ export default function HomeIntroAnimation({ onRevealing, onComplete }) {
   // Measure destination layout dynamically with resilient fallbacks
   useEffect(() => {
     const measure = () => {
-      const brandEl = document.getElementById("navbar-brand-link");
-      const logoImgEl = document.getElementById("navbar-logo-img");
+      const brandEl = document.getElementById("navbar-brand-link") || document.getElementById("navbar-brand-logo");
+      const logoImgEl = document.getElementById("navbar-logo-img") || brandEl?.querySelector("img");
 
       const width = window.innerWidth;
       const isMobile = width < 640;
@@ -168,6 +168,7 @@ export default function HomeIntroAnimation({ onRevealing, onComplete }) {
     const t5 = setTimeout(() => {
       setStep(5); // reveal
       if (onRevealing) onRevealing();
+      if (onBrandReady) onBrandReady();
     }, 3700);
 
     // 6. t = 4300ms: Complete & unmount

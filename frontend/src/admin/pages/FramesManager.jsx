@@ -671,7 +671,7 @@ export default function FramesManager() {
                   initial={{ opacity: 0, scale: 0.96, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                  className="relative bg-white rounded-2xl max-w-4xl lg:max-w-5xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-[#E7E0D2] overflow-hidden"
+                  className="relative bg-white rounded-2xl sm:rounded-3xl max-w-4xl lg:max-w-5xl w-full max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col shadow-2xl border border-[#E7E0D2] overflow-hidden"
                 >
                   {/* Modal Top Pinned Header */}
                   <div className="flex items-center justify-between px-5 sm:px-6 md:px-8 py-4 sm:py-5 border-b border-[#E7E0D2] bg-white shrink-0 z-10">
@@ -1211,7 +1211,7 @@ function WoodTypeModal({ isOpen, mode, initialData, onClose, onSave }) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative bg-white rounded-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
+        className="relative bg-white rounded-2xl sm:rounded-3xl max-w-md w-full max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
       >
         <div className="flex items-center justify-between border-b border-[#E7E0D2] px-5 py-4 shrink-0 bg-white">
           <h3 className="font-display font-bold text-lg text-[#1C1B19]">
@@ -1375,7 +1375,7 @@ function FrameDesignModal({ isOpen, mode, initialData, onClose, onSave }) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative bg-white rounded-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
+        className="relative bg-white rounded-2xl sm:rounded-3xl max-w-md w-full max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
       >
         <div className="flex items-center justify-between border-b border-[#E7E0D2] px-5 py-4 shrink-0 bg-white">
           <h3 className="font-display font-bold text-lg text-[#1C1B19]">
@@ -1565,7 +1565,7 @@ function RatioModal({ isOpen, mode, initialData, existingRatios = [], onClose, o
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative bg-white rounded-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
+        className="relative bg-white rounded-2xl sm:rounded-3xl max-w-md w-full max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden shadow-2xl border border-[#E7E0D2]"
       >
         <div className="flex items-center justify-between border-b border-[#E7E0D2] px-5 py-4 shrink-0 bg-white">
           <h3 className="font-display font-bold text-lg text-[#1C1B19]">

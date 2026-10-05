@@ -2,12 +2,14 @@ import { motion } from "framer-motion";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
 import { useAdminData } from "../admin/context/AdminDataContext";
 
-export default function FloatingButtons() {
+export default function FloatingButtons({ introActive = false }) {
   const { websiteContent } = useAdminData();
   const contactData = websiteContent?.contact || {};
   const instagramHref = contactData.instagram || "https://www.instagram.com/subash_studio/";
   const whatsappRaw = contactData.whatsapp || "+91 93457 06609";
   const whatsappHref = whatsappRaw.startsWith("http") ? whatsappRaw : `https://wa.me/${whatsappRaw.replace(/\D/g, "")}`;
+
+  if (introActive) return null;
 
   return (
     <div

@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import { deleteStorageFile } from "../utils/storage.js";
 
 const VALID_SECTIONS = ["home", "about", "contact"];
 
@@ -40,6 +41,42 @@ function validateSectionData(section, data) {
       result.heroTagline = data.heroTagline.replace(/<[^>]*>?/gm, "");
     }
 
+    if (data.heroVideos !== undefined) {
+      if (!Array.isArray(data.heroVideos)) {
+        throw new Error("Hero Videos must be an array.");
+      }
+      result.heroVideos = data.heroVideos.map((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(`Hero video item at index ${index} must be an object.`);
+        }
+        const url = String(item.url || "").trim();
+        if (!url) {
+          throw new Error(`Hero video item at index ${index} is missing a video URL.`);
+        }
+        return {
+          id: String(item.id || `hvid-${Date.now()}-${index}`),
+          url: url,
+          name: sanitizeString(item.name || item.filename || "Hero Video", 120),
+          duration: item.duration ? sanitizeString(String(item.duration), 30) : null,
+          order: typeof item.order === "number" ? item.order : index,
+          active: item.active !== false,
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      }).sort((a, b) => a.order - b.order);
+    }
+
+    if (data.heroVideoLoop !== undefined) {
+      result.heroVideoLoop = Boolean(data.heroVideoLoop);
+    } else if (data.loopHeroVideos !== undefined) {
+      result.heroVideoLoop = Boolean(data.loopHeroVideos);
+    }
+
+    if (data.heroImage !== undefined) {
+      result.heroImage = String(data.heroImage).trim();
+    }
+
+>>>>>>> 6484f85a5164a5a3c12f8894b718a3e5d0054dba
     result.heroCtaText = "BOOK A SHOOT";
     if (data.stats && typeof data.stats === "object") {
       result.stats = {
@@ -134,6 +171,20 @@ export async function updateContent(section, data) {
   const existing = await prisma.websiteContent.findUnique({
     where: { section },
   });
+
+  // If section is 'home' and heroVideos were updated, safely delete any removed video files
+  if (section === "home" && validated.heroVideos !== undefined && existing?.data?.heroVideos) {
+    const existingVideos = Array.isArray(existing.data.heroVideos) ? existing.data.heroVideos : [];
+    const remainingUrls = new Set(validated.heroVideos.map((v) => v.url));
+    const removedVideos = existingVideos.filter((v) => v && v.url && !remainingUrls.has(v.url));
+    for (const removed of removedVideos) {
+      try {
+        await deleteStorageFile(removed.url);
+      } catch (e) {
+        console.warn("[contentService] Could not delete removed hero video file:", removed.url, e.message);
+      }
+    }
+  }
 
   const merged = existing ? { ...(existing.data || {}), ...validated } : validated;
 

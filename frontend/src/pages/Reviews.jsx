@@ -384,10 +384,10 @@ export default function Reviews() {
                 <ArrowRight size={14} />
               </Link>
               <Link
-                to="/portfolio"
+                to="/gallery"
                 className="w-full sm:w-auto px-8 h-[50px] bg-white hover:bg-[#1C1B19] border border-[#E7E0D2] hover:border-[#1C1B19] text-[#1C1B19] hover:text-white rounded-full text-xs font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center"
               >
-                <span>EXPLORE PORTFOLIO</span>
+                <span>EXPLORE GALLERY</span>
               </Link>
             </div>
           </div>

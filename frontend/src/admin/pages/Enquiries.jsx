@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare,
@@ -459,22 +460,30 @@ export default function Enquiries() {
       )}
 
       {/* Enquiry Detail Modal */}
-      <AnimatePresence>
-        {activeEnquiry && (
-          <div className="admin-modal-overlay">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setActiveEnquiry(null)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] flex flex-col overflow-hidden"
-            >
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {activeEnquiry && (
+              <div
+                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+                role="dialog"
+                aria-modal="true"
+              >
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setActiveEnquiry(null)}
+                  className="fixed inset-0"
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96, y: 0 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
               {/* Fixed Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
                 <div>
@@ -636,25 +645,35 @@ export default function Enquiries() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
       {/* Edit Enquiry Modal */}
-      <AnimatePresence>
-        {editModalOpen && editingEnquiry && (
-          <div className="admin-modal-overlay !z-[60]">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={handleCloseEditModal}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] flex flex-col overflow-hidden"
-            >
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {editModalOpen && editingEnquiry && (
+              <div
+                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+                role="dialog"
+                aria-modal="true"
+              >
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={handleCloseEditModal}
+                  className="fixed inset-0"
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.96, y: 0 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
                 <div>
@@ -883,7 +902,9 @@ export default function Enquiries() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
       {/* Delete Confirm */}
       <ConfirmModal

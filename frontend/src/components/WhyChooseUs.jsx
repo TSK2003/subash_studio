@@ -30,7 +30,10 @@ const benefits = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="relative w-full bg-transparent py-20 sm:py-24 lg:py-28 overflow-hidden border-b border-[#E7E0D2]/70">
+    <section
+      id="why-choose-us-section"
+      className="relative w-full bg-transparent py-20 sm:py-24 lg:py-28 overflow-hidden border-b border-[#E7E0D2]/70 scroll-mt-20"
+    >
       <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
         {/* Header */}
         <header className="max-w-3xl mx-auto text-center">

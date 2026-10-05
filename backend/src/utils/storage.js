@@ -3,18 +3,27 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import ENV from "../config/env.js";
+import {
+  optimizeImage,
+  verifyImageMagicBytes,
+  getOptimizationProfile,
+} from "../services/imageOptimizationService.js";
 
 const ALLOWED_CATEGORIES = [
   "gallery",
+  "gallery/albums",
   "portfolio",
   "services",
   "branches",
   "films",
   "films/videos",
+  "frames",
   "frames/catalog",
   "frames/customer-orders",
   "admin",
   "general",
+  "cms",
+  "testimonials",
 ];
 
 const ALLOWED_MIME_TYPES = {
@@ -31,70 +40,7 @@ export const ALLOWED_VIDEO_MIME_TYPES = {
   "video/quicktime": ".mov",
 };
 
-/**
- * Validates actual binary magic bytes of buffer against expected image signatures
- */
-export function verifyImageMagicBytes(buffer, mimetype) {
-  if (!buffer || buffer.length < 12) {
-    throw new Error("Invalid image buffer or file too small.");
-  }
-
-  // Check JPEG signature: FF D8 FF
-  if (mimetype === "image/jpeg" || mimetype === "image/jpg") {
-    if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
-      return true;
-    }
-  }
-
-  // Check PNG signature: 89 50 4E 47 0D 0A 1A 0A
-  if (mimetype === "image/png") {
-    if (
-      buffer[0] === 0x89 &&
-      buffer[1] === 0x50 &&
-      buffer[2] === 0x4e &&
-      buffer[3] === 0x47 &&
-      buffer[4] === 0x0d &&
-      buffer[5] === 0x0a &&
-      buffer[6] === 0x1a &&
-      buffer[7] === 0x0a
-    ) {
-      return true;
-    }
-  }
-
-  // Check GIF signature: 47 49 46 38 ("GIF8")
-  if (mimetype === "image/gif") {
-    if (
-      buffer[0] === 0x47 &&
-      buffer[1] === 0x49 &&
-      buffer[2] === 0x46 &&
-      buffer[3] === 0x38
-    ) {
-      return true;
-    }
-  }
-
-  // Check WebP signature: RIFF ... WEBP
-  if (mimetype === "image/webp") {
-    const isRiff =
-      buffer[0] === 0x52 &&
-      buffer[1] === 0x49 &&
-      buffer[2] === 0x46 &&
-      buffer[3] === 0x46;
-    const isWebp =
-      buffer[8] === 0x57 &&
-      buffer[9] === 0x45 &&
-      buffer[10] === 0x42 &&
-      buffer[11] === 0x50;
-    if (isRiff && isWebp) {
-      return true;
-    }
-  }
-
-  throw new Error(
-    "File signature verification failed. The uploaded file content does not match its claimed image MIME type."
-  );
-}
+export { verifyImageMagicBytes };
 
 export function validateFileType(mimetype, originalname) {
   if (!ALLOWED_MIME_TYPES[mimetype]) {
@@ -123,8 +69,6 @@ function getS3Client() {
     region: ENV.AWS_REGION || "ap-south-1",
   };
 
-  // If explicit credentials provided (local dev / staging), use them
-  // Otherwise, leave credentials empty so AWS SDK automatically resolves from EC2 IAM Instance Profile
   if (ENV.AWS_ACCESS_KEY_ID && ENV.AWS_SECRET_ACCESS_KEY) {
     clientConfig.credentials = {
       accessKeyId: ENV.AWS_ACCESS_KEY_ID,
@@ -136,36 +80,104 @@ function getS3Client() {
   return cachedS3Client;
 }
 
+/**
+ * Saves and automatically optimizes an uploaded image.
+ * 
+ * Flow:
+ * 1. Validate magic bytes and format
+ * 2. Optimize image using centralized imageOptimizationService (Sharp)
+ * 3. Save optimized WebP as the primary asset
+ * 4. Save responsive variants (medium, thumb) if generated
+ * 5. Save original untouched buffer separately in originals/ directory for high-res archival/print
+ * 6. Return optimized URL and metadata
+ */
 export async function saveFile({ buffer, mimetype, originalname, category = "general" }) {
-  const extension = validateFileType(mimetype, originalname);
-  verifyImageMagicBytes(buffer, mimetype);
-
+  validateFileType(mimetype, originalname);
   const cleanCategory = sanitizeCategory(category);
-  const safeUniqueId = `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${extension}`;
-  const objectKey = `${cleanCategory}/${safeUniqueId}`;
+
+  // 1. Run centralized image optimization & WebP conversion
+  const optimizationResult = await optimizeImage({
+    buffer,
+    mimetype,
+    originalname,
+    category: cleanCategory,
+  });
+
+  const baseToken = `${Date.now()}-${crypto.randomBytes(8).toString("hex")}`;
+  const webpFileName = `${baseToken}.webp`;
+  const originalFileName = `${baseToken}${optimizationResult.original.extension}`;
+
+  const objectKey = `${cleanCategory}/${webpFileName}`;
+  const originalObjectKey = `${cleanCategory}/originals/${originalFileName}`;
 
   // AWS S3 upload if bucket configured
   if (ENV.AWS_S3_BUCKET) {
     try {
       const s3Client = getS3Client();
+
+      // Upload primary optimized WebP
       await s3Client.send(
         new PutObjectCommand({
           Bucket: ENV.AWS_S3_BUCKET,
           Key: objectKey,
-          Body: buffer,
-          ContentType: mimetype,
+          Body: optimizationResult.optimized.buffer,
+          ContentType: "image/webp",
           CacheControl: "public, max-age=31536000, immutable",
         })
       );
+
+      // Upload original untouched file for archival/high-res use
+      await s3Client.send(
+        new PutObjectCommand({
+          Bucket: ENV.AWS_S3_BUCKET,
+          Key: originalObjectKey,
+          Body: optimizationResult.original.buffer,
+          ContentType: mimetype,
+          CacheControl: "private, max-age=31536000",
+        })
+      );
+
+      // Upload responsive variants if any
+      const variantUrls = {};
+      for (const variant of optimizationResult.variants) {
+        const variantKey = `${cleanCategory}/${baseToken}${variant.suffix}.webp`;
+        await s3Client.send(
+          new PutObjectCommand({
+            Bucket: ENV.AWS_S3_BUCKET,
+            Key: variantKey,
+            Body: variant.buffer,
+            ContentType: "image/webp",
+            CacheControl: "public, max-age=31536000, immutable",
+          })
+        );
+        const vUrl = ENV.CLOUDFRONT_URL
+          ? `${ENV.CLOUDFRONT_URL}/${variantKey}`
+          : `https://${ENV.AWS_S3_BUCKET}.s3.${ENV.AWS_REGION}.amazonaws.com/${variantKey}`;
+        variantUrls[variant.name] = vUrl;
+      }
 
       // CloudFront CDN URL preference over raw S3 bucket URL
       const cdnUrl = ENV.CLOUDFRONT_URL
         ? `${ENV.CLOUDFRONT_URL}/${objectKey}`
         : `https://${ENV.AWS_S3_BUCKET}.s3.${ENV.AWS_REGION}.amazonaws.com/${objectKey}`;
 
+      const originalUrl = ENV.CLOUDFRONT_URL
+        ? `${ENV.CLOUDFRONT_URL}/${originalObjectKey}`
+        : `https://${ENV.AWS_S3_BUCKET}.s3.${ENV.AWS_REGION}.amazonaws.com/${originalObjectKey}`;
+
       return {
         url: cdnUrl,
         key: objectKey,
+        originalUrl,
+        thumbnailUrl: variantUrls.thumbnail || cdnUrl,
+        mediumUrl: variantUrls.medium || cdnUrl,
+        variants: variantUrls,
+        width: optimizationResult.optimized.width,
+        height: optimizationResult.optimized.height,
+        format: "webp",
+        size: optimizationResult.optimized.size,
+        originalSize: optimizationResult.original.size,
+        savingsPercent: optimizationResult.stats.savingsPercent,
         storage: "s3",
       };
     } catch (err) {
@@ -173,19 +185,50 @@ export async function saveFile({ buffer, mimetype, originalname, category = "gen
     }
   }
 
-  // Local storage fallback for development
+  // Local storage fallback for development & local environment
   const localUploadsDir = path.resolve(process.cwd(), "uploads", cleanCategory);
+  const localOriginalsDir = path.resolve(localUploadsDir, "originals");
+
   if (!fs.existsSync(localUploadsDir)) {
     fs.mkdirSync(localUploadsDir, { recursive: true });
   }
+  if (!fs.existsSync(localOriginalsDir)) {
+    fs.mkdirSync(localOriginalsDir, { recursive: true });
+  }
 
-  const filePath = path.join(localUploadsDir, safeUniqueId);
-  fs.writeFileSync(filePath, buffer);
+  // Write primary optimized WebP
+  const optimizedFilePath = path.join(localUploadsDir, webpFileName);
+  fs.writeFileSync(optimizedFilePath, optimizationResult.optimized.buffer);
 
-  const localUrl = `/uploads/${cleanCategory}/${safeUniqueId}`;
+  // Write original file in originals/ subdirectory
+  const originalFilePath = path.join(localOriginalsDir, originalFileName);
+  fs.writeFileSync(originalFilePath, optimizationResult.original.buffer);
+
+  // Write responsive variants
+  const variantUrls = {};
+  for (const variant of optimizationResult.variants) {
+    const variantFileName = `${baseToken}${variant.suffix}.webp`;
+    const variantFilePath = path.join(localUploadsDir, variantFileName);
+    fs.writeFileSync(variantFilePath, variant.buffer);
+    variantUrls[variant.name] = `/uploads/${cleanCategory}/${variantFileName}`;
+  }
+
+  const localUrl = `/uploads/${cleanCategory}/${webpFileName}`;
+  const localOriginalUrl = `/uploads/${cleanCategory}/originals/${originalFileName}`;
+
   return {
     url: localUrl,
     key: objectKey,
+    originalUrl: localOriginalUrl,
+    thumbnailUrl: variantUrls.thumbnail || localUrl,
+    mediumUrl: variantUrls.medium || localUrl,
+    variants: variantUrls,
+    width: optimizationResult.optimized.width,
+    height: optimizationResult.optimized.height,
+    format: "webp",
+    size: optimizationResult.optimized.size,
+    originalSize: optimizationResult.original.size,
+    savingsPercent: optimizationResult.stats.savingsPercent,
     storage: "local",
   };
 }
@@ -330,7 +373,6 @@ export async function saveVideoFileFromDisk({ tempFilePath, mimetype, originalna
   try {
     fs.renameSync(tempFilePath, destinationPath);
   } catch (err) {
-    // Fallback if renaming across partitions fails: stream copy then unlink
     await new Promise((resolve, reject) => {
       const readStream = fs.createReadStream(tempFilePath);
       const writeStream = fs.createWriteStream(destinationPath);
@@ -356,7 +398,7 @@ export async function saveVideoFileFromDisk({ tempFilePath, mimetype, originalna
 }
 
 /**
- * Safely deletes a file from local storage or S3
+ * Safely deletes a file (and any associated variants or originals) from local storage or S3
  */
 export async function deleteStorageFile(fileUrlOrKey) {
   if (!fileUrlOrKey || typeof fileUrlOrKey !== "string") return false;
@@ -366,11 +408,44 @@ export async function deleteStorageFile(fileUrlOrKey) {
     if (fileUrlOrKey.startsWith("/uploads/")) {
       const relPath = fileUrlOrKey.replace(/^\/uploads\//, "");
       const fullPath = path.resolve(process.cwd(), "uploads", relPath);
+      let deletedAny = false;
+
       if (fs.existsSync(fullPath)) {
         fs.unlinkSync(fullPath);
-        return true;
+        deletedAny = true;
       }
-      return false;
+
+      // Check and delete variants (-thumb.webp, -md.webp) and originals if present
+      const dir = path.dirname(fullPath);
+      const ext = path.extname(fullPath);
+      const base = path.basename(fullPath, ext);
+
+      const thumbPath = path.join(dir, `${base}-thumb${ext}`);
+      if (fs.existsSync(thumbPath)) {
+        fs.unlinkSync(thumbPath);
+      }
+
+      const mdPath = path.join(dir, `${base}-md${ext}`);
+      if (fs.existsSync(mdPath)) {
+        fs.unlinkSync(mdPath);
+      }
+
+      // Also clean up original in originals/ if matching base name
+      const originalsDir = path.join(dir, "originals");
+      if (fs.existsSync(originalsDir)) {
+        const potentialOriginals = fs.readdirSync(originalsDir);
+        for (const f of potentialOriginals) {
+          if (f.startsWith(base)) {
+            try {
+              fs.unlinkSync(path.join(originalsDir, f));
+            } catch (e) {
+              // ignore
+            }
+          }
+        }
+      }
+
+      return deletedAny;
     }
 
     // If it's an S3 object key or URL
@@ -398,4 +473,3 @@ export async function deleteStorageFile(fileUrlOrKey) {
   }
   return false;
 }
-

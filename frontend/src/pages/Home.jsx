@@ -1,8 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Play } from "lucide-react";
-import * as ReactCountUp from "react-countup";
-const CountUp = ReactCountUp.default?.default || ReactCountUp.default;
 import Seo from "../components/Seo";
 import Reveal from "../components/Reveal";
 import WhyChooseUs from "../components/WhyChooseUs";
@@ -10,102 +8,9 @@ import TestimonialsCarousel from "../components/TestimonialsCarousel";
 import HomeHero from "../components/home/HomeHero";
 import { useAdminData } from "../admin/context/AdminDataContext";
 
-
-
-const selectedWorkItems = [
-  {
-    title: "Forever Begins",
-    category: "WEDDING",
-    image: "/images/portfolio/wedding-01.jpg",
-  },
-  {
-    title: "A Beautiful Beginning",
-    category: "WEDDING",
-    image: "/images/portfolio/wedding-02.jpg",
-  },
-  {
-    title: "The Wedding Story",
-    category: "WEDDING",
-    image: "/images/portfolio/wedding-03.jpg",
-  },
-  {
-    title: "Two Hearts",
-    category: "COUPLE",
-    image: "/images/portfolio/couple-01.jpg",
-  },
-  {
-    title: "Together",
-    category: "FAMILY",
-    image: "/images/portfolio/couple-02.jpg",
-  },
-  {
-    title: "Little Moments",
-    category: "BABY",
-    image: "/images/portfolio/baby-01.jpg",
-  },
-];
-
-function parseStatValue(raw, defaultVal, defaultSuffix) {
-  if (raw === undefined || raw === null || raw === "") {
-    return { end: defaultVal, suffix: defaultSuffix };
-  }
-  const str = String(raw).trim();
-  const match = str.match(/^([\d,.]+)\s*(.*)$/);
-  if (match) {
-    const num = parseFloat(match[1].replace(/,/g, "")) || 0;
-    const suffix = match[2] || "";
-    return { end: num, suffix };
-  }
-  return { end: defaultVal, suffix: defaultSuffix };
-}
-
 export default function Home() {
-  const { portfolio, featuredPortfolio, branches, websiteContent, loading } = useAdminData();
+  const { branches } = useAdminData();
 
-  const dynamicStats = useMemo(() => {
-    const stats = websiteContent?.home?.stats;
-    return [
-      {
-        ...parseStatValue(stats?.weddingsCaptured, 1200, "+"),
-        label: "Weddings Captured",
-      },
-      {
-        ...parseStatValue(stats?.yearsOfCraft, 18, "+"),
-        label: "Years of Craft",
-      },
-      {
-        ...parseStatValue(stats?.signatureFilms, 450, "+"),
-        label: "Signature Films",
-      },
-      {
-        ...parseStatValue(stats?.happyFamilies, 2800, "+"),
-        label: "Happy Families",
-      },
-    ];
-  }, [websiteContent]);
-
-  const workItems = useMemo(() => {
-    // Prefer server-queried featured portfolio items (where published=true AND featured=true)
-    const activeFeatured = (featuredPortfolio && featuredPortfolio.length > 0)
-      ? featuredPortfolio
-      : (portfolio || []).filter((item) => Boolean(item.featured || item.featuredOnHome) && item.published !== false);
-
-    if (activeFeatured.length > 0) {
-      return activeFeatured.slice(0, 6).map((item) => ({
-        id: item.id || item.title,
-        title: item.title,
-        category: (item.category || "PORTFOLIO").toUpperCase(),
-        image: item.coverImage || item.image || item.imageUrl || "/images/portfolio/wedding-01.jpg",
-      }));
-    }
-
-    // Fallback only during initial load before database responds
-    if (loading) {
-      return selectedWorkItems;
-    }
-
-    return [];
-  }, [featuredPortfolio, portfolio, loading]);
   return (
     <div className="relative pt-[84px]">
       <Seo
@@ -119,34 +24,7 @@ export default function Home() {
       <HomeHero />
 
       {/* =========================================================
-          SECTION 2: STATS SECTION (Clean Horizontal Strip)
-      ========================================================= */}
-      <section
-        id="home-stats-section"
-        className="bg-transparent border-b border-[#E7E0D2]/70 py-10 sm:py-12 scroll-mt-20"
-      >
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#E7E0D2]/80">
-          {dynamicStats.map((s, i) => (
-            <div
-              key={s.label}
-              className={`text-center py-4 sm:py-0 px-4 ${
-                i === 1 ? "border-r-0 lg:border-r border-[#E7E0D2]/80" : ""
-              }`}
-            >
-              <p className="font-display text-4xl sm:text-5xl lg:text-[50px] text-[#B38F4D] font-medium leading-none">
-                <CountUp end={s.end} duration={2.2} enableScrollSpy scrollSpyOnce />
-                {s.suffix}
-              </p>
-              <p className="mt-2.5 text-[11px] sm:text-xs tracking-[0.18em] uppercase font-semibold text-[#6F6A62]">
-                {s.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* =========================================================
-          SECTION 4: WHY CHOOSE US (4 Balanced Benefit Cards)
+          WHY CHOOSE US (More Than Photographs)
       ========================================================= */}
       <WhyChooseUs />
 
@@ -159,16 +37,30 @@ export default function Home() {
           <Reveal className="relative max-w-md sm:max-w-lg mx-auto lg:max-w-none w-full">
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-[#E7E0D2]/80 aspect-[4/5] bg-[#FAF8F5]">
               <img
-                src="/images/shyam chandru.jpeg"
+                src="/images/shyam-chandru.webp"
                 alt="Subash - Founder and Lead Photographer at SUBASH STUDIO"
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  if (e.currentTarget.src !== "/images/shyam chandru.jpeg") {
+                    e.currentTarget.src = "/images/shyam chandru.jpeg";
+                  }
+                }}
                 className="w-full h-full object-cover object-top"
               />
             </div>
             {/* Small overlapping secondary black-and-white portrait at bottom/right */}
             <div className="hidden sm:flex absolute -bottom-6 -right-4 sm:-bottom-8 sm:-right-6 w-36 h-36 sm:w-44 sm:h-44 rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-white z-10">
               <img
-                src="/images/shyam chandru.jpeg"
+                src="/images/shyam-chandru.webp"
                 alt="Subash at work behind the lens"
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  if (e.currentTarget.src !== "/images/shyam chandru.jpeg") {
+                    e.currentTarget.src = "/images/shyam chandru.jpeg";
+                  }
+                }}
                 className="w-full h-full object-cover object-center grayscale contrast-125 hover:grayscale-0 transition-all duration-500"
               />
             </div>
@@ -236,69 +128,6 @@ export default function Home() {
           SECTION 6: TESTIMONIALS (Kind Words & Keepsakes)
       ========================================================= */}
       <TestimonialsCarousel />
-
-      {/* =========================================================
-          SECTION 7: SELECTED WORK / PORTFOLIO (6 Image Cards)
-      ========================================================= */}
-      <section className="relative w-full bg-transparent border-t border-[#E7E0D2]/70 overflow-hidden py-20 sm:py-24">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12 sm:mb-14">
-            <div>
-              <Reveal>
-                <p className="text-xs tracking-[0.25em] font-semibold text-[#B38F4D] uppercase mb-2">
-                  SELECTED WORK
-                </p>
-              </Reveal>
-              <Reveal delay={0.08}>
-                <h2 className="font-display font-medium text-3xl sm:text-4xl lg:text-[42px] text-[#1C1B19] leading-tight">
-                  Stories captured, moments preserved.
-                </h2>
-              </Reveal>
-            </div>
-
-            <Reveal delay={0.15}>
-              <Link
-                to="/portfolio"
-                className="group inline-flex items-center gap-2 text-xs sm:text-[13px] font-bold tracking-[0.14em] uppercase text-[#1C1B19] hover:text-[#B38F4D] whitespace-nowrap transition-colors"
-              >
-                <span>EXPLORE FULL PORTFOLIO</span>
-                <span className="inline-block transition-transform duration-300 group-hover:translate-x-1.5">
-                  →
-                </span>
-              </Link>
-            </Reveal>
-          </div>
-
-          {/* 6 Clean Image Cards in a single row on desktop */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
-            {workItems.map((item, idx) => (
-              <Reveal key={item.title} delay={idx * 0.06}>
-                <Link to="/portfolio" className="group block">
-                  <div className="relative aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-[#E7E0D2]/80 bg-[#FAF8F5]">
-                    <img
-                      src={item.image}
-                      alt={`${item.title} by SUBASH STUDIO`}
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                  </div>
-
-                  <div className="mt-3">
-                    <h3 className="font-display text-[15px] sm:text-base font-bold text-[#1C1B19] group-hover:text-[#B38F4D] transition-colors line-clamp-1">
-                      {item.title}
-                    </h3>
-                    <p className="text-[10px] text-[#8C6D32] uppercase tracking-[0.18em] font-bold mt-0.5">
-                      {item.category}
-                    </p>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* =========================================================
           SECTION 8: LARGE CTA BANNER SECTION

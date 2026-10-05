@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   Bell,
-  ExternalLink,
   Plus,
   Calendar,
   MessageSquare,
@@ -84,9 +83,8 @@ export default function AdminHeader({ onMobileMenuClick }) {
       case ADMIN_ROUTES.ENQUIRIES:
         return { title: "Lead Inquiries", subtitle: "Track and follow up on client contact messages" };
       case ADMIN_ROUTES.GALLERY:
-        return { title: "Gallery Showcase", subtitle: "Curate public portfolio and client showcase photos" };
       case ADMIN_ROUTES.PORTFOLIO:
-        return { title: "Featured Stories", subtitle: "Manage highlight stories & wedding case studies" };
+        return { title: "Gallery Albums", subtitle: "Curate event and client photo albums with category filters" };
       case ADMIN_ROUTES.SERVICES:
         return { title: "Studio Offerings", subtitle: "Configure photography packages, pricing & descriptions" };
       case ADMIN_ROUTES.FILMS:
@@ -149,7 +147,6 @@ export default function AdminHeader({ onMobileMenuClick }) {
           <Plus className="w-4 h-4 text-[#E4D3A6]" />
           <span>New Booking</span>
         </Link>
-
         {/* Live Site Link */}
         <a
           href="/"

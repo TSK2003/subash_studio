@@ -18,6 +18,7 @@ export default function ImageUploader({
   const [useUrlInput, setUseUrlInput] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [dimensions, setDimensions] = useState(null);
@@ -82,14 +83,36 @@ export default function ImageUploader({
     if (!file) return;
     setUploadError("");
     setUploading(true);
+    setUploadStatus("Uploading...");
 
     try {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await api.upload(`/api/uploads?category=${encodeURIComponent(category)}`, formData);
+      const res = await api.uploadWithProgress(
+        `/api/uploads?category=${encodeURIComponent(category)}`,
+        formData,
+        {
+          onProgress: ({ percent }) => {
+            if (percent < 100) {
+              setUploadStatus(`Uploading (${percent}%)...`);
+            } else {
+              setUploadStatus("Optimizing image...");
+            }
+          },
+        }
+      );
+
       if (res && res.url) {
+        setUploadStatus("Upload complete");
         onChange(res.url);
+        if (res.width && res.height && onDimensionsDetected) {
+          onDimensionsDetected({
+            width: res.width,
+            height: res.height,
+            orientation: res.height > res.width ? "portrait" : "landscape",
+          });
+        }
       } else {
         throw new Error("Server did not return an image URL.");
       }
@@ -103,7 +126,10 @@ export default function ImageUploader({
       reader.readAsDataURL(file);
       setUploadError("Image cached locally (backend upload failed).");
     } finally {
-      setUploading(false);
+      setTimeout(() => {
+        setUploading(false);
+        setUploadStatus("");
+      }, 600);
     }
   };
 
@@ -188,9 +214,9 @@ export default function ImageUploader({
             </span>
           </div>
           {uploading && (
-            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white text-xs gap-2">
+            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-xs gap-2 z-20 backdrop-blur-[2px]">
               <Loader2 className="w-6 h-6 animate-spin text-[#C9A669]" />
-              <span>Uploading to server...</span>
+              <span className="font-medium text-[#FAF7F2]">{uploadStatus || "Optimizing image..."}</span>
             </div>
           )}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">
@@ -244,7 +270,7 @@ export default function ImageUploader({
             )}
           </div>
           <p className="text-sm font-medium text-[#2B2B2B]">
-            {uploading ? "Uploading..." : "Click to upload or drag & drop"}
+            {uploading ? (uploadStatus || "Optimizing image...") : "Click to upload or drag & drop"}
           </p>
           <p className="text-xs text-[#6F6A62] mt-1">{helpText}</p>
           {uploadError && (

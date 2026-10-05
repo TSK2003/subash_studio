@@ -6,6 +6,19 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    watch: {
+      ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**', '**/backend/**'],
+    },
+    warmup: {
+      clientFiles: [
+        './src/main.jsx',
+        './src/App.jsx',
+        './src/index.css',
+        './src/pages/Home.jsx',
+        './src/admin/components/AdminLayout.jsx',
+        './src/admin/context/AdminDataContext.jsx',
+      ],
+    },
     proxy: {
       '/api': {
         target: process.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000',
@@ -30,8 +43,26 @@ export default defineConfig({
             }
           });
         },
-      }
-    }
+      },
+    },
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'framer-motion',
+      'lucide-react',
+      'lightgallery',
+      'lightgallery/react',
+      'react-helmet-async',
+      'react-icons',
+      'swiper',
+      'swiper/react',
+      'react-countup',
+      '@studio-freight/lenis',
+    ],
+    holdUntilCrawlEnd: false,
   },
   build: {
     chunkSizeWarningLimit: 600,
