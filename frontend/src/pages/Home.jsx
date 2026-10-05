@@ -97,7 +97,7 @@ export default function Home() {
             >
               {/* Left: Signature style text */}
               <div>
-                <p className="font-display italic text-3xl text-[#B38F4D] font-normal select-none -rotate-2 mb-1">
+                <p className="font-display text-3xl text-[#B38F4D] font-normal select-none mb-1">
                   Shyam Chandru
                 </p>
                 <p className="text-[10px] tracking-[0.2em] text-[#6F6A62] uppercase font-semibold mt-0.5">
