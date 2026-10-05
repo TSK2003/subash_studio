@@ -524,9 +524,12 @@ export const initialTestimonials = [
 
 export const initialWebsiteContent = {
   home: {
-    heroHeading: "Fine Photography & Cinematic Films",
-    heroTagline: "Preserving timeless heritage, profound emotions, and authentic human celebrations across generations.",
-    heroCtaText: "Explore Portfolio",
+    heroEyebrow: "WEDDING PHOTOGRAPHY & FILMS",
+    heroHeading: "Real emotions.\nBeautiful stories.\nForever yours.",
+    heroTagline: "We capture the moments you feel, and the memories you keep.",
+    heroImages: [],
+    heroImageLoop: true,
+    heroCtaText: "BOOK A SHOOT",
     stats: {
       weddingsCaptured: "1,200+",
       yearsOfCraft: "18+",

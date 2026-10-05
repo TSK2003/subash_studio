@@ -25,6 +25,10 @@ export default defineConfig({
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on('error', (err, _req, res) => {
+            if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') {
+              return;
+            }
+            console.error('[vite proxy error]', err.message);
             if (res && !res.headersSent) {
               res.writeHead(502, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ error: 'Backend server is temporarily unreachable. Please ensure the backend server is running.' }));
@@ -37,6 +41,10 @@ export default defineConfig({
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on('error', (err, _req, res) => {
+            if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') {
+              return;
+            }
+            console.error('[vite proxy error]', err.message);
             if (res && !res.headersSent) {
               res.writeHead(502);
               res.end();

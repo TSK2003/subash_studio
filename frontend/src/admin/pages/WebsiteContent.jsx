@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { FaInstagram, FaFacebookF, FaYoutube } from "react-icons/fa6";
 import ImageUploader from "../components/ImageUploader";
-import HeroVideoManager from "../components/HeroVideoManager";
+import HeroImageManager from "../components/HeroImageManager";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
 
@@ -24,7 +24,7 @@ export default function WebsiteContent() {
 
   const [activeTab, setActiveTab] = useState("home");
   const [savingSection, setSavingSection] = useState(null);
-  const [isVideoUploading, setIsVideoUploading] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
   // Local editable copies
   const [homeForm, setHomeForm] = useState(websiteContent?.home || {});
@@ -39,23 +39,29 @@ export default function WebsiteContent() {
     if (websiteContent?.contact) setContactForm(websiteContent.contact);
   }, [websiteContent]);
 
+  const eyebrowChars = (homeForm.heroEyebrow || "").length;
   const headlineChars = (homeForm.heroHeading || "").length;
   const subtitleChars = (homeForm.heroTagline || "").length;
 
+  const handleEyebrowChange = (e) => {
+    const val = e.target.value.slice(0, 100);
+    setHomeForm((prev) => ({ ...prev, heroEyebrow: val }));
+  };
+
   const handleHeadlineChange = (e) => {
-    // Limit typed or pasted content to maximum 20 characters
-    const val = e.target.value.slice(0, 20);
+    // Limit typed or pasted content to maximum 250 characters
+    const val = e.target.value.slice(0, 250);
     setHomeForm((prev) => ({ ...prev, heroHeading: val }));
-    if (formErrors.heroHeading && val.length <= 20) {
+    if (formErrors.heroHeading && val.length <= 250) {
       setFormErrors((prev) => ({ ...prev, heroHeading: null }));
     }
   };
 
   const handleTaglineChange = (e) => {
-    // Limit typed or pasted content to maximum 150 characters
-    const val = e.target.value.slice(0, 150);
+    // Limit typed or pasted content to maximum 300 characters
+    const val = e.target.value.slice(0, 300);
     setHomeForm((prev) => ({ ...prev, heroTagline: val }));
-    if (formErrors.heroTagline && val.length <= 150) {
+    if (formErrors.heroTagline && val.length <= 300) {
       setFormErrors((prev) => ({ ...prev, heroTagline: null }));
     }
   };
@@ -64,14 +70,15 @@ export default function WebsiteContent() {
     e.preventDefault();
     const heading = homeForm.heroHeading !== undefined ? String(homeForm.heroHeading) : "";
     const tagline = homeForm.heroTagline !== undefined ? String(homeForm.heroTagline) : "";
+    const eyebrow = homeForm.heroEyebrow !== undefined ? String(homeForm.heroEyebrow).trim() : "WEDDING PHOTOGRAPHY & FILMS";
 
     const errors = {};
-    if (heading.length > 20) {
-      errors.heroHeading = `Hero Main Headline cannot exceed 20 characters (currently ${heading.length}).`;
+    if (heading.length > 250) {
+      errors.heroHeading = `Hero Main Headline cannot exceed 250 characters (currently ${heading.length}).`;
     }
 
-    if (tagline.length > 150) {
-      errors.heroTagline = `Hero Subtitle / Tagline cannot exceed 150 characters (currently ${tagline.length}).`;
+    if (tagline.length > 300) {
+      errors.heroTagline = `Hero Subtitle / Tagline cannot exceed 300 characters (currently ${tagline.length}).`;
     }
 
     if (Object.keys(errors).length > 0) {
@@ -80,8 +87,8 @@ export default function WebsiteContent() {
       return;
     }
 
-    if (isVideoUploading) {
-      addToast("Please wait for all video uploads to finish before saving.", "warning");
+    if (isImageUploading) {
+      addToast("Please wait for all image uploads to finish before saving.", "warning");
       return;
     }
 
@@ -90,10 +97,11 @@ export default function WebsiteContent() {
       setSavingSection("home");
       const payload = {
         ...homeForm,
+        heroEyebrow: eyebrow,
         heroHeading: heading,
         heroTagline: tagline,
-        heroVideos: Array.isArray(homeForm.heroVideos) ? homeForm.heroVideos : [],
-        heroVideoLoop: homeForm.heroVideoLoop !== false,
+        heroImages: Array.isArray(homeForm.heroImages) ? homeForm.heroImages : [],
+        heroImageLoop: homeForm.heroImageLoop !== false,
         heroCtaText: "BOOK A SHOOT",
       };
       const updated = await updateWebsiteContent("home", payload);
@@ -216,58 +224,84 @@ export default function WebsiteContent() {
             </div>
 
             <div className="space-y-4 text-xs">
+              {/* Eyebrow Tag */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="cms-heroEyebrow" className="font-semibold text-[#6F6A62]">
+                    Hero Eyebrow Tag
+                  </label>
+                  <span className="text-[11px] font-medium text-[#9C7B3D]">
+                    {eyebrowChars} / 100
+                  </span>
+                </div>
+                <input
+                  id="cms-heroEyebrow"
+                  type="text"
+                  maxLength={100}
+                  placeholder="e.g. WEDDING PHOTOGRAPHY & FILMS"
+                  value={homeForm.heroEyebrow !== undefined ? homeForm.heroEyebrow : "WEDDING PHOTOGRAPHY & FILMS"}
+                  onChange={handleEyebrowChange}
+                  className="w-full p-3 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs font-semibold text-[#2B2B2B] uppercase tracking-wider focus:border-[#C9A669] focus:outline-none transition-colors"
+                />
+              </div>
+
+              {/* Main Headline */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label htmlFor="cms-heroHeading" className="font-semibold text-[#6F6A62]">
-                    Hero Main Headline
+                    Hero Main Headline (Multi-line supported)
                   </label>
                   <span
                     className={`text-[11px] font-medium transition-colors ${
-                      headlineChars > 20
+                      headlineChars > 250
                         ? "text-rose-600 font-semibold"
                         : "text-[#9C7B3D]"
                     }`}
                   >
-                    {headlineChars} / 20
+                    {headlineChars} / 250
                   </span>
                 </div>
-                <input
+                <textarea
                   id="cms-heroHeading"
-                  type="text"
-                  maxLength={20}
-                  placeholder="e.g. Subash Photography"
-                  value={homeForm.heroHeading || ""}
+                  rows={3}
+                  maxLength={250}
+                  placeholder={"Real emotions.\nBeautiful stories.\nForever yours."}
+                  value={homeForm.heroHeading !== undefined ? homeForm.heroHeading : "Real emotions.\nBeautiful stories.\nForever yours."}
                   onChange={handleHeadlineChange}
                   className={`w-full p-3 bg-[#F8F6F2] border ${
                     formErrors.heroHeading ? "border-rose-400" : "border-[#E7E0D2]"
-                  } rounded-xl text-sm font-display font-bold text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none transition-colors`}
+                  } rounded-xl text-sm font-display font-bold text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none transition-colors resize-none leading-snug`}
                 />
+                <p className="text-[11px] text-[#8C8275]">
+                  Tip: Use line breaks to separate phrases. The final line is highlighted with a champagne-gold italic accent on the homepage.
+                </p>
                 {formErrors.heroHeading && (
                   <p className="text-[11px] text-rose-600 mt-1">{formErrors.heroHeading}</p>
                 )}
               </div>
 
+              {/* Subtitle / Tagline */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label htmlFor="cms-heroTagline" className="font-semibold text-[#6F6A62]">
-                    Hero Subtitle / Tagline
+                    Hero Description / Tagline
                   </label>
                   <span
                     className={`text-[11px] font-medium transition-colors ${
-                      subtitleChars > 150
+                      subtitleChars > 300
                         ? "text-rose-600 font-semibold"
                         : "text-[#9C7B3D]"
                     }`}
                   >
-                    {subtitleChars} / 150
+                    {subtitleChars} / 300
                   </span>
                 </div>
                 <textarea
                   id="cms-heroTagline"
-                  rows={4}
-                  maxLength={150}
-                  placeholder="Enter a descriptive subtitle (up to 150 characters)..."
-                  value={homeForm.heroTagline || ""}
+                  rows={3}
+                  maxLength={300}
+                  placeholder="We capture the moments you feel, and the memories you keep."
+                  value={homeForm.heroTagline !== undefined ? homeForm.heroTagline : "We capture the moments you feel, and the memories you keep."}
                   onChange={handleTaglineChange}
                   className={`w-full p-3 bg-[#F8F6F2] border ${
                     formErrors.heroTagline ? "border-rose-400" : "border-[#E7E0D2]"
@@ -278,18 +312,25 @@ export default function WebsiteContent() {
                 )}
               </div>
 
-              {/* HERO VIDEOS SECTION */}
-              <HeroVideoManager
-                videos={Array.isArray(homeForm.heroVideos) ? homeForm.heroVideos : []}
-                onChange={(updatedVideos) =>
-                  setHomeForm((prev) => ({ ...prev, heroVideos: updatedVideos }))
-                }
-                loopEnabled={homeForm.heroVideoLoop !== false}
+              {/* HERO IMAGES SECTION (Screenshot 2) */}
+              <HeroImageManager
+                images={Array.isArray(homeForm.heroImages) ? homeForm.heroImages : []}
+                onChange={(updatedImages) => {
+                  if (typeof updatedImages === "function") {
+                    setHomeForm((prev) => ({
+                      ...prev,
+                      heroImages: updatedImages(prev.heroImages || []),
+                    }));
+                  } else {
+                    setHomeForm((prev) => ({ ...prev, heroImages: updatedImages }));
+                  }
+                }}
+                loopEnabled={homeForm.heroImageLoop !== false}
                 onLoopChange={(loop) =>
-                  setHomeForm((prev) => ({ ...prev, heroVideoLoop: loop }))
+                  setHomeForm((prev) => ({ ...prev, heroImageLoop: loop }))
                 }
                 disabled={savingSection !== null}
-                onUploadingStateChange={setIsVideoUploading}
+                onUploadingStateChange={setIsImageUploading}
               />
             </div>
           </div>
