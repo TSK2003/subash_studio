@@ -1,28 +1,16 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useAdminData } from "../../admin/context/AdminDataContext";
 import { scrollToTop } from "../../lib/useLenis";
 
-/**
- * HomeHero
- *
- * Recreates the approved luxury editorial wedding hero design (Screenshot 1).
- * Features:
- * - Full-width wedding photography background with smooth multi-image slideshow.
- * - Stationary cinematic dark gradient overlay keeping left-aligned text readable.
- * - Left-aligned text hierarchy:
- *   - Eyebrow: "WEDDING PHOTOGRAPHY & FILMS"
- *   - Heading: "Real emotions.\nBeautiful stories.\nForever yours."
- *     (Warm ivory lines with champagne-gold italic accent on the final line)
- *   - Description: "We capture the moments you feel, and the memories you keep."
- *   - No buttons (spacing optimized).
- * - Bottom Bar:
- *   - Left: "A LOVE STORY, CAPTURED BY SUBASH"
- *   - Right: "01 / 03" counter with discreet circular previous/next arrow buttons.
- * - Mobile touch/swipe navigation.
- * - Image preloading to eliminate blank/flashing frames.
- */
+const DEFAULT_HERO_SLIDES = [
+  "/images/wedding photos.jpg",
+  "/images/couple.jpg",
+  "/images/traditional photos.jpg",
+  "/images/receiption.jpg",
+];
+
 export default function HomeHero() {
   const { websiteContent } = useAdminData();
   const homeData = websiteContent?.home || {};
@@ -54,27 +42,28 @@ export default function HomeHero() {
   ).trim();
 
   // 2. Saved Hero Images from Admin CMS
-  // The image at sort-order index 1 (second position) is excluded as requested.
   const activeHeroImages = useMemo(() => {
     if (!Array.isArray(homeData.heroImages)) return [];
-    const sorted = homeData.heroImages
+    return homeData.heroImages
       .filter((img) => img && img.url && img.active !== false)
       .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
-    // Remove the second image (index 1) — the unwanted slide
-    return sorted.filter((_, idx) => idx !== 1);
   }, [homeData.heroImages]);
 
-  // Fallback wedding image if zero images uploaded
-  const fallbackImage =
-    homeData.heroImage || homeData.image || "/images/wedding photos.jpg";
-
-  // Normalized slide URLs list
+  // Normalized slide URLs list: guarantees multiple slides so prev/next arrows always work
   const slideList = useMemo(() => {
-    if (activeHeroImages.length > 0) {
+    if (activeHeroImages.length > 1) {
       return activeHeroImages.map((img) => img.url);
     }
-    return [fallbackImage];
-  }, [activeHeroImages, fallbackImage]);
+    if (activeHeroImages.length === 1) {
+      const single = activeHeroImages[0].url;
+      return [single, ...DEFAULT_HERO_SLIDES.filter((s) => s !== single)];
+    }
+    if (homeData.heroImage || homeData.image) {
+      const single = homeData.heroImage || homeData.image;
+      return [single, ...DEFAULT_HERO_SLIDES.filter((s) => s !== single)];
+    }
+    return DEFAULT_HERO_SLIDES;
+  }, [activeHeroImages, homeData.heroImage, homeData.image]);
 
   const hasMultipleSlides = slideList.length > 1;
   const loopEnabled = homeData.heroImageLoop !== false;
@@ -203,7 +192,6 @@ export default function HomeHero() {
       {/* =========================================================
           LAYER 0.5: CENTER-EDGE PREV / NEXT ARROW BUTTONS (z-[3])
           Vertically centered on the left and right edges of the hero.
-          Only rendered when more than one slide is available.
       ========================================================= */}
       {hasMultipleSlides && (
         <>
@@ -213,35 +201,23 @@ export default function HomeHero() {
             onClick={handlePrev}
             aria-label="Previous hero image"
             className="
-              absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-[3]
+              absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-[3]
               w-10 h-10 sm:w-12 sm:h-12
               rounded-full
               flex items-center justify-center
               text-[#FAF7F2]
-              border border-white/25 hover:border-[#E4D3A6]
-              bg-black/30 hover:bg-[#1a1714]/70
-              backdrop-blur-sm
-              shadow-[0_4px_20px_rgba(0,0,0,0.45)]
+              border border-white/30 hover:border-[#E4D3A6]
+              bg-black/40 hover:bg-[#1a1714]/80
+              backdrop-blur-md
+              shadow-[0_4px_24px_rgba(0,0,0,0.5)]
               transition-all duration-300
               hover:scale-105 active:scale-95
               hover:text-[#E4D3A6]
               cursor-pointer
             "
-            style={{ WebkitTapHighlightColor: 'transparent' }}
+            style={{ WebkitTapHighlightColor: "transparent" }}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="10,3 5,8 10,13" />
-            </svg>
+            <ArrowLeft size={18} />
           </button>
 
           {/* Next — Center Right */}
@@ -250,35 +226,23 @@ export default function HomeHero() {
             onClick={handleNext}
             aria-label="Next hero image"
             className="
-              absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-[3]
+              absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-[3]
               w-10 h-10 sm:w-12 sm:h-12
               rounded-full
               flex items-center justify-center
               text-[#FAF7F2]
-              border border-white/25 hover:border-[#E4D3A6]
-              bg-black/30 hover:bg-[#1a1714]/70
-              backdrop-blur-sm
-              shadow-[0_4px_20px_rgba(0,0,0,0.45)]
+              border border-white/30 hover:border-[#E4D3A6]
+              bg-black/40 hover:bg-[#1a1714]/80
+              backdrop-blur-md
+              shadow-[0_4px_24px_rgba(0,0,0,0.5)]
               transition-all duration-300
               hover:scale-105 active:scale-95
               hover:text-[#E4D3A6]
               cursor-pointer
             "
-            style={{ WebkitTapHighlightColor: 'transparent' }}
+            style={{ WebkitTapHighlightColor: "transparent" }}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="6,3 11,8 6,13" />
-            </svg>
+            <ArrowRight size={18} />
           </button>
         </>
       )}
@@ -305,6 +269,7 @@ export default function HomeHero() {
           2. WEDDING FILM COMPANY (elegant secondary line)
           3. SINCE 1933 (refined heritage accent line)
           4. WE PROMISE ON TIME DELIVERY (supporting tagline)
+          5. BOTTOM BAR (counter + navigation arrows)
       ========================================================= */}
       <div className="relative z-[2] w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 flex-1 flex flex-col justify-center pt-24 sm:pt-28 pb-12 sm:pb-16">
         <div className="max-w-4xl text-left space-y-3.5 sm:space-y-4">

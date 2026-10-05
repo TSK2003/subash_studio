@@ -11,7 +11,6 @@ import {
   Clock,
   Share2,
   Loader2,
-  ExternalLink,
   Edit3,
 } from "lucide-react";
 import { FaInstagram, FaFacebookF, FaYoutube } from "react-icons/fa6";
@@ -290,17 +289,6 @@ export default function WebsiteContent() {
               </div>
 
               <div className="flex items-center gap-2.5">
-                <a
-                  href="/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-3.5 py-2 rounded-xl border border-[#E7E0D2] bg-white hover:bg-[#F8F6F2] text-[#2B2B2B] text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all"
-                  title="Open public website in a new tab"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 text-[#9C7B3D]" />
-                  <span>Preview Website</span>
-                </a>
-
                 <button
                   type="submit"
                   disabled={savingSection !== null || savingField !== null}

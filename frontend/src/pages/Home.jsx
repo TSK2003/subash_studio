@@ -9,7 +9,8 @@ import HomeHero from "../components/home/HomeHero";
 import { useAdminData } from "../admin/context/AdminDataContext";
 
 export default function Home() {
-  const { branches } = useAdminData();
+  const { branches, websiteContent } = useAdminData();
+  const ctaBgImage = websiteContent?.home?.ctaImage || "/images/wedding-cta.png";
 
   return (
     <div className="relative">
@@ -131,11 +132,11 @@ export default function Home() {
       ========================================================= */}
       <section className="relative py-24 sm:py-28 overflow-hidden">
         <img
-          src="/images/wedding photos.jpg"
+          src={ctaBgImage}
           alt="SUBASH STUDIO authentic wedding moments"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-[52%_20%] sm:object-[52%_24%] md:object-[50%_28%] lg:object-[50%_32%]"
         />
-        <div className="absolute inset-0 bg-[#141210]/65 backdrop-blur-[0.5px]" />
+        <div className="absolute inset-0 bg-[#141210]/60 backdrop-blur-[0.5px]" />
 
         <div className="relative max-w-3xl mx-auto px-6 text-center z-10">
           <Reveal>
