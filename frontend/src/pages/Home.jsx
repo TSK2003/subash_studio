@@ -38,7 +38,7 @@ export default function Home() {
             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-[#E7E0D2]/80 aspect-[4/5] bg-[#FAF8F5]">
               <img
                 src="/images/shyam-chandru.webp"
-                alt="Subash - Founder and Lead Photographer at SUBASH STUDIO"
+                alt="Shyam Chandru - Founder and Lead Photographer at SUBASH STUDIO"
                 loading="lazy"
                 decoding="async"
                 onError={(e) => {
@@ -53,7 +53,7 @@ export default function Home() {
             <div className="hidden sm:flex absolute -bottom-6 -right-4 sm:-bottom-8 sm:-right-6 w-36 h-36 sm:w-44 sm:h-44 rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-white z-10">
               <img
                 src="/images/shyam-chandru.webp"
-                alt="Subash at work behind the lens"
+                alt="Shyam Chandru at work behind the lens"
                 loading="lazy"
                 decoding="async"
                 onError={(e) => {
@@ -97,10 +97,7 @@ export default function Home() {
               {/* Left: Signature style text */}
               <div>
                 <p className="font-display italic text-3xl text-[#B38F4D] font-normal select-none -rotate-2 mb-1">
-                  Subash
-                </p>
-                <p className="text-xs font-bold tracking-[0.22em] text-[#1C1B19] uppercase">
-                  SUBASH
+                  Shyam Chandru
                 </p>
                 <p className="text-[10px] tracking-[0.2em] text-[#6F6A62] uppercase font-semibold mt-0.5">
                   FOUNDER &amp; LEAD PHOTOGRAPHER
