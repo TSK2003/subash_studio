@@ -10,6 +10,16 @@ export function notFoundHandler(req, res) {
 export function centralizedErrorHandler(err, req, res, next) {
   const statusCode = err.statusCode || (res.statusCode !== 200 ? res.statusCode : 500);
 
+  // Handle malformed JSON body parse errors cleanly without dumping an unhandled stack trace
+  if (err.type === "entity.parse.failed" || (err instanceof SyntaxError && (err.status === 400 || err.statusCode === 400) && "body" in err)) {
+    console.warn(`[Client Warning][${req?.id || "N/A"}] ${req.method} ${req.originalUrl}: Malformed JSON in request body`);
+    return res.status(400).json({
+      success: false,
+      error: "Invalid JSON format in request body. Please verify that JSON syntax is valid.",
+      requestId: req?.id || null,
+    });
+  }
+
   // In production, suppress technical internal error details
   let message = err.message || "An unexpected server error occurred.";
   if (ENV.NODE_ENV === "production" && statusCode === 500) {

@@ -337,6 +337,6 @@ select:focus-visible {
     background: #8C6D32 !important;
   }
 }
-
-
-
+.font-script {
+  font-family: 'Great Vibes', 'Fraunces', cursive, serif;
+}

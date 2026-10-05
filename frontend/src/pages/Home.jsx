@@ -12,7 +12,7 @@ export default function Home() {
   const { branches } = useAdminData();
 
   return (
-    <div className="relative pt-[84px]">
+    <div className="relative">
       <Seo
         title="Home | Fine Photography & Cinematic Films"
         description="SUBASH STUDIO — Fine photography and cinematic films preserving timeless heritage, profound emotions, and authentic human celebrations."
