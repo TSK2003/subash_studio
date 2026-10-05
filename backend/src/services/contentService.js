@@ -76,7 +76,6 @@ function validateSectionData(section, data) {
       result.heroImage = String(data.heroImage).trim();
     }
 
->>>>>>> 6484f85a5164a5a3c12f8894b718a3e5d0054dba
     result.heroCtaText = "BOOK A SHOOT";
     if (data.stats && typeof data.stats === "object") {
       result.stats = {
