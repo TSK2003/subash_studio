@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { FaWhatsapp, FaInstagram, FaFacebookF, FaYoutube, FaPinterestP } from "react-icons/fa";
 import { MapPin, Phone, Mail, ExternalLink, ChevronRight, Clock } from "lucide-react";
@@ -97,6 +97,306 @@ function StudioCard({ branch }) {
         ) : (
           <div className="mt-auto" />
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Studio Locations Section & Dynamic Seamless Infinite Carousel
+ * - Dynamically supports any number of branches (1, 2, 3, 4, 5, 6, 10, 20+).
+ * - Desktop: Always displays exactly 3 cards at a time (when 3 or more branches exist).
+ * - Tablet: Shows 2 cards. Mobile: Shows 1 card.
+ * - Viewport clips track correctly with zero horizontal overflow or page widening.
+ * - Uses pure CSS percentage calculation fallback & synchronous useLayoutEffect measurement for 100% stable card dimensions.
+ * - Modulo-normalized infinite wrap ensures clicking < or > or auto-playing never hits a blank slide or index glitch.
+ * - Clean text < and > navigation controls integrated before Multiple Locations text.
+ */
+function StudioLocations({ branches = [] }) {
+  // Filter active branches
+  const activeList = useMemo(() => {
+    return (branches || []).filter((b) => b && b.active !== false);
+  }, [branches]);
+
+  const N = activeList.length;
+
+  const containerRef = useRef(null);
+  const trackRef = useRef(null);
+
+  // Responsive window & container measurement
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  // Measure container width and window innerWidth synchronously before paint
+  useLayoutEffect(() => {
+    const updateDimensions = () => {
+      setWindowWidth(window.innerWidth);
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.getBoundingClientRect().width);
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+
+    let ro;
+    if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+      ro = new ResizeObserver(() => {
+        if (containerRef.current) {
+          setContainerWidth(containerRef.current.getBoundingClientRect().width);
+        }
+      });
+      ro.observe(containerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", updateDimensions);
+      if (ro) ro.disconnect();
+    };
+  }, []);
+
+  // Determine visible card count based on responsive viewport width and available branches
+  const visibleCount = useMemo(() => {
+    if (N === 0) return 1;
+    let maxVisible = 1;
+    if (windowWidth >= 1024) maxVisible = 3;
+    else if (windowWidth >= 640) maxVisible = 2;
+    else maxVisible = 1;
+
+    return Math.min(maxVisible, N);
+  }, [windowWidth, N]);
+
+  // Carousel is active only when total branches exceed visible slots
+  const isCarousel = N > visibleCount;
+
+  // Gap between cards (16px default, 20px on xl screens)
+  const gap = windowWidth >= 1280 ? 20 : 16;
+
+  // Card width calculation (fallback to CSS percentage if containerWidth not measured yet)
+  const cardWidth = containerWidth > 0
+    ? (containerWidth - (visibleCount - 1) * gap) / visibleCount
+    : 0;
+
+  const step = cardWidth > 0 ? cardWidth + gap : 0;
+
+  // Cloned array for seamless infinite looping
+  const clonedBranches = useMemo(() => {
+    if (!isCarousel) return activeList;
+    return [...activeList, ...activeList, ...activeList];
+  }, [activeList, isCarousel]);
+
+  // Carousel state: initial index starts at N (the middle set)
+  const [currentIndex, setCurrentIndex] = useState(isCarousel ? N : 0);
+  const [withTransition, setWithTransition] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isDocHidden, setIsDocHidden] = useState(false);
+
+  // Listen for browser tab visibility
+  useEffect(() => {
+    const handleVisibility = () => {
+      setIsDocHidden(document.hidden);
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  // Reset index to middle set if N or isCarousel changes
+  useEffect(() => {
+    if (isCarousel) {
+      setCurrentIndex(N);
+      setWithTransition(false);
+    } else {
+      setCurrentIndex(0);
+      setWithTransition(false);
+    }
+  }, [N, isCarousel]);
+
+  // Re-enable transition after silentModuloSnap
+  useEffect(() => {
+    if (!withTransition) {
+      const id = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setWithTransition(true);
+        });
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [withTransition]);
+
+  // Navigation: Next
+  const handleNext = useCallback(() => {
+    if (!isCarousel) return;
+    setWithTransition(true);
+    setCurrentIndex((prev) => prev + 1);
+  }, [isCarousel]);
+
+  // Navigation: Prev
+  const handlePrev = useCallback(() => {
+    if (!isCarousel) return;
+    setWithTransition(true);
+    setCurrentIndex((prev) => prev - 1);
+  }, [isCarousel]);
+
+  // Handle transitionend: silently normalize index back to middle set [N, 2N-1]
+  const handleTransitionEnd = useCallback(
+    (e) => {
+      if (e.target !== trackRef.current || e.propertyName !== "transform") return;
+      if (!isCarousel || N <= 0) return;
+
+      if (currentIndex >= 2 * N || currentIndex < N) {
+        setWithTransition(false);
+        // Universal modulo formula: maps any index directly into middle range [N, 2N-1]
+        const normalized = (((currentIndex % N) + N) % N) + N;
+        setCurrentIndex(normalized);
+      }
+    },
+    [currentIndex, isCarousel, N]
+  );
+
+  // Auto-play interval: 4.5 seconds per slide, paused on hover/touch/tab hidden
+  useEffect(() => {
+    if (!isCarousel || isHovered || isDocHidden) return;
+
+    const timer = setInterval(() => {
+      handleNext();
+    }, 4500);
+
+    return () => clearInterval(timer);
+  }, [isCarousel, isHovered, isDocHidden, handleNext, currentIndex]);
+
+  // Touch gesture support for mobile/tablet
+  const touchStartX = useRef(0);
+  const touchDeltaX = useRef(0);
+
+  const handleTouchStart = (e) => {
+    setIsHovered(true);
+    touchStartX.current = e.touches[0].clientX;
+    touchDeltaX.current = 0;
+  };
+
+  const handleTouchMove = (e) => {
+    touchDeltaX.current = e.touches[0].clientX - touchStartX.current;
+  };
+
+  const handleTouchEnd = () => {
+    setIsHovered(false);
+    if (touchDeltaX.current < -35) {
+      handleNext();
+    } else if (touchDeltaX.current > 35) {
+      handlePrev();
+    }
+  };
+
+  // Empty state handling
+  if (N === 0) {
+    return (
+      <div className="lg:col-span-7 flex flex-col justify-start min-w-0">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h4 className="text-xs uppercase font-semibold tracking-[0.22em] text-[#E4D3A6]">
+              STUDIO LOCATIONS
+            </h4>
+            <div className="w-10 h-[1.5px] bg-[#E4D3A6]/80 mt-2" />
+          </div>
+        </div>
+        <div className="p-6 rounded-lg bg-[#171614] border border-[#E4D3A6]/15 text-xs text-[#FAF8F5]/65">
+          Our studio locations are currently being updated. For bookings or consultations, please contact us.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="lg:col-span-7 flex flex-col justify-start min-w-0">
+      {/* Header Row */}
+      <div className="flex items-center justify-between mb-5 relative z-10">
+        <div>
+          <h4 className="text-xs uppercase font-semibold tracking-[0.22em] text-[#E4D3A6]">
+            STUDIO LOCATIONS
+          </h4>
+          <div className="w-10 h-[1.5px] bg-[#E4D3A6]/80 mt-2" />
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-2.5 text-xs text-[#E4D3A6]/85 font-light tracking-[0.14em]">
+          {/* Functional minimalist < and > navigation controls placed directly before text */}
+          {isCarousel && (
+            <div
+              className="inline-flex items-center gap-2 mr-1"
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="Previous studio location"
+                className="text-[#E4D3A6]/70 hover:text-[#FAF8F5] transition-colors duration-200 cursor-pointer p-0.5 font-mono text-sm sm:text-base leading-none focus:outline-none select-none inline-flex items-center justify-center hover:scale-110 active:scale-95"
+                style={{ pointerEvents: 'auto' }}
+              >
+                &lt;
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Next studio location"
+                className="text-[#E4D3A6]/70 hover:text-[#FAF8F5] transition-colors duration-200 cursor-pointer p-0.5 font-mono text-sm sm:text-base leading-none focus:outline-none select-none inline-flex items-center justify-center hover:scale-110 active:scale-95"
+                style={{ pointerEvents: 'auto' }}
+              >
+                &gt;
+              </button>
+            </div>
+          )}
+
+          <span className="italic font-display text-[13px] hidden sm:inline">Multiple Locations</span>
+          <span className="text-[#E4D3A6]/40 select-none hidden sm:inline">•</span>
+          <span className="italic font-display text-[13px] hidden sm:inline">One Vision</span>
+        </div>
+      </div>
+
+      {/* Cards Display Container: Viewport & Track */}
+      <div
+        ref={containerRef}
+        className="relative w-full overflow-hidden"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div
+          ref={trackRef}
+          className="flex items-stretch"
+          style={{
+            gap: `${gap}px`,
+            transform:
+              isCarousel && step > 0
+                ? `translateX(-${currentIndex * step}px)`
+                : "none",
+            transition:
+              isCarousel && withTransition
+                ? "transform 850ms cubic-bezier(0.25, 1, 0.5, 1)"
+                : "none",
+            willChange: isCarousel ? "transform" : "auto",
+          }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {clonedBranches.map((branch, idx) => (
+            <div
+              key={`${branch.id || branch.city || branch.name || "br"}-${idx}`}
+              style={{
+                width:
+                  cardWidth > 0
+                    ? `${cardWidth}px`
+                    : `calc((100% - ${(visibleCount - 1) * gap}px) / ${visibleCount})`,
+                flexShrink: 0,
+              }}
+              className="h-full flex flex-col"
+            >
+              <StudioCard branch={branch} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -308,39 +608,7 @@ export default function Footer() {
           {/* =========================================================
               COLUMN 3: STUDIO LOCATIONS (Desktop: 7 cols)
           ========================================================= */}
-          <div className="lg:col-span-7 flex flex-col justify-start">
-            {/* Header Row */}
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h4 className="text-xs uppercase font-semibold tracking-[0.22em] text-[#E4D3A6]">
-                  STUDIO LOCATIONS
-                </h4>
-                <div className="w-10 h-[1.5px] bg-[#E4D3A6]/80 mt-2" />
-              </div>
-
-              <div className="hidden sm:flex items-center gap-2 text-xs text-[#E4D3A6]/85 font-light tracking-[0.14em]">
-                <span className="italic font-display text-[13px]">Multiple Locations</span>
-                <span className="text-[#E4D3A6]/40 select-none">•</span>
-                <span className="italic font-display text-[13px]">One Vision</span>
-              </div>
-            </div>
-
-            {/* Cards Grid */}
-            {activeBranches.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-5 items-stretch">
-                {activeBranches.map((branch) => (
-                  <StudioCard
-                    key={branch.id || branch.city || branch.name}
-                    branch={branch}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="p-6 rounded-lg bg-[#171614] border border-[#E4D3A6]/15 text-xs text-[#FAF8F5]/65">
-                Our studio locations are currently being updated. For bookings or consultations, please contact us.
-              </div>
-            )}
-          </div>
+          <StudioLocations branches={activeBranches} />
         </div>
 
         {/* =========================================================

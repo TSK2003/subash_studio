@@ -1,6 +1,34 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-bg: #F8F5EF;
+  --color-bg-soft: #FBF8F2;
+  --color-bg-cream: #F4EFE6;
+  --color-card: #FFFFFF;
+  --color-ink: #2B2B2B;
+  --color-ink-soft: #6B7280;
+  --color-gold: #C9A669;
+  --color-gold-light: #E4D3A6;
+  --color-gold-dark: #9C7B3D;
+  --color-champagne: #D8C3A5;
+  --color-warm-beige: #E7D8C5;
+  --color-line: #E7E0D2;
+
+  /* Font families */
+  --font-family-display: "'Fraunces'", serif;
+  --font-family-body: "'Manrope'", sans-serif;
+
+  /* Letter spacing */
+  --letter-spacing-widest2: 0.32em;
+
+  /* Box shadows */
+  --shadow-soft: 0 20px 60px -20px rgba(43,43,43,0.18);
+  --shadow-card: 0 10px 40px -15px rgba(43,43,43,0.14);
+
+  /* Transition timing */
+  --ease-luxury: cubic-bezier(0.65,0,0.35,1);
+}
 
 html {
   scroll-behavior: auto;
