@@ -48,9 +48,9 @@ import PremiumPageBackground from "./components/PremiumPageBackground";
 import { ADMIN_BASE_PATH, ADMIN_ROUTES, ADMIN_SUBPATHS } from "./admin/constants/adminRoutes";
 
 const pageVariants = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -16 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 function PageWrapper({ children }) {
@@ -61,6 +61,7 @@ function PageWrapper({ children }) {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
+      className="w-full flex-1"
     >
       {children}
     </motion.main>
@@ -80,6 +81,7 @@ function PublicWebsiteLayout() {
 
   useEffect(() => {
     if (location.pathname === "/") {
+      scrollToTop();
       setIntroState({
         active: true,
         revealing: false,
@@ -94,13 +96,16 @@ function PublicWebsiteLayout() {
     }
   }, [location.pathname, location.key]);
 
-  const handleRevealing = () => {
+  const handleRevealing = useCallback(() => {
+    scrollToTop();
     setIntroState((prev) => ({ ...prev, revealing: true }));
-  };
+  }, []);
 
-  const handleComplete = () => {
+  const handleComplete = useCallback(() => {
     setIntroState((prev) => ({ ...prev, active: false }));
-  };
+    scrollToTop();
+    requestAnimationFrame(() => scrollToTop());
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col relative text-ink">
@@ -150,6 +155,9 @@ export default function App() {
   const location = useLocation();
 
   useEffect(() => {
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
     scrollToTop();
   }, [location.pathname]);
 

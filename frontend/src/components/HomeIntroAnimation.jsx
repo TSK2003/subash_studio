@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { stopLenis, startLenis, scrollToTop } from "../lib/useLenis";
 
 /**
  * HomeIntroAnimation
@@ -131,13 +132,27 @@ export default function HomeIntroAnimation({ onRevealing, onComplete, onBrandRea
 
   // Lock scroll while intro is playing
   useEffect(() => {
-    window.scrollTo(0, 0);
-    const originalOverflow = document.body.style.overflow;
+    stopLenis();
+    scrollToTop();
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      startLenis();
+      scrollToTop();
+      requestAnimationFrame(() => scrollToTop());
     };
   }, []);
+
+  const onRevealingRef = useRef(onRevealing);
+  onRevealingRef.current = onRevealing;
+  const onBrandReadyRef = useRef(onBrandReady);
+  onBrandReadyRef.current = onBrandReady;
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   // Orchestrate timeline sequence
   useEffect(() => {
@@ -167,14 +182,16 @@ export default function HomeIntroAnimation({ onRevealing, onComplete, onBrandRea
     // 5. t = 3700ms: Arrived at Navbar; reveal homepage (overlay background dissolves)
     const t5 = setTimeout(() => {
       setStep(5); // reveal
-      if (onRevealing) onRevealing();
-      if (onBrandReady) onBrandReady();
+      scrollToTop();
+      if (onRevealingRef.current) onRevealingRef.current();
+      if (onBrandReadyRef.current) onBrandReadyRef.current();
     }, 3700);
 
     // 6. t = 4300ms: Complete & unmount
     const t6 = setTimeout(() => {
       setStep(6); // done
-      if (onComplete) onComplete();
+      scrollToTop();
+      if (onCompleteRef.current) onCompleteRef.current();
     }, 4300);
 
     return () => {
@@ -185,7 +202,7 @@ export default function HomeIntroAnimation({ onRevealing, onComplete, onBrandRea
       clearTimeout(t5);
       clearTimeout(t6);
     };
-  }, [layout, onRevealing, onComplete]);
+  }, [layout]);
 
   if (!layout || step >= 6) return null;
 
@@ -215,11 +232,13 @@ export default function HomeIntroAnimation({ onRevealing, onComplete, onBrandRea
           x: layout.deltaX_logo,
           y: layout.deltaY,
           scale: layout.intermediateScale,
+          opacity: 1,
         }}
         animate={{
           x: step >= 4 ? 0 : step >= 2 ? layout.deltaX_lockup : layout.deltaX_logo,
           y: step >= 4 ? 0 : layout.deltaY,
           scale: step >= 4 ? 1 : layout.intermediateScale,
+          opacity: step >= 5 ? 0 : 1,
         }}
         transition={{
           x: {
@@ -233,6 +252,10 @@ export default function HomeIntroAnimation({ onRevealing, onComplete, onBrandRea
           scale: {
             duration: step >= 4 ? 1.05 : 0.85,
             ease: [0.65, 0, 0.35, 1], // Continuous scale-down to exact 1.0x Navbar size
+          },
+          opacity: {
+            duration: 0.35,
+            ease: "easeOut",
           },
         }}
       >

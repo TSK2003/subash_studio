@@ -110,19 +110,20 @@ export default function Navbar({
                     id="navbar-logo-img"
                     src="/logo.png"
                     alt="SUBASH STUDIO"
-                    className="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0 brightness-0 invert"
+                    className="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0"
+                    style={{ filter: "brightness(0) invert(1)" }}
                   />
-                  <div className="h-7 sm:h-8 w-[1px] bg-white/40 shrink-0" aria-hidden="true" />
+                  <div className="h-7 sm:h-8 w-[1px] bg-white/60 shrink-0" aria-hidden="true" />
                   <div className="flex flex-col justify-center select-none">
                     <span className="font-display text-[15px] sm:text-[17px] font-bold tracking-[0.22em] text-[#FAF7F2] uppercase leading-none drop-shadow-sm">
                       SUBASH
                     </span>
                     <div className="flex items-center justify-between w-full mt-1">
-                      <span className="h-[1px] flex-1 bg-white/40" />
+                      <span className="h-[1px] flex-1 bg-white/60" />
                       <span className="text-[8.5px] sm:text-[9.5px] font-bold tracking-[0.24em] text-[#FAF7F2] uppercase leading-none px-1 drop-shadow-sm">
                         STUDIO
                       </span>
-                      <span className="h-[1px] flex-1 bg-white/40" />
+                      <span className="h-[1px] flex-1 bg-white/60" />
                     </div>
                   </div>
                 </div>

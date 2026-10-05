@@ -4,6 +4,7 @@ import {
   Menu,
   Bell,
   Plus,
+  ExternalLink,
   Calendar,
   MessageSquare,
   Sparkles,
