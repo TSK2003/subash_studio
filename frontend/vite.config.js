@@ -23,10 +23,27 @@ export default defineConfig({
       '/api': {
         target: process.env.VITE_API_BASE_URL || 'http://localhost:5000',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
+            // Ignore expected stream resets from SSE/realtime when backend restarts
+            if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') {
+              return;
+            }
+            console.error('[vite proxy error]', err.message);
+          });
+        },
       },
       '/uploads': {
         target: process.env.VITE_API_BASE_URL || 'http://localhost:5000',
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
+            if (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') {
+              return;
+            }
+            console.error('[vite proxy error]', err.message);
+          });
+        },
       },
     },
   },

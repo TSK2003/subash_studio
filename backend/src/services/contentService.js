@@ -17,30 +17,71 @@ function validateSectionData(section, data) {
   const result = {};
 
   if (section === "home") {
+    if (data.heroEyebrow !== undefined) {
+      if (typeof data.heroEyebrow !== "string") {
+        throw new Error("Hero Eyebrow must be a string.");
+      }
+      result.heroEyebrow = sanitizeString(data.heroEyebrow, 120);
+    }
+
     if (data.heroHeading !== undefined) {
       if (typeof data.heroHeading !== "string") {
         throw new Error("Hero Main Headline must be a string.");
       }
-      if (data.heroHeading.length > 20) {
+      if (data.heroHeading.length > 250) {
         throw new Error(
-          `Hero Main Headline cannot exceed 20 characters (received ${data.heroHeading.length} characters).`
+          `Hero Main Headline cannot exceed 250 characters (received ${data.heroHeading.length} characters).`
         );
       }
-      result.heroHeading = data.heroHeading.replace(/<[^>]*>?/gm, "");
+      result.heroHeading = data.heroHeading.replace(/<[^>]*>?/gm, "").trim();
     }
 
     if (data.heroTagline !== undefined) {
       if (typeof data.heroTagline !== "string") {
         throw new Error("Hero Subtitle / Tagline must be a string.");
       }
-      if (data.heroTagline.length > 150) {
+      if (data.heroTagline.length > 300) {
         throw new Error(
-          `Hero Subtitle / Tagline cannot exceed 150 characters (received ${data.heroTagline.length} characters).`
+          `Hero Subtitle / Tagline cannot exceed 300 characters (received ${data.heroTagline.length} characters).`
         );
       }
-      result.heroTagline = data.heroTagline.replace(/<[^>]*>?/gm, "");
+      result.heroTagline = data.heroTagline.replace(/<[^>]*>?/gm, "").trim();
     }
 
+    // Hero Images (Screenshot 2)
+    if (data.heroImages !== undefined) {
+      if (!Array.isArray(data.heroImages)) {
+        throw new Error("Hero Images must be an array.");
+      }
+      result.heroImages = data.heroImages.map((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(`Hero image item at index ${index} must be an object.`);
+        }
+        const url = String(item.url || "").trim();
+        if (!url) {
+          throw new Error(`Hero image item at index ${index} is missing an image URL.`);
+        }
+        return {
+          id: String(item.id || `himg-${Date.now()}-${index}`),
+          url: url,
+          name: sanitizeString(item.name || item.filename || "Hero Image", 120),
+          order: typeof item.order === "number" ? item.order : index,
+          active: item.active !== false,
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      }).sort((a, b) => a.order - b.order);
+    }
+
+    if (data.heroImageLoop !== undefined) {
+      result.heroImageLoop = Boolean(data.heroImageLoop);
+    } else if (data.loopSlideshow !== undefined) {
+      result.heroImageLoop = Boolean(data.loopSlideshow);
+    } else if (data.heroVideoLoop !== undefined) {
+      result.heroImageLoop = Boolean(data.heroVideoLoop);
+    }
+
+    // Legacy Hero Videos (maintained for backward compatibility)
     if (data.heroVideos !== undefined) {
       if (!Array.isArray(data.heroVideos)) {
         throw new Error("Hero Videos must be an array.");
@@ -171,19 +212,8 @@ export async function updateContent(section, data) {
     where: { section },
   });
 
-  // If section is 'home' and heroVideos were updated, safely delete any removed video files
-  if (section === "home" && validated.heroVideos !== undefined && existing?.data?.heroVideos) {
-    const existingVideos = Array.isArray(existing.data.heroVideos) ? existing.data.heroVideos : [];
-    const remainingUrls = new Set(validated.heroVideos.map((v) => v.url));
-    const removedVideos = existingVideos.filter((v) => v && v.url && !remainingUrls.has(v.url));
-    for (const removed of removedVideos) {
-      try {
-        await deleteStorageFile(removed.url);
-      } catch (e) {
-        console.warn("[contentService] Could not delete removed hero video file:", removed.url, e.message);
-      }
-    }
-  }
+  // Preserve existing video files in storage without deleting them
+
 
   const merged = existing ? { ...(existing.data || {}), ...validated } : validated;
 
