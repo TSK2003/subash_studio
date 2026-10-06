@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Trash2, X, Eye, EyeOff, AlertCircle } from "lucide-react";
 
@@ -87,29 +88,35 @@ export default function ConfirmModal({
 
   const busy = isSubmitting || isLoading;
 
-  return (
-    <AnimatePresence>
-      <div className="admin-modal-overlay !z-[1000]">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={handleClose}
-          className="fixed inset-0 bg-[#1C1B19]/60 backdrop-blur-sm"
-        />
-
-        {/* Modal Dialog */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          transition={{ duration: 0.2 }}
+  return typeof document !== "undefined" &&
+    createPortal(
+      <AnimatePresence>
+        <div
+          className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="confirm-modal-title"
-          className="relative w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] overflow-y-auto modal-scrollbar"
         >
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleClose}
+            className="fixed inset-0"
+          />
+
+          {/* Modal Dialog */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 0 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 0 }}
+            transition={{ duration: 0.2 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-modal-title"
+            className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto overflow-y-auto modal-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
           <button
             type="button"
             onClick={handleClose}
@@ -235,6 +242,7 @@ export default function ConfirmModal({
           </form>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

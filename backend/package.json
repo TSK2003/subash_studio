@@ -5,17 +5,19 @@
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node src/server.js",
-    "start:dev": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "start:dev": "node --watch src/server.js",
     "build": "prisma generate --schema=prisma/schema.prisma",
     "postinstall": "prisma generate --schema=prisma/schema.prisma",
     "lint": "node -e \"console.log('Backend syntax clean')\"",
     "test": "node -e \"console.log('All tests completed')\"",
+    "optimize:images": "node scripts/optimizeExistingImages.js",
     "prisma:validate": "prisma validate --schema=prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema=prisma/schema.prisma",
     "prisma:migrate:deploy": "prisma migrate deploy --schema=prisma/schema.prisma",
     "prisma:migrate:dev": "prisma migrate dev --schema=prisma/schema.prisma",
-    "prisma:migrate:status": "prisma migrate status --schema=prisma/schema.prisma"
+    "prisma:migrate:status": "prisma migrate status --schema=prisma/schema.prisma",
+    "prisma:db:push": "prisma db push --schema=prisma/schema.prisma"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.750.0",
@@ -28,9 +30,10 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
-    "prisma": "^6.19.3"
+    "prisma": "^6.12.0"
   }
 }

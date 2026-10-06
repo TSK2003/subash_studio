@@ -1,6 +1,34 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-bg: #F8F5EF;
+  --color-bg-soft: #FBF8F2;
+  --color-bg-cream: #F4EFE6;
+  --color-card: #FFFFFF;
+  --color-ink: #2B2B2B;
+  --color-ink-soft: #6B7280;
+  --color-gold: #C9A669;
+  --color-gold-light: #E4D3A6;
+  --color-gold-dark: #9C7B3D;
+  --color-champagne: #D8C3A5;
+  --color-warm-beige: #E7D8C5;
+  --color-line: #E7E0D2;
+
+  /* Font families */
+  --font-family-display: "'Fraunces'", serif;
+  --font-family-body: "'Manrope'", sans-serif;
+
+  /* Letter spacing */
+  --letter-spacing-widest2: 0.32em;
+
+  /* Box shadows */
+  --shadow-soft: 0 20px 60px -20px rgba(43, 43, 43, 0.18);
+  --shadow-card: 0 10px 40px -15px rgba(43, 43, 43, 0.14);
+
+  /* Transition timing */
+  --ease-luxury: cubic-bezier(0.65, 0, 0.35, 1);
+}
 
 html {
   scroll-behavior: auto;
@@ -35,14 +63,17 @@ body::before {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
   border-radius: 0px;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #E4D3A6;
   border-radius: 0px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #C9A669;
 }
@@ -51,14 +82,17 @@ body::before {
   width: 6px;
   height: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: #1C1B19;
   border-radius: 0px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #48443D;
   border-radius: 0px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #C9A669;
 }
@@ -68,13 +102,16 @@ body::before {
   width: 6px;
   height: 6px;
 }
+
 .modal-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .modal-scrollbar::-webkit-scrollbar-thumb {
   background: #E4D3A6;
   border-radius: 0px;
 }
+
 .modal-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #C9A669;
 }
@@ -95,23 +132,17 @@ body::before {
 .admin-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 99990;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 0.75rem;
+  overflow: hidden;
 }
 
 @media (min-width: 640px) {
   .admin-modal-overlay {
     padding: 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .admin-modal-overlay {
-    padding: 2rem;
-    padding-left: calc(var(--admin-sidebar-w, 14rem) + 2rem);
   }
 }
 
@@ -136,6 +167,7 @@ body::before {
   height: var(--size);
   position: relative;
 }
+
 .aperture .blade {
   position: absolute;
   inset: 0;
@@ -143,35 +175,81 @@ body::before {
   border-radius: 9999px;
   clip-path: polygon(50% 50%, 50% 0%, 100% 0%);
   transform-origin: 50% 50%;
-  animation: aperture-spin 2.6s cubic-bezier(0.65,0,0.35,1) infinite;
+  animation: aperture-spin 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
   opacity: 0.85;
 }
-.aperture .blade:nth-child(1){ transform: rotate(0deg); animation-delay: 0s; }
-.aperture .blade:nth-child(2){ transform: rotate(60deg); animation-delay: 0.05s; }
-.aperture .blade:nth-child(3){ transform: rotate(120deg); animation-delay: 0.1s; }
-.aperture .blade:nth-child(4){ transform: rotate(180deg); animation-delay: 0.15s; }
-.aperture .blade:nth-child(5){ transform: rotate(240deg); animation-delay: 0.2s; }
-.aperture .blade:nth-child(6){ transform: rotate(300deg); animation-delay: 0.25s; }
+
+.aperture .blade:nth-child(1) {
+  transform: rotate(0deg);
+  animation-delay: 0s;
+}
+
+.aperture .blade:nth-child(2) {
+  transform: rotate(60deg);
+  animation-delay: 0.05s;
+}
+
+.aperture .blade:nth-child(3) {
+  transform: rotate(120deg);
+  animation-delay: 0.1s;
+}
+
+.aperture .blade:nth-child(4) {
+  transform: rotate(180deg);
+  animation-delay: 0.15s;
+}
+
+.aperture .blade:nth-child(5) {
+  transform: rotate(240deg);
+  animation-delay: 0.2s;
+}
+
+.aperture .blade:nth-child(6) {
+  transform: rotate(300deg);
+  animation-delay: 0.25s;
+}
 
 @keyframes aperture-spin {
-  0%, 100% { transform: scale(1) rotate(var(--r,0deg)); }
-  50% { transform: scale(0.55) rotate(calc(var(--r,0deg) + 20deg)); }
+
+  0%,
+  100% {
+    transform: scale(1) rotate(var(--r, 0deg));
+  }
+
+  50% {
+    transform: scale(0.55) rotate(calc(var(--r, 0deg) + 20deg));
+  }
 }
 
-.text-balance { text-wrap: balance; }
+.text-balance {
+  text-wrap: balance;
+}
 
 /* Lenis smooth scroll helper class */
-html.lenis, html.lenis body {
+html.lenis,
+html.lenis body {
   height: auto;
 }
+
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
 
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
-.lg-caption { font-family: 'Manrope', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.75rem; }
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.lg-caption {
+  font-family: 'Manrope', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
 
 /* ==========================================================
    DEDICATED PRINT RECEIPT STYLES
@@ -179,6 +257,7 @@ html.lenis, html.lenis body {
    rendering ONLY the clean single-page standalone receipt.
 ========================================================== */
 @media screen {
+
   #frame-print-receipt,
   .frame-receipt-print-only {
     display: none !important;
@@ -191,7 +270,8 @@ html.lenis, html.lenis body {
     margin: 8mm 12mm;
   }
 
-  html, body {
+  html,
+  body {
     background: #ffffff !important;
     color: #1c1b19 !important;
     margin: 0 !important;
@@ -203,8 +283,8 @@ html.lenis, html.lenis body {
 
   /* Completely isolate the print page by hiding the entire React app root
      and any other element on body that is not #frame-print-receipt */
-  body > #root,
-  body > *:not(#frame-print-receipt),
+  body>#root,
+  body>*:not(#frame-print-receipt),
   header,
   nav,
   footer,
@@ -248,6 +328,7 @@ html.lenis, html.lenis body {
 
 /* Accessibility & Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -275,11 +356,15 @@ select:focus-visible {
 
 /* Utility to hide scrollbars while maintaining scroll functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
+
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+  display: none;
+  /* Chrome, Safari and Opera */
 }
 
 /* Custom luxury scrollbar and independent scroll for Order Frames workspace columns */
@@ -316,5 +401,6 @@ select:focus-visible {
   }
 }
 
-
-
+.font-script {
+  font-family: 'Great Vibes', 'Fraunces', cursive, serif;
+}

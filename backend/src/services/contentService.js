@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import { deleteStorageFile } from "../utils/storage.js";
 
 const VALID_SECTIONS = ["home", "about", "contact"];
 
@@ -16,28 +17,145 @@ function validateSectionData(section, data) {
   const result = {};
 
   if (section === "home") {
-    if (data.heroHeading !== undefined) {
+    // 1. Main Title
+    if (data.heroMainTitle !== undefined || data.heroTitle !== undefined) {
+      const val = data.heroMainTitle !== undefined ? data.heroMainTitle : data.heroTitle;
+      if (typeof val !== "string") {
+        throw new Error("Main Title must be a string.");
+      }
+      if (val.length > 150) {
+        throw new Error(`Main Title cannot exceed 150 characters (received ${val.length} characters).`);
+      }
+      result.heroMainTitle = sanitizeString(val, 150);
+      result.heroHeading = result.heroMainTitle;
+    } else if (data.heroHeading !== undefined) {
       if (typeof data.heroHeading !== "string") {
         throw new Error("Hero Main Headline must be a string.");
       }
-      if (data.heroHeading.length > 20) {
+      if (data.heroHeading.length > 250) {
         throw new Error(
-          `Hero Main Headline cannot exceed 20 characters (received ${data.heroHeading.length} characters).`
+          `Hero Main Headline cannot exceed 250 characters (received ${data.heroHeading.length} characters).`
         );
       }
-      result.heroHeading = data.heroHeading.replace(/<[^>]*>?/gm, "");
+      result.heroHeading = sanitizeString(data.heroHeading, 250);
+      result.heroMainTitle = result.heroHeading;
     }
 
-    if (data.heroTagline !== undefined) {
+    // 2. Subtitle
+    if (data.heroSubtitle !== undefined) {
+      if (typeof data.heroSubtitle !== "string") {
+        throw new Error("Subtitle must be a string.");
+      }
+      if (data.heroSubtitle.length > 150) {
+        throw new Error(`Subtitle cannot exceed 150 characters (received ${data.heroSubtitle.length} characters).`);
+      }
+      result.heroSubtitle = sanitizeString(data.heroSubtitle, 150);
+      result.heroEyebrow = result.heroSubtitle;
+    } else if (data.heroEyebrow !== undefined) {
+      if (typeof data.heroEyebrow !== "string") {
+        throw new Error("Hero Eyebrow must be a string.");
+      }
+      result.heroEyebrow = sanitizeString(data.heroEyebrow, 120);
+      result.heroSubtitle = result.heroEyebrow;
+    }
+
+    // 3. Since Text
+    if (data.heroSinceText !== undefined || data.heroSince !== undefined) {
+      const val = data.heroSinceText !== undefined ? data.heroSinceText : data.heroSince;
+      if (typeof val !== "string") {
+        throw new Error("Since Text must be a string.");
+      }
+      if (val.length > 60) {
+        throw new Error(`Since Text cannot exceed 60 characters (received ${val.length} characters).`);
+      }
+      result.heroSinceText = sanitizeString(val, 60);
+    }
+
+    // 4. Delivery Tagline
+    if (data.heroDeliveryTagline !== undefined) {
+      if (typeof data.heroDeliveryTagline !== "string") {
+        throw new Error("Delivery Tagline must be a string.");
+      }
+      if (data.heroDeliveryTagline.length > 200) {
+        throw new Error(`Delivery Tagline cannot exceed 200 characters (received ${data.heroDeliveryTagline.length} characters).`);
+      }
+      result.heroDeliveryTagline = sanitizeString(data.heroDeliveryTagline, 200);
+      result.heroTagline = result.heroDeliveryTagline;
+    } else if (data.heroTagline !== undefined) {
       if (typeof data.heroTagline !== "string") {
         throw new Error("Hero Subtitle / Tagline must be a string.");
       }
-      if (data.heroTagline.length > 150) {
-        throw new Error(
-          `Hero Subtitle / Tagline cannot exceed 150 characters (received ${data.heroTagline.length} characters).`
-        );
+      result.heroTagline = sanitizeString(data.heroTagline, 300);
+      result.heroDeliveryTagline = result.heroTagline;
+    }
+
+    // Hero Images (Screenshot 2)
+    if (data.heroImages !== undefined) {
+      if (!Array.isArray(data.heroImages)) {
+        throw new Error("Hero Images must be an array.");
       }
-      result.heroTagline = data.heroTagline.replace(/<[^>]*>?/gm, "");
+      result.heroImages = data.heroImages.map((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(`Hero image item at index ${index} must be an object.`);
+        }
+        const url = String(item.url || "").trim();
+        if (!url) {
+          throw new Error(`Hero image item at index ${index} is missing an image URL.`);
+        }
+        return {
+          id: String(item.id || `himg-${Date.now()}-${index}`),
+          url: url,
+          name: sanitizeString(item.name || item.filename || "Hero Image", 120),
+          order: typeof item.order === "number" ? item.order : index,
+          active: item.active !== false,
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      }).sort((a, b) => a.order - b.order);
+    }
+
+    if (data.heroImageLoop !== undefined) {
+      result.heroImageLoop = Boolean(data.heroImageLoop);
+    } else if (data.loopSlideshow !== undefined) {
+      result.heroImageLoop = Boolean(data.loopSlideshow);
+    } else if (data.heroVideoLoop !== undefined) {
+      result.heroImageLoop = Boolean(data.heroVideoLoop);
+    }
+
+    // Legacy Hero Videos (maintained for backward compatibility)
+    if (data.heroVideos !== undefined) {
+      if (!Array.isArray(data.heroVideos)) {
+        throw new Error("Hero Videos must be an array.");
+      }
+      result.heroVideos = data.heroVideos.map((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(`Hero video item at index ${index} must be an object.`);
+        }
+        const url = String(item.url || "").trim();
+        if (!url) {
+          throw new Error(`Hero video item at index ${index} is missing a video URL.`);
+        }
+        return {
+          id: String(item.id || `hvid-${Date.now()}-${index}`),
+          url: url,
+          name: sanitizeString(item.name || item.filename || "Hero Video", 120),
+          duration: item.duration ? sanitizeString(String(item.duration), 30) : null,
+          order: typeof item.order === "number" ? item.order : index,
+          active: item.active !== false,
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      }).sort((a, b) => a.order - b.order);
+    }
+
+    if (data.heroVideoLoop !== undefined) {
+      result.heroVideoLoop = Boolean(data.heroVideoLoop);
+    } else if (data.loopHeroVideos !== undefined) {
+      result.heroVideoLoop = Boolean(data.loopHeroVideos);
+    }
+
+    if (data.heroImage !== undefined) {
+      result.heroImage = String(data.heroImage).trim();
     }
 
     result.heroCtaText = "BOOK A SHOOT";
@@ -134,6 +252,9 @@ export async function updateContent(section, data) {
   const existing = await prisma.websiteContent.findUnique({
     where: { section },
   });
+
+  // Preserve existing video files in storage without deleting them
+
 
   const merged = existing ? { ...(existing.data || {}), ...validated } : validated;
 

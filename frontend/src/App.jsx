@@ -1,11 +1,13 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import FloatingButtons from "./components/FloatingButtons";
 import LuxuryLoader from "./components/LuxuryLoader";
+import HomeIntroAnimation from "./components/HomeIntroAnimation";
 import { useLenis, scrollToTop } from "./lib/useLenis";
+import { shouldPlayIntro } from "./lib/introLifecycle";
 
 // Critical landing page loaded synchronously for optimal FCP
 import Home from "./pages/Home";
@@ -13,8 +15,8 @@ import Home from "./pages/Home";
 // Public Pages (Lazy Loaded)
 const About = lazy(() => import("./pages/About"));
 const Services = lazy(() => import("./pages/Services"));
-const Portfolio = lazy(() => import("./pages/Portfolio"));
 const Gallery = lazy(() => import("./pages/Gallery"));
+const AlbumDetail = lazy(() => import("./pages/AlbumDetail"));
 const Films = lazy(() => import("./pages/Films"));
 const Branches = lazy(() => import("./pages/Branches"));
 const Reviews = lazy(() => import("./pages/Reviews"));
@@ -35,7 +37,6 @@ const Bookings = lazy(() => import("./admin/pages/Bookings"));
 const Enquiries = lazy(() => import("./admin/pages/Enquiries"));
 const FramesManager = lazy(() => import("./admin/pages/FramesManager"));
 const GalleryManager = lazy(() => import("./admin/pages/GalleryManager"));
-const PortfolioManager = lazy(() => import("./admin/pages/PortfolioManager"));
 const ServicesManager = lazy(() => import("./admin/pages/ServicesManager"));
 const FilmsManager = lazy(() => import("./admin/pages/FilmsManager"));
 const BranchesManager = lazy(() => import("./admin/pages/BranchesManager"));
@@ -47,9 +48,9 @@ import PremiumPageBackground from "./components/PremiumPageBackground";
 import { ADMIN_BASE_PATH, ADMIN_ROUTES, ADMIN_SUBPATHS } from "./admin/constants/adminRoutes";
 
 const pageVariants = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -16 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 function PageWrapper({ children }) {
@@ -60,6 +61,7 @@ function PageWrapper({ children }) {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
+      className="w-full flex-1"
     >
       {children}
     </motion.main>
@@ -70,11 +72,56 @@ function PublicWebsiteLayout() {
   const location = useLocation();
   useLenis();
 
+  const isHome = location.pathname === "/";
+  const [introState, setIntroState] = useState({
+    active: isHome,
+    revealing: false,
+    key: location.key || "home-init",
+  });
+
+  useEffect(() => {
+    if (location.pathname === "/") {
+      scrollToTop();
+      setIntroState({
+        active: true,
+        revealing: false,
+        key: location.key || String(Date.now()),
+      });
+    } else {
+      setIntroState({
+        active: false,
+        revealing: false,
+        key: "",
+      });
+    }
+  }, [location.pathname, location.key]);
+
+  const handleRevealing = useCallback(() => {
+    scrollToTop();
+    setIntroState((prev) => ({ ...prev, revealing: true }));
+  }, []);
+
+  const handleComplete = useCallback(() => {
+    setIntroState((prev) => ({ ...prev, active: false }));
+    scrollToTop();
+    requestAnimationFrame(() => scrollToTop());
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col relative text-ink">
+      {introState.active && (
+        <HomeIntroAnimation
+          key={introState.key}
+          onRevealing={handleRevealing}
+          onComplete={handleComplete}
+        />
+      )}
       <PremiumPageBackground />
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Navbar />
+        <Navbar
+          isHomeIntro={introState.active}
+          isIntroRevealing={introState.revealing}
+        />
         <div className="flex-1">
           <Suspense fallback={<LuxuryLoader />}>
             <AnimatePresence mode="wait">
@@ -84,8 +131,10 @@ function PublicWebsiteLayout() {
                 <Route path="/order-booking" element={<PageWrapper><Services /></PageWrapper>} />
                 <Route path="/services" element={<Navigate to="/order-booking" replace />} />
                 <Route path="/frames" element={<PageWrapper><OrderFrames /></PageWrapper>} />
-                <Route path="/portfolio" element={<PageWrapper><Portfolio /></PageWrapper>} />
+                <Route path="/portfolio" element={<Navigate to="/gallery" replace />} />
+                <Route path="/portfolio/*" element={<Navigate to="/gallery" replace />} />
                 <Route path="/gallery" element={<PageWrapper><Gallery /></PageWrapper>} />
+                <Route path="/gallery/:albumSlug" element={<PageWrapper><AlbumDetail /></PageWrapper>} />
                 <Route path="/films" element={<PageWrapper><Films /></PageWrapper>} />
                 <Route path="/branches" element={<PageWrapper><Branches /></PageWrapper>} />
                 <Route path="/reviews" element={<PageWrapper><Reviews /></PageWrapper>} />
@@ -96,7 +145,7 @@ function PublicWebsiteLayout() {
           </Suspense>
         </div>
         <Footer />
-        <FloatingButtons />
+        <FloatingButtons introActive={introState.active} />
       </div>
     </div>
   );
@@ -106,6 +155,9 @@ export default function App() {
   const location = useLocation();
 
   useEffect(() => {
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
     scrollToTop();
   }, [location.pathname]);
 
@@ -139,7 +191,7 @@ export default function App() {
                 <Route path={ADMIN_SUBPATHS.ENQUIRIES} element={<Enquiries />} />
                 <Route path={ADMIN_SUBPATHS.FRAMES} element={<FramesManager />} />
                 <Route path={ADMIN_SUBPATHS.GALLERY} element={<GalleryManager />} />
-                <Route path={ADMIN_SUBPATHS.PORTFOLIO} element={<PortfolioManager />} />
+                <Route path={ADMIN_SUBPATHS.PORTFOLIO} element={<Navigate to={ADMIN_ROUTES.GALLERY} replace />} />
                 <Route path={ADMIN_SUBPATHS.SERVICES} element={<ServicesManager />} />
                 <Route path={ADMIN_SUBPATHS.FILMS} element={<FilmsManager />} />
                 <Route path={ADMIN_SUBPATHS.BRANCHES} element={<BranchesManager />} />

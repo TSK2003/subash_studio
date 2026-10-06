@@ -112,12 +112,21 @@ app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 // Rate Limiting on API endpoints
 app.use("/api", generalLimiter);
 
-// Serve static local uploads if present (development / fallback)
+// Serve static local uploads with high-performance browser caching (30 days immutable)
 const uploadsDir = path.resolve(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-app.use("/uploads", express.static(uploadsDir));
+app.use(
+  "/uploads",
+  express.static(uploadsDir, {
+    maxAge: "30d",
+    immutable: true,
+    setHeaders: (res) => {
+      res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
+    },
+  })
+);
 
 // Mount REST API
 app.use("/api", apiRoutes);

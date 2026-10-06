@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, Tag, SlidersHorizontal, Loader2 } from "lucide-react";
 import AdminStatusBadge, { AdminStatusButton } from "./AdminStatusBadge";
@@ -78,26 +79,33 @@ export function AddCategoryModal({
     }
   };
 
-  return (
-    <AnimatePresence>
-      <div className="admin-modal-overlay !z-[1050]">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => !submitting && onClose()}
-          className="fixed inset-0 bg-[#1C1B19]/60 backdrop-blur-sm"
-        />
+  return typeof document !== "undefined" &&
+    createPortal(
+      <AnimatePresence>
+        {isOpen && (
+          <div
+            className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !submitting && onClose()}
+              className="fixed inset-0"
+            />
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          transition={{ duration: 0.2 }}
-          role="dialog"
-          aria-modal="true"
-          className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 overflow-hidden flex flex-col max-h-[85vh]"
-        >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 0 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 0 }}
+              transition={{ duration: 0.2 }}
+              role="dialog"
+              aria-modal="true"
+              className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] bg-white shrink-0">
             <div className="flex items-center gap-2.5">
@@ -186,11 +194,13 @@ export function AddCategoryModal({
                 )}
               </button>
             </div>
-          </form>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>,
+      document.body
+    );
 }
 
 /**
@@ -253,26 +263,33 @@ export function ManageCategoriesModal({
   const activeCount = categories.filter((c) => c.active).length;
   const inactiveCount = categories.filter((c) => !c.active).length;
 
-  return (
-    <AnimatePresence>
-      <div className="admin-modal-overlay !z-[1040]">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-[#1C1B19]/60 backdrop-blur-sm"
-        />
+  return typeof document !== "undefined" &&
+    createPortal(
+      <AnimatePresence>
+        {isOpen && (
+          <div
+            className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+              className="fixed inset-0"
+            />
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          transition={{ duration: 0.2 }}
-          role="dialog"
-          aria-modal="true"
-          className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 overflow-hidden flex flex-col max-h-[85vh]"
-        >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 0 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 0 }}
+              transition={{ duration: 0.2 }}
+              role="dialog"
+              aria-modal="true"
+              className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
           {/* Fixed Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] bg-white shrink-0">
             <div className="flex items-center gap-3">
@@ -400,6 +417,8 @@ export function ManageCategoriesModal({
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
-  );
+    )}
+  </AnimatePresence>,
+  document.body
+);
 }

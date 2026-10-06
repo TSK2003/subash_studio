@@ -53,11 +53,6 @@ export const navItems = [
     icon: Images,
   },
   {
-    path: ADMIN_ROUTES.PORTFOLIO,
-    label: "Portfolio",
-    icon: Briefcase,
-  },
-  {
     path: ADMIN_ROUTES.SERVICES,
     label: "Services",
     icon: Camera,

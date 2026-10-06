@@ -524,9 +524,16 @@ export const initialTestimonials = [
 
 export const initialWebsiteContent = {
   home: {
-    heroHeading: "Fine Photography & Cinematic Films",
-    heroTagline: "Preserving timeless heritage, profound emotions, and authentic human celebrations across generations.",
-    heroCtaText: "Explore Portfolio",
+    heroMainTitle: "SUBASH STUDIO",
+    heroHeading: "SUBASH STUDIO",
+    heroSubtitle: "WEDDING FILM COMPANY",
+    heroEyebrow: "WEDDING FILM COMPANY",
+    heroSinceText: "SINCE 1933",
+    heroDeliveryTagline: "WE PROMISE ON TIME DELIVERY",
+    heroTagline: "WE PROMISE ON TIME DELIVERY",
+    heroImages: [],
+    heroImageLoop: true,
+    heroCtaText: "BOOK A SHOOT",
     stats: {
       weddingsCaptured: "1,200+",
       yearsOfCraft: "18+",
