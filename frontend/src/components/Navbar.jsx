@@ -35,10 +35,12 @@ export default function Navbar({
   const [mobileServicesOpen, setMobileServicesOpen] = useState(true);
   const dropdownRef = useRef(null);
 
+  const isHomePage = location.pathname === "/";
+
   useEffect(() => {
     setMenuOpen(false);
     setServicesOpen(false);
-    const onScroll = () => setScrolled(window.scrollY > 16);
+    const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
@@ -69,6 +71,7 @@ export default function Navbar({
   const activeIntro = isHomeIntro || introActive;
   const readyBrand = isIntroRevealing || brandReady;
   const isIntroHidden = activeIntro && !readyBrand;
+  const hideNavItems = (isHomePage && !scrolled) || isIntroHidden;
 
   return (
     <>
@@ -79,11 +82,13 @@ export default function Navbar({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
               isIntroHidden
                 ? "bg-transparent border-transparent shadow-none backdrop-blur-none pointer-events-none"
                 : scrolled
                 ? "bg-[#141311]/92 backdrop-blur-md border-b border-white/10 shadow-lg"
+                : isHomePage
+                ? "bg-transparent border-b border-transparent shadow-none backdrop-blur-none"
                 : "bg-black/35 backdrop-blur-md border-b border-white/10"
             }`}
             style={{
@@ -91,6 +96,8 @@ export default function Navbar({
                 ? "transparent"
                 : scrolled
                 ? "rgba(20, 19, 17, 0.92)"
+                : isHomePage
+                ? "transparent"
                 : "rgba(0, 0, 0, 0.38)",
             }}
           >
@@ -130,8 +137,10 @@ export default function Navbar({
 
               {/* Desktop Nav Links */}
               <nav
-                className={`hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 transition-opacity duration-500 ${
-                  isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+                className={`hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 transition-all duration-500 ${
+                  hideNavItems
+                    ? "opacity-0 pointer-events-none -translate-y-1"
+                    : "opacity-100 translate-y-0"
                 }`}
               >
                 {NAV_LINKS.map((l) => {
@@ -259,8 +268,10 @@ export default function Navbar({
 
               {/* Book a Shoot Outlined Button (Screenshot 1) */}
               <div
-                className={`hidden lg:flex items-center gap-5 transition-opacity duration-500 ${
-                  isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+                className={`hidden lg:flex items-center gap-5 transition-all duration-500 ${
+                  hideNavItems
+                    ? "opacity-0 pointer-events-none -translate-y-1"
+                    : "opacity-100 translate-y-0"
                 }`}
               >
                 <Link
@@ -274,8 +285,10 @@ export default function Navbar({
 
               {/* Mobile Menu Toggle Button */}
               <button
-                className={`lg:hidden text-[#FAF7F2] transition-opacity duration-500 p-1.5 rounded-lg hover:bg-white/10 ${
-                  isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+                className={`lg:hidden text-[#FAF7F2] transition-all duration-500 p-1.5 rounded-lg hover:bg-white/10 ${
+                  hideNavItems
+                    ? "opacity-0 pointer-events-none -translate-y-1"
+                    : "opacity-100 translate-y-0"
                 }`}
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-label="Toggle menu"
