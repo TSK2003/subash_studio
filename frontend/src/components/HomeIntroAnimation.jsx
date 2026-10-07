@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { stopLenis, startLenis, scrollToTop } from "../lib/useLenis";
+import { markIntroCompleted } from "../lib/introLifecycle";
 
 /**
  * HomeIntroAnimation
@@ -144,6 +145,7 @@ export default function HomeIntroAnimation({ onRevealing, onComplete, onBrandRea
       startLenis();
       scrollToTop();
       requestAnimationFrame(() => scrollToTop());
+      markIntroCompleted();
     };
   }, []);
 
@@ -191,6 +193,7 @@ export default function HomeIntroAnimation({ onRevealing, onComplete, onBrandRea
     const t6 = setTimeout(() => {
       setStep(6); // done
       scrollToTop();
+      markIntroCompleted();
       if (onCompleteRef.current) onCompleteRef.current();
     }, 4300);
 

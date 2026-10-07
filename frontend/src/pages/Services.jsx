@@ -207,7 +207,7 @@ export default function Services() {
           CUSTOM FRAMES CTA SECTION
       ======================================== */}
       <section className="max-w-7xl mx-auto px-6 lg:px-10 pb-24">
-        <div className="bg-[#24221F] rounded-3xl p-8 sm:p-12 text-[#F8F6F2] border border-[#3A3833] flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+        <div className="bg-[#24221F] rounded-[28px] p-8 sm:p-12 text-[#F8F6F2] border border-[#3A3833] flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
           <div className="space-y-3 max-w-xl">
             <span className="text-xs uppercase tracking-[0.18em] font-semibold text-[#C9A669]">
               Heirloom Framing Studio
@@ -221,7 +221,7 @@ export default function Services() {
           </div>
           <Link
             to="/frames"
-            className="shrink-0 px-7 py-3.5 bg-gradient-to-r from-[#C9A669] to-[#9C7B3D] text-[#1C1B19] rounded-full text-xs font-bold tracking-[0.12em] uppercase hover:brightness-110 transition-all shadow-lg active:scale-95"
+            className="shrink-0 px-7 py-3.5 bg-gradient-to-r from-[#C9A669] to-[#9C7B3D] text-[#1C1B19] rounded-[14px] text-xs font-bold tracking-[0.12em] uppercase hover:brightness-110 transition-all shadow-lg active:scale-95"
           >
             Order Custom Frames
           </Link>

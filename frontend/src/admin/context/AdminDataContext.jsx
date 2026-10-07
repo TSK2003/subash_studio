@@ -18,6 +18,7 @@ export function normalizeBooking(booking = {}) {
     email: booking.email || "",
     eventType: booking.eventType || "Wedding",
     eventDate: booking.eventDate || booking.date || "",
+    eventTime: booking.eventTime || (booking.eventDate?.includes("T") ? booking.eventDate.split("T")[1] : "") || "",
     location: booking.location || booking.venue || "",
     numberOfDays: booking.numberOfDays || "1 Day",
     requiredService: booking.requiredService || booking.service || "Wedding Photography",

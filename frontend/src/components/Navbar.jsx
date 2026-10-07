@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
 import { Menu, X, ChevronDown, Camera, Frame, ArrowRight } from "lucide-react";
 import { useAdminData } from "../admin/context/AdminDataContext";
+import { scrollToTop } from "../lib/useLenis";
 
 const NAV_LINKS = [
   { to: "/", label: "Home" },
@@ -107,6 +108,12 @@ export default function Navbar({
                 to="/"
                 id="navbar-brand-link"
                 data-id="navbar-brand-logo"
+                onClick={(e) => {
+                  if (location.pathname === "/") {
+                    e.preventDefault();
+                    scrollToTop();
+                  }
+                }}
                 className={`flex items-center gap-2.5 sm:gap-3 group shrink-0 transition-opacity duration-300 select-none ${
                   isIntroHidden ? "opacity-0 pointer-events-none" : "opacity-100"
                 }`}
@@ -242,6 +249,12 @@ export default function Navbar({
                       key={l.to}
                       to={l.to}
                       end={l.to === "/"}
+                      onClick={(e) => {
+                        if (l.to === "/" && location.pathname === "/") {
+                          e.preventDefault();
+                          scrollToTop();
+                        }
+                      }}
                       className={({ isActive }) =>
                         `text-[13px] tracking-[0.08em] uppercase font-medium transition-colors duration-300 relative py-1 ${
                           isActive
@@ -375,7 +388,13 @@ export default function Navbar({
                   <NavLink
                     key={l.to}
                     to={l.to}
-                    onClick={() => setMenuOpen(false)}
+                    onClick={(e) => {
+                      setMenuOpen(false);
+                      if (l.to === "/" && location.pathname === "/") {
+                        e.preventDefault();
+                        scrollToTop();
+                      }
+                    }}
                     className={({ isActive }) =>
                       `text-sm tracking-[0.1em] uppercase font-medium ${
                         isActive ? "text-[#E4D3A6] font-semibold" : "text-[#FAF8F5]/80 hover:text-white"

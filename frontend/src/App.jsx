@@ -7,7 +7,7 @@ import FloatingButtons from "./components/FloatingButtons";
 import LuxuryLoader from "./components/LuxuryLoader";
 import HomeIntroAnimation from "./components/HomeIntroAnimation";
 import { useLenis, scrollToTop } from "./lib/useLenis";
-import { shouldPlayIntro } from "./lib/introLifecycle";
+import { shouldPlayIntro, markIntroRunning, markIntroCompleted } from "./lib/introLifecycle";
 
 // Critical landing page loaded synchronously for optimal FCP
 import Home from "./pages/Home";
@@ -72,29 +72,31 @@ function PublicWebsiteLayout() {
   const location = useLocation();
   useLenis();
 
-  const isHome = location.pathname === "/";
-  const [introState, setIntroState] = useState({
-    active: isHome,
-    revealing: false,
-    key: location.key || "home-init",
-  });
-
-  useEffect(() => {
-    if (location.pathname === "/") {
-      scrollToTop();
-      setIntroState({
+  // Authoritative document-level trigger:
+  // ONLY true on the very first browser document load or refresh directly at "/"
+  const [introState, setIntroState] = useState(() => {
+    if (shouldPlayIntro()) {
+      markIntroRunning();
+      return {
         active: true,
         revealing: false,
-        key: location.key || String(Date.now()),
-      });
-    } else {
-      setIntroState({
-        active: false,
-        revealing: false,
-        key: "",
-      });
+        key: "initial-home-intro",
+      };
     }
-  }, [location.pathname, location.key]);
+    return {
+      active: false,
+      revealing: false,
+      key: "",
+    };
+  });
+
+  // If navigating away from "/" while intro is running, cancel/complete it immediately
+  useEffect(() => {
+    if (introState.active && location.pathname !== "/") {
+      markIntroCompleted();
+      setIntroState({ active: false, revealing: false, key: "" });
+    }
+  }, [location.pathname, introState.active]);
 
   const handleRevealing = useCallback(() => {
     scrollToTop();
@@ -102,7 +104,8 @@ function PublicWebsiteLayout() {
   }, []);
 
   const handleComplete = useCallback(() => {
-    setIntroState((prev) => ({ ...prev, active: false }));
+    markIntroCompleted();
+    setIntroState({ active: false, revealing: false, key: "" });
     scrollToTop();
     requestAnimationFrame(() => scrollToTop());
   }, []);

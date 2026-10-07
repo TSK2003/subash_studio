@@ -1,13 +1,23 @@
 // Document-level authoritative lifecycle for homepage intro animation
 // Possible states: "idle" -> "running" -> "completed"
 
+const initialPath =
+  typeof window !== "undefined"
+    ? (window.location.pathname || "/").replace(/\/+$/, "") || "/"
+    : "/";
+
+// Only true when the browser document was initially loaded or refreshed directly at "/"
 const isInitialHome =
   typeof window !== "undefined" &&
-  (window.location.pathname === "/" || window.location.pathname === "");
+  (initialPath === "/" || initialPath === "/index.html");
 
-// Only initialize to "idle" if the initial document opened on "/"
+// Only initialize to "idle" if the browser document opened directly on "/"
 // Any non-homepage initial load immediately marks intro as "completed"
 let introStatus = isInitialHome ? "idle" : "completed";
+
+if (typeof window !== "undefined") {
+  window.__subashIntroStatus = () => introStatus;
+}
 
 export function getIntroStatus() {
   return introStatus;

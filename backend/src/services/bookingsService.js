@@ -106,6 +106,7 @@ export async function createBooking(data) {
       email,
       eventType,
       eventDate,
+      eventTime: data.eventTime ? String(data.eventTime).trim() : null,
       location,
       numberOfDays,
       requiredService,
@@ -159,6 +160,9 @@ export async function updateBooking(id, data) {
     const eventDate = (data.eventDate || "").trim();
     if (!eventDate) throw new Error("Event date cannot be empty.");
     updatePayload.eventDate = eventDate;
+  }
+  if (data.eventTime !== undefined) {
+    updatePayload.eventTime = data.eventTime ? String(data.eventTime).trim() : null;
   }
   if (data.location !== undefined) {
     const location = (data.location || "").trim();

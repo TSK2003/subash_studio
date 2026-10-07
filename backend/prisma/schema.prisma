@@ -67,6 +67,7 @@ model Booking {
   email                     String
   eventType                 String
   eventDate                 String
+  eventTime                 String?
   location                  String
   numberOfDays              String        @default("1 Day")
   requiredService           String

@@ -16,11 +16,12 @@ import {
 import { FaInstagram, FaFacebookF, FaYoutube } from "react-icons/fa6";
 import ImageUploader from "../components/ImageUploader";
 import HeroImageManager from "../components/HeroImageManager";
+import AboutContentEditor from "../components/about/AboutContentEditor";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
 
 export default function WebsiteContent() {
-  const { websiteContent, updateWebsiteContent } = useAdminData();
+  const { websiteContent, updateWebsiteContent, getMediaLibrary } = useAdminData();
   const { addToast } = useToast();
 
   const [activeTab, setActiveTab] = useState("home");
@@ -189,15 +190,17 @@ export default function WebsiteContent() {
     }
   };
 
-  const handleSaveAbout = async (e) => {
-    e.preventDefault();
+  const handleSaveAbout = async (payload, targetSection = "all") => {
     try {
-      setSavingSection("about");
-      const updated = await updateWebsiteContent("about", aboutForm);
+      setSavingSection(targetSection === "all" ? "about" : targetSection);
+      const updated = await updateWebsiteContent("about", payload);
       if (updated) setAboutForm(updated);
-      addToast("About Page content saved successfully.", "success");
+      const label = targetSection === "all" ? "About Page content" : `About ${targetSection}`;
+      addToast(`${label} saved successfully.`, "success");
+      return updated;
     } catch (err) {
       addToast(err?.message || "Failed to save About content.", "error");
+      throw err;
     } finally {
       setSavingSection(null);
     }
@@ -462,87 +465,14 @@ export default function WebsiteContent() {
 
       {/* Tab 2: About Studio */}
       {activeTab === "about" && (
-        <form onSubmit={handleSaveAbout} className="space-y-6">
-          <div className="bg-white rounded-xl border border-[#E7E0D2] p-5 sm:p-6 shadow-sm space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E7E0D2]">
-              <div>
-                <h3 className="text-lg font-display font-bold text-[#2B2B2B]">
-                  Studio Story &amp; Philosophy
-                </h3>
-                <p className="text-xs text-[#6F6A62]">
-                  Customize the About page background story, heritage, and creative vision.
-                </p>
-              </div>
-              <button
-                type="submit"
-                disabled={savingSection !== null}
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60"
-              >
-                {savingSection === "about" ? (
-                  <Loader2 className="w-4 h-4 text-[#E4D3A6] animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4 text-[#E4D3A6]" />
-                )}
-                <span>{savingSection === "about" ? "Saving..." : "Save About Content"}</span>
-              </button>
-            </div>
-
-            <div className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">About Page Heading</label>
-                  <input
-                    type="text"
-                    value={aboutForm.heading || ""}
-                    onChange={(e) =>
-                      setAboutForm({ ...aboutForm, heading: e.target.value })
-                    }
-                    className="w-full p-3 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-sm font-display font-bold text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Established Year</label>
-                  <input
-                    type="text"
-                    value={aboutForm.establishedYear || ""}
-                    onChange={(e) =>
-                      setAboutForm({
-                        ...aboutForm,
-                        establishedYear: e.target.value,
-                      })
-                    }
-                    className="w-full p-3 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-sm font-bold text-[#9C7B3D] focus:border-[#C9A669] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-[#6F6A62]">Studio Story &amp; History</label>
-                <textarea
-                  rows={4}
-                  value={aboutForm.studioStory || ""}
-                  onChange={(e) =>
-                    setAboutForm({ ...aboutForm, studioStory: e.target.value })
-                  }
-                  className="w-full p-3 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] leading-relaxed focus:border-[#C9A669] focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-semibold text-[#6F6A62]">Artistic Philosophy</label>
-                <textarea
-                  rows={3}
-                  value={aboutForm.philosophy || ""}
-                  onChange={(e) =>
-                    setAboutForm({ ...aboutForm, philosophy: e.target.value })
-                  }
-                  className="w-full p-3 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] leading-relaxed focus:border-[#C9A669] focus:outline-none"
-                />
-              </div>
-            </div>
-          </div>
-        </form>
+        <AboutContentEditor
+          aboutData={aboutForm}
+          onSave={handleSaveAbout}
+          isSaving={savingSection !== null}
+          savingSection={savingSection}
+          getMediaLibrary={getMediaLibrary}
+          addToast={addToast}
+        />
       )}
 
       {/* Tab 3: Contact & Social */}

@@ -283,6 +283,30 @@ export async function seedInitialDataIfNeeded() {
         });
       }
       console.log("✓ Website Content seeded");
+    } else {
+      // Ensure about section has modern heritage / milestones structure if missing
+      const existingAbout = await prisma.websiteContent.findUnique({
+        where: { section: "about" },
+      });
+      if (!existingAbout || !existingAbout.data || !existingAbout.data.intro || !existingAbout.data.milestones) {
+        const mergedAbout = {
+          ...initialWebsiteContent.about,
+          ...(existingAbout?.data || {}),
+          intro: existingAbout?.data?.intro || initialWebsiteContent.about.intro,
+          founder: existingAbout?.data?.founder || initialWebsiteContent.about.founder,
+          camera: existingAbout?.data?.camera || initialWebsiteContent.about.camera,
+          community: existingAbout?.data?.community || initialWebsiteContent.about.community,
+          journey: existingAbout?.data?.journey || initialWebsiteContent.about.journey,
+          milestones: existingAbout?.data?.milestones || initialWebsiteContent.about.milestones,
+          closingSummary: existingAbout?.data?.closingSummary || initialWebsiteContent.about.closingSummary,
+        };
+        await prisma.websiteContent.upsert({
+          where: { section: "about" },
+          update: { data: mergedAbout },
+          create: { section: "about", data: mergedAbout },
+        });
+        console.log("✓ About page heritage content initialized");
+      }
     }
 
     // 12. Studio Settings
