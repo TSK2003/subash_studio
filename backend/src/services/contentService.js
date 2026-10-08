@@ -1,5 +1,6 @@
 import prisma from "../config/prisma.js";
 import { deleteStorageFile } from "../utils/storage.js";
+import { getCached, setCached, invalidateCache } from "../utils/cache.js";
 
 const VALID_SECTIONS = ["home", "about", "contact"];
 
@@ -168,6 +169,107 @@ function validateSectionData(section, data) {
       };
     }
   } else if (section === "about") {
+    // 1. Intro
+    if (data.intro !== undefined && typeof data.intro === "object" && data.intro !== null) {
+      result.intro = {
+        eyebrow: sanitizeString(data.intro.eyebrow ?? "OUR HERITAGE", 100),
+        heroTitle: sanitizeString(data.intro.heroTitle ?? "About", 100),
+        title: sanitizeString(data.intro.title ?? "The story behind the lens.", 200),
+        subtitle: sanitizeString(data.intro.subtitle ?? "A chance beginning. A lifelong passion.", 300),
+        backgroundImage: sanitizeString(data.intro.backgroundImage ?? data.intro.bannerImage ?? "", 500),
+        bannerImage: sanitizeString(data.intro.bannerImage ?? data.intro.backgroundImage ?? "", 500),
+        imageAlt: sanitizeString(data.intro.imageAlt ?? "About Subash Studio heritage", 200),
+        establishedYear: sanitizeString(String(data.intro.establishedYear ?? "1993"), 20),
+      };
+      result.heading = result.intro.title;
+      result.establishedYear = result.intro.establishedYear;
+    }
+
+    // 2. Founder
+    if (data.founder !== undefined && typeof data.founder === "object" && data.founder !== null) {
+      result.founder = {
+        label: sanitizeString(data.founder.label ?? "THE STORY OF THE FOUNDER", 120),
+        name: sanitizeString(data.founder.name ?? "P. Arunachalam", 120),
+        role: sanitizeString(data.founder.role ?? "FOUNDER, SUBASH STUDIO", 120),
+        descParagraph1: sanitizeString(data.founder.descParagraph1 ?? "His story began in a village in the Western Ghats, with just a few cows and goats.", 2000),
+        descParagraph2: sanitizeString(data.founder.descParagraph2 ?? "In 1987, a camera won in a lottery revealed his artistic talent — and became the beginning of a business that would grow to three branches.", 2000),
+        caption: sanitizeString(data.founder.caption ?? "Where the journey began.", 200),
+        photo1: sanitizeString(data.founder.photo1 ?? "/images/about/founder-camera.jpeg", 500),
+        photo1Alt: sanitizeString(data.founder.photo1Alt ?? "P. Arunachalam holding an Agfa camera", 200),
+        photo2: sanitizeString(data.founder.photo2 ?? "/images/about/founder-field.jpeg", 500),
+        photo2Alt: sanitizeString(data.founder.photo2Alt ?? "P. Arunachalam in a marigold flower field", 200),
+      };
+      result.studioStory = `${result.founder.descParagraph1}\n\n${result.founder.descParagraph2}`;
+    }
+
+    // 3. Camera (1987 Turning Point)
+    if (data.camera !== undefined && typeof data.camera === "object" && data.camera !== null) {
+      result.camera = {
+        label: sanitizeString(data.camera.label ?? "1987 • THE TURNING POINT", 120),
+        heading: sanitizeString(data.camera.heading ?? "A camera. A new beginning.", 200),
+        cameraName: sanitizeString(data.camera.cameraName ?? "Agfa Click III", 120),
+        description: sanitizeString(data.camera.description ?? "An Agfa Click III camera, won in a lottery in 1987, changed his life and helped him discover his artistic skills.", 2000),
+        image: "/images/about/agfa-camera-1987.png",
+        imageAlt: sanitizeString(data.camera.imageAlt ?? "Agfa Click III camera", 200),
+      };
+    }
+
+    // 4. Community Leadership
+    if (data.community !== undefined && typeof data.community === "object" && data.community !== null) {
+      result.community = {
+        label: sanitizeString(data.community.label ?? "2018 • COMMUNITY & LEADERSHIP", 120),
+        heading: sanitizeString(data.community.heading ?? "Serving the photography community.", 200),
+        headingAccent: sanitizeString(data.community.headingAccent ?? "community.", 120),
+        description: sanitizeString(data.community.description ?? "Became Vice President of the Tirunelveli District Photography Labour Welfare Association.", 2000),
+        role: sanitizeString(data.community.role ?? "VICE PRESIDENT", 120),
+        organization: sanitizeString(data.community.organization ?? "Tirunelveli District Photography Labour Welfare Association", 200),
+        appointedYear: sanitizeString(data.community.appointedYear ?? "Appointed in 2018", 100),
+        caption: sanitizeString(data.community.caption ?? "P. Arunachalam", 120),
+        portrait: sanitizeString(data.community.portrait ?? "/images/about/founder-field.jpeg", 500),
+        portraitAlt: sanitizeString(data.community.portraitAlt ?? "P. Arunachalam portrait", 200),
+      };
+    }
+
+    // 5. Studio Journey Introduction
+    if (data.journey !== undefined && typeof data.journey === "object" && data.journey !== null) {
+      result.journey = {
+        eyebrow: sanitizeString(data.journey.eyebrow ?? "OUR STUDIO JOURNEY", 100),
+        title: sanitizeString(data.journey.title ?? "From one studio to a shared legacy.", 200),
+        subtitle: sanitizeString(data.journey.subtitle ?? "Four milestones. One enduring passion.", 300),
+      };
+    }
+
+    // 6. Milestones
+    if (data.milestones !== undefined) {
+      if (!Array.isArray(data.milestones)) {
+        throw new Error("Milestones must be an array.");
+      }
+      result.milestones = data.milestones.map((m, idx) => {
+        if (!m || typeof m !== "object") {
+          throw new Error(`Milestone at index ${idx} must be an object.`);
+        }
+        return {
+          id: sanitizeString(m.id || `m-${Date.now()}-${idx}`, 50),
+          date: sanitizeString(m.date || "", 100),
+          heading: sanitizeString(m.heading || "", 200),
+          description: sanitizeString(m.description || "", 2000),
+          quoteLine: sanitizeString(m.quoteLine || "", 200),
+          layout: m.layout === "content-left" ? "content-left" : "photo-left",
+          image: sanitizeString(m.image || "", 500),
+          imageAlt: sanitizeString(m.imageAlt || "", 200),
+        };
+      });
+    }
+
+    // 7. Closing Location Summary
+    if (data.closingSummary !== undefined && typeof data.closingSummary === "object" && data.closingSummary !== null) {
+      result.closingSummary = {
+        locations: sanitizeString(data.closingSummary.locations ?? "Kallidaikurichi · Chennai · Tirunelveli", 200),
+        tagline: sanitizeString(data.closingSummary.tagline ?? "THREE BRANCHES. ONE SHARED LEGACY.", 200),
+      };
+    }
+
+    // Legacy fields (backward compatibility)
     if (data.heading !== undefined) {
       result.heading = sanitizeString(data.heading, 300);
     }
@@ -224,11 +326,16 @@ function validateSectionData(section, data) {
 }
 
 export async function getAllContent() {
+  const cached = getCached("content:all");
+  if (cached) return cached;
+
   const contents = await prisma.websiteContent.findMany();
   const map = {};
   contents.forEach((item) => {
     map[item.section] = item.data;
   });
+
+  setCached("content:all", map, 120);
   return map;
 }
 
@@ -236,10 +343,17 @@ export async function getContentBySection(section) {
   if (!VALID_SECTIONS.includes(section)) {
     return null;
   }
+  const cached = getCached(`content:${section}`);
+  if (cached) return cached;
+
   const item = await prisma.websiteContent.findUnique({
     where: { section },
   });
-  return item ? item.data : null;
+  const data = item ? item.data : null;
+  if (data) {
+    setCached(`content:${section}`, data, 120);
+  }
+  return data;
 }
 
 export async function updateContent(section, data) {
@@ -255,8 +369,9 @@ export async function updateContent(section, data) {
 
   // Preserve existing video files in storage without deleting them
 
-
   const merged = existing ? { ...(existing.data || {}), ...validated } : validated;
+
+  invalidateCache("content");
 
   return prisma.websiteContent.upsert({
     where: { section },

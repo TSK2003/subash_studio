@@ -66,3 +66,8 @@ export function startLenis() {
   }
 }
 
+export function getLenis() {
+  return lenisInstance;
+}
+
+

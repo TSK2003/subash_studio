@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,12 +36,397 @@ import {
   formatBookingStatusLabel,
 } from "../../lib/bookingStatus.js";
 
+export function formatBookingDateTime(dateStr, timeStr) {
+  if (!dateStr) return { date: "Not specified", time: "" };
+
+  let timePart = timeStr || "";
+  let datePart = dateStr;
+
+  if (dateStr.includes("T")) {
+    const parts = dateStr.split("T");
+    datePart = parts[0];
+    if (!timePart && parts[1]) timePart = parts.slice(1).join("T");
+  }
+
+  const parsed = new Date(datePart + "T00:00:00");
+  const formattedDate = !isNaN(parsed.getTime())
+    ? parsed.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : datePart;
+
+  let formattedTime = "";
+  if (timePart) {
+    const trimmed = timePart.trim();
+    const match12 = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (match12) {
+      let hours = parseInt(match12[1], 10);
+      const minutes = match12[2];
+      const ampm = match12[3].toUpperCase();
+      formattedTime = `${hours}:${minutes} ${ampm}`;
+    } else {
+      const match24 = trimmed.match(/^(\d{1,2}):(\d{2})/);
+      if (match24) {
+        let hours = parseInt(match24[1], 10);
+        const minutes = match24[2];
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12 || 12;
+        formattedTime = `${hours}:${minutes} ${ampm}`;
+      } else {
+        formattedTime = trimmed;
+      }
+    }
+  }
+
+  return { date: formattedDate, time: formattedTime };
+}
+
+export function parseTimeValue(val) {
+  if (!val || typeof val !== "string") {
+    return { hour: "", minute: "", period: "AM" };
+  }
+  const str = val.trim();
+  const match12 = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (match12) {
+    let h = parseInt(match12[1], 10);
+    const m = match12[2];
+    const p = match12[3].toUpperCase();
+    if (h > 12) h = h % 12 || 12;
+    if (h === 0) h = 12;
+    return {
+      hour: String(h).padStart(2, "0"),
+      minute: m,
+      period: p,
+    };
+  }
+
+  const match24 = str.match(/^(\d{1,2}):(\d{2})/);
+  if (match24) {
+    let h = parseInt(match24[1], 10);
+    const m = match24[2];
+    const p = h >= 12 ? "PM" : "AM";
+    h = h % 12 || 12;
+    return {
+      hour: String(h).padStart(2, "0"),
+      minute: m,
+      period: p,
+    };
+  }
+
+  return { hour: "", minute: "", period: "AM" };
+}
+
+function Time12Picker({ value, onChange, id }) {
+  const [hour, setHour] = useState("");
+  const [minute, setMinute] = useState("");
+  const [period, setPeriod] = useState("AM");
+
+  const hourInputRef = useRef(null);
+  const minuteInputRef = useRef(null);
+  const lastEmittedRef = useRef(value || "");
+
+  useEffect(() => {
+    if (value === lastEmittedRef.current) return;
+    lastEmittedRef.current = value || "";
+    const parsed = parseTimeValue(value);
+    setHour(parsed.hour);
+    setMinute(parsed.minute);
+    setPeriod(parsed.period);
+  }, [value]);
+
+  const triggerChange = (h, m, p) => {
+    if (!h && !m) {
+      lastEmittedRef.current = "";
+      onChange("");
+      return;
+    }
+    const cleanH = h ? h.padStart(2, "0") : "12";
+    const cleanM = (m || "00").padStart(2, "0");
+    const formatted = `${cleanH}:${cleanM} ${p}`;
+    lastEmittedRef.current = formatted;
+    onChange(formatted);
+  };
+
+  const handleHourChange = (e) => {
+    const raw = e.target.value;
+    // Allow pasting full time e.g. "10:30 PM" or "14:20"
+    if (raw.includes(":")) {
+      const parsed = parseTimeValue(raw);
+      if (parsed.hour) {
+        setHour(parsed.hour);
+        setMinute(parsed.minute || "00");
+        setPeriod(parsed.period);
+        triggerChange(parsed.hour, parsed.minute || "00", parsed.period);
+        return;
+      }
+    }
+
+    const digits = raw.replace(/\D/g, "");
+
+    if (digits === "") {
+      setHour("");
+      triggerChange("", minute, period);
+      return;
+    }
+
+    const num = parseInt(digits, 10);
+    // Strict 12-hour limit: typing > 12 is rejected and does not work
+    if (num > 12) {
+      return;
+    }
+
+    // Allow typing "0" so user can type "01"-"09"
+    if (digits === "0") {
+      setHour("0");
+      return;
+    }
+
+    // Single digit 2-9 cannot have another digit since 20+ > 12
+    if (digits.length === 1 && num >= 2) {
+      const padded = `0${num}`;
+      setHour(padded);
+      triggerChange(padded, minute, period);
+      minuteInputRef.current?.focus();
+      minuteInputRef.current?.select();
+      return;
+    }
+
+    if (digits.length === 2) {
+      if (num === 0) return; // 00 is invalid in 12h clock
+      setHour(digits);
+      triggerChange(digits, minute, period);
+      minuteInputRef.current?.focus();
+      minuteInputRef.current?.select();
+      return;
+    }
+
+    // Single digit "1"
+    setHour(digits);
+    triggerChange(digits, minute, period);
+  };
+
+  const handleMinuteChange = (e) => {
+    const raw = e.target.value;
+    const digits = raw.replace(/\D/g, "");
+
+    if (digits === "") {
+      setMinute("");
+      triggerChange(hour, "", period);
+      return;
+    }
+
+    const num = parseInt(digits, 10);
+    // Strict minute limit: typing > 59 is rejected and does not work
+    if (num > 59) {
+      return;
+    }
+
+    // Single digit 6-9 cannot have a second digit since 60+ > 59
+    if (digits.length === 1 && num >= 6) {
+      const padded = `0${num}`;
+      setMinute(padded);
+      triggerChange(hour, padded, period);
+      return;
+    }
+
+    if (digits.length === 2) {
+      setMinute(digits);
+      triggerChange(hour, digits, period);
+      return;
+    }
+
+    // Single digit 0-5
+    setMinute(digits);
+    triggerChange(hour, digits, period);
+  };
+
+  const handleHourBlur = () => {
+    if (!hour) return;
+    const num = parseInt(hour, 10);
+    if (isNaN(num) || num === 0) {
+      setHour("12");
+      triggerChange("12", minute, period);
+    } else {
+      const padded = String(num).padStart(2, "0");
+      setHour(padded);
+      triggerChange(padded, minute, period);
+    }
+  };
+
+  const handleMinuteBlur = () => {
+    if (!minute) return;
+    const num = parseInt(minute, 10);
+    const padded = String(isNaN(num) ? 0 : num).padStart(2, "0");
+    setMinute(padded);
+    triggerChange(hour, padded, period);
+  };
+
+  const handleKeyDownCommon = (e) => {
+    if (e.key === "a" || e.key === "A") {
+      e.preventDefault();
+      handlePeriodChange("AM");
+    } else if (e.key === "p" || e.key === "P") {
+      e.preventDefault();
+      handlePeriodChange("PM");
+    }
+  };
+
+  const handleHourKeyDown = (e) => {
+    handleKeyDownCommon(e);
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const current = parseInt(hour, 10);
+      const next = isNaN(current) ? 12 : current >= 12 ? 1 : current + 1;
+      const nextStr = String(next).padStart(2, "0");
+      setHour(nextStr);
+      triggerChange(nextStr, minute, period);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const current = parseInt(hour, 10);
+      const next = isNaN(current) ? 12 : current <= 1 ? 12 : current - 1;
+      const nextStr = String(next).padStart(2, "0");
+      setHour(nextStr);
+      triggerChange(nextStr, minute, period);
+    } else if (e.key === "ArrowRight" || e.key === ":") {
+      e.preventDefault();
+      minuteInputRef.current?.focus();
+      minuteInputRef.current?.select();
+    }
+  };
+
+  const handleMinuteKeyDown = (e) => {
+    handleKeyDownCommon(e);
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const current = parseInt(minute, 10);
+      const next = isNaN(current) ? 0 : current >= 59 ? 0 : current + 1;
+      const nextStr = String(next).padStart(2, "0");
+      setMinute(nextStr);
+      triggerChange(hour, nextStr, period);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const current = parseInt(minute, 10);
+      const next = isNaN(current) ? 59 : current <= 0 ? 59 : current - 1;
+      const nextStr = String(next).padStart(2, "0");
+      setMinute(nextStr);
+      triggerChange(hour, nextStr, period);
+    } else if (e.key === "ArrowLeft") {
+      if (e.target.selectionStart === 0 || !minute) {
+        e.preventDefault();
+        hourInputRef.current?.focus();
+        hourInputRef.current?.select();
+      }
+    } else if (e.key === "Backspace" && !minute) {
+      e.preventDefault();
+      hourInputRef.current?.focus();
+      hourInputRef.current?.select();
+    }
+  };
+
+  const handlePeriodChange = (newPeriod) => {
+    setPeriod(newPeriod);
+    triggerChange(hour, minute, newPeriod);
+  };
+
+  const handleClear = () => {
+    setHour("");
+    setMinute("");
+    lastEmittedRef.current = "";
+    onChange("");
+    hourInputRef.current?.focus();
+  };
+
+  return (
+    <div className="flex items-center justify-between w-full p-2 bg-[#F8F6F2] border border-[#E7E0D2] focus-within:border-[#C9A669] focus-within:ring-1 focus-within:ring-[#C9A669]/30 rounded-xl transition-all">
+      <div className="flex items-center gap-1.5 text-xs text-[#2B2B2B]">
+        <Clock className="w-4 h-4 text-[#8E867B] shrink-0 ml-1" />
+
+        {/* Hour Input (1-12) */}
+        <input
+          ref={hourInputRef}
+          id={id}
+          type="text"
+          inputMode="numeric"
+          placeholder="HH"
+          value={hour}
+          onChange={handleHourChange}
+          onKeyDown={handleHourKeyDown}
+          onBlur={handleHourBlur}
+          maxLength={2}
+          aria-label="Hour (1 to 12)"
+          className="w-7 text-center bg-transparent text-xs font-semibold text-[#2B2B2B] placeholder:text-[#A8A196] focus:outline-none select-all"
+        />
+
+        <span className="text-[#8E867B] font-bold select-none">:</span>
+
+        {/* Minute Input (0-59) */}
+        <input
+          ref={minuteInputRef}
+          type="text"
+          inputMode="numeric"
+          placeholder="MM"
+          value={minute}
+          onChange={handleMinuteChange}
+          onKeyDown={handleMinuteKeyDown}
+          onBlur={handleMinuteBlur}
+          maxLength={2}
+          aria-label="Minute (0 to 59)"
+          className="w-7 text-center bg-transparent text-xs font-semibold text-[#2B2B2B] placeholder:text-[#A8A196] focus:outline-none select-all"
+        />
+      </div>
+
+      {/* AM / PM Segmented Control & Optional Clear */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        <div className="inline-flex items-center p-0.5 bg-[#EAE4D7] rounded-lg border border-[#DDD5C5]">
+          <button
+            type="button"
+            onClick={() => handlePeriodChange("AM")}
+            className={`px-2.5 py-0.5 text-[10px] font-bold tracking-wider rounded-md transition-all ${
+              period === "AM"
+                ? "bg-[#2B2B2B] text-[#F9F6F0] shadow-xs"
+                : "text-[#6F6A62] hover:text-[#2B2B2B]"
+            }`}
+          >
+            AM
+          </button>
+          <button
+            type="button"
+            onClick={() => handlePeriodChange("PM")}
+            className={`px-2.5 py-0.5 text-[10px] font-bold tracking-wider rounded-md transition-all ${
+              period === "PM"
+                ? "bg-[#2B2B2B] text-[#F9F6F0] shadow-xs"
+                : "text-[#6F6A62] hover:text-[#2B2B2B]"
+            }`}
+          >
+            PM
+          </button>
+        </div>
+
+        {(hour || minute) && (
+          <button
+            type="button"
+            onClick={handleClear}
+            title="Clear time"
+            aria-label="Clear time"
+            className="p-1 text-[#8E867B] hover:text-rose-500 rounded-md transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const INITIAL_FORM_STATE = {
   customerName: "",
   phone: "",
   email: "",
   eventType: "",
   eventDate: "",
+  eventTime: "",
   location: "",
   numberOfDays: "",
   requiredService: "",
@@ -59,6 +444,7 @@ const FIELD_ORDER = [
   "email",
   "eventType",
   "eventDate",
+  "eventTime",
   "numberOfDays",
   "budget",
   "requiredService",
@@ -166,12 +552,24 @@ export default function Bookings() {
 
   const handleOpenEditModal = (booking) => {
     setEditingBooking(booking);
+    let initialDate = "";
+    let initialTime = booking.eventTime || "";
+    if (booking.eventDate) {
+      if (booking.eventDate.includes("T")) {
+        const parts = booking.eventDate.split("T");
+        initialDate = parts[0];
+        if (!initialTime && parts[1]) initialTime = parts.slice(1).join("T");
+      } else {
+        initialDate = booking.eventDate;
+      }
+    }
     setFormData({
       customerName: booking.customerName || booking.clientName || "",
       phone: (booking.phone || "").replace(/\D/g, "").slice(0, 10),
       email: booking.email || "",
       eventType: booking.eventType || "",
-      eventDate: booking.eventDate ? (booking.eventDate.includes("T") ? booking.eventDate.split("T")[0] : booking.eventDate) : "",
+      eventDate: initialDate,
+      eventTime: initialTime,
       location: booking.location || booking.venue || "",
       numberOfDays: booking.numberOfDays || "",
       requiredService: booking.requiredService || booking.service || "",
@@ -349,15 +747,25 @@ export default function Bookings() {
     }
 
     setIsSubmitting(true);
+    const cleanDateOnly = formData.eventDate ? formData.eventDate.split("T")[0] : "";
+    const cleanTime = (formData.eventTime || "").trim();
+    const finalEventDate = cleanTime ? `${cleanDateOnly}T${cleanTime}` : cleanDateOnly;
+
+    const payload = {
+      ...formData,
+      eventDate: finalEventDate,
+      eventTime: cleanTime,
+    };
+
     try {
       if (editingBooking) {
-        await updateBooking(editingBooking.id, formData);
+        await updateBooking(editingBooking.id, payload);
         addToast(`Booking ${editingBooking.id} updated successfully.`, "success");
         if (activeBooking?.id === editingBooking.id) {
-          setActiveBooking({ ...activeBooking, ...formData });
+          setActiveBooking({ ...activeBooking, ...payload });
         }
       } else {
-        const created = await addBooking(formData);
+        const created = await addBooking(payload);
         addToast(`Booking ${created?.id || ""} created successfully.`, "success");
       }
       handleCloseModal();
@@ -601,16 +1009,25 @@ export default function Bookings() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-[#2B2B2B]">
-                        {new Date(b.eventDate).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </div>
-                      <div className="text-[11px] text-[#8E867B]">
-                        Budget: {b.budget || "N/A"}
-                      </div>
+                      {(() => {
+                        const { date: fDate, time: fTime } = formatBookingDateTime(b.eventDate, b.eventTime);
+                        return (
+                          <>
+                            <div className="font-semibold text-[#2B2B2B] flex items-center gap-1.5 flex-wrap">
+                              <span>{fDate}</span>
+                              {fTime && (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#9C7B3D] bg-[#F9F5EC] px-1.5 py-0.5 rounded-md border border-[#E7E0D2]/80">
+                                  <Clock className="w-3 h-3 text-[#C9A669]" />
+                                  {fTime}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-[#8E867B]">
+                              Budget: {b.budget || "N/A"}
+                            </div>
+                          </>
+                        );
+                      })()}
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="font-medium text-[#2B2B2B]">
@@ -797,15 +1214,36 @@ export default function Bookings() {
                     <span className="text-[#6F6A62]">Event Date:</span>
                     <span className="font-semibold text-[#2B2B2B]">
                       {activeBooking.eventDate
-                        ? new Date(activeBooking.eventDate).toLocaleDateString("en-IN", {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })
+                        ? (() => {
+                            const datePart = activeBooking.eventDate.includes("T")
+                              ? activeBooking.eventDate.split("T")[0]
+                              : activeBooking.eventDate;
+                            const parsed = new Date(datePart + "T00:00:00");
+                            return !isNaN(parsed.getTime())
+                              ? parsed.toLocaleDateString("en-IN", {
+                                  weekday: "short",
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                })
+                              : datePart;
+                          })()
                         : "Not specified"}
                     </span>
                   </div>
+                  {(() => {
+                    const { time: detailTime } = formatBookingDateTime(activeBooking.eventDate, activeBooking.eventTime);
+                    if (!detailTime) return null;
+                    return (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[#6F6A62]">Event Time:</span>
+                        <span className="font-semibold text-[#9C7B3D] flex items-center gap-1.5 bg-[#F9F5EC] px-2 py-0.5 rounded-lg border border-[#E7E0D2]">
+                          <Clock className="w-3.5 h-3.5 text-[#C9A669]" />
+                          {detailTime}
+                        </span>
+                      </div>
+                    );
+                  })()}
                   <div className="flex justify-between items-center">
                     <span className="text-[#6F6A62]">Shoot Duration:</span>
                     <span className="font-semibold text-[#2B2B2B]">{activeBooking.numberOfDays || "Not specified"}</span>
@@ -1093,7 +1531,7 @@ export default function Bookings() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Event Date * */}
                     <div className="space-y-1">
                       <label htmlFor="booking-eventDate" className="font-semibold text-[#6F6A62]">
@@ -1113,6 +1551,20 @@ export default function Bookings() {
                       )}
                     </div>
 
+                    {/* Event Time */}
+                    <div className="space-y-1">
+                      <label htmlFor="booking-eventTime" className="font-semibold text-[#6F6A62] block">
+                        Event Time
+                      </label>
+                      <Time12Picker
+                        id="booking-eventTime"
+                        value={formData.eventTime}
+                        onChange={(val) => handleFieldChange("eventTime", val)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Duration / Days * */}
                     <div className="space-y-1">
                       <label htmlFor="booking-numberOfDays" className="font-semibold text-[#6F6A62]">

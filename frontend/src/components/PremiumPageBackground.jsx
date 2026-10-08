@@ -56,6 +56,7 @@ export default function PremiumPageBackground({
       className={`page-background-root fixed inset-0 pointer-events-none select-none z-0 overflow-hidden ${
         isAdminDashboard ? "bg-transparent" : "bg-[#FAF7F2]"
       } ${className}`}
+      style={{ contain: "strict" }}
       aria-hidden="true"
     >
       {/* =========================================================

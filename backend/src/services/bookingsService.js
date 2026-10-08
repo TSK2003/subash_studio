@@ -106,6 +106,7 @@ export async function createBooking(data) {
       email,
       eventType,
       eventDate,
+      eventTime: data.eventTime ? String(data.eventTime).trim() : null,
       location,
       numberOfDays,
       requiredService,
@@ -119,13 +120,15 @@ export async function createBooking(data) {
     },
   });
 
-  // Server-side admin notification creation
-  await createNotification({
+  // Secondary admin notification creation - executed asynchronously so it does not block user response
+  createNotification({
     type: NOTIFICATION_TYPES.BOOKING,
     title: "New Shoot Booking",
     message: `${customerName} booked ${requiredService} for ${eventDate || "upcoming date"}.`,
     relatedEntityId: newBooking.id,
     relatedEntityType: "Booking",
+  }).catch((notifErr) => {
+    console.warn("[Booking] Notification creation warning:", notifErr.message);
   });
 
   return newBooking;
@@ -159,6 +162,9 @@ export async function updateBooking(id, data) {
     const eventDate = (data.eventDate || "").trim();
     if (!eventDate) throw new Error("Event date cannot be empty.");
     updatePayload.eventDate = eventDate;
+  }
+  if (data.eventTime !== undefined) {
+    updatePayload.eventTime = data.eventTime ? String(data.eventTime).trim() : null;
   }
   if (data.location !== undefined) {
     const location = (data.location || "").trim();

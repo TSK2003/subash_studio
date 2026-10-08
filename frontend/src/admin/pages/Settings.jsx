@@ -1,56 +1,182 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { useSearchParams, useLocation } from "react-router-dom";
 import {
-  Settings as SettingsIcon,
   User,
-  Shield,
   Building,
   Bell,
   Save,
   Lock,
-  RefreshCw,
-  Download,
-  CheckCircle2,
-  AlertTriangle,
   Eye,
   EyeOff,
-  Loader2,
 } from "lucide-react";
 import ImageUploader from "../components/ImageUploader";
-import api from "../../lib/api.js";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { useAdminData } from "../context/AdminDataContext";
 import { useToast } from "../context/ToastContext";
 
+function PasswordCredentialsCard({
+  formId = "admin-profile-password-form",
+  securityForm,
+  setSecurityForm,
+  handleSaveSecurity,
+  savingPassword,
+  showCurrentPassword,
+  setShowCurrentPassword,
+  showNewPassword,
+  setShowNewPassword,
+  showConfirmPassword,
+  setShowConfirmPassword,
+}) {
+  return (
+    <form
+      id={formId}
+      onSubmit={handleSaveSecurity}
+      className="bg-[#FAF8F5] rounded-xl sm:rounded-2xl border border-[#E7E0D2] p-4 sm:p-5 space-y-4"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 sm:pb-4 border-b border-[#E7E0D2] gap-3">
+        <div>
+          <h3 className="text-sm sm:text-base font-display font-bold text-[#2B2B2B]">
+            Update Password &amp; Credentials
+          </h3>
+          <p className="text-[11px] sm:text-xs text-[#6F6A62]">
+            Keep your studio administration portal protected.
+          </p>
+        </div>
+        <button
+          type="submit"
+          disabled={savingPassword}
+          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60 cursor-pointer shrink-0"
+        >
+          <Lock className="w-3.5 h-3.5 text-[#E4D3A6]" />
+          <span>{savingPassword ? "Updating..." : "Change Password"}</span>
+        </button>
+      </div>
+
+      <div className="space-y-3.5 text-xs">
+        <div className="space-y-1">
+          <label className="font-semibold text-[#6F6A62]">Current Password</label>
+          <div className="relative">
+            <input
+              type={showCurrentPassword ? "text" : "password"}
+              placeholder="Enter current password"
+              value={securityForm.currentPassword}
+              onChange={(e) =>
+                setSecurityForm({ ...securityForm, currentPassword: e.target.value })
+              }
+              className="w-full p-2.5 pr-10 bg-white border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+            />
+            <button
+              type="button"
+              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B] cursor-pointer"
+              aria-label={
+                showCurrentPassword ? "Hide current password" : "Show current password"
+              }
+            >
+              {showCurrentPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="space-y-1">
+            <label className="font-semibold text-[#6F6A62]">New Password</label>
+            <div className="relative">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                placeholder="Enter new password"
+                value={securityForm.newPassword}
+                onChange={(e) =>
+                  setSecurityForm({ ...securityForm, newPassword: e.target.value })
+                }
+                className="w-full p-2.5 pr-10 bg-white border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B] cursor-pointer"
+                aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+              >
+                {showNewPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="font-semibold text-[#6F6A62]">Confirm New Password</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm new password"
+                value={securityForm.confirmPassword}
+                onChange={(e) =>
+                  setSecurityForm({
+                    ...securityForm,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                className="w-full p-2.5 pr-10 bg-white border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B] cursor-pointer"
+                aria-label={
+                  showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+                }
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  );
+}
+
+const VALID_TABS = ["profile", "studio", "notifications"];
+
 export default function Settings() {
   const { adminUser, updateProfile, changePassword } = useAdminAuth();
-  const {
-    settings,
-    updateSettings,
-    resetAllDemoData,
-    refreshData,
-    bookings,
-    enquiries,
-    gallery,
-    galleryCategories,
-    portfolio,
-    portfolioCategories,
-    services,
-    films,
-    branches,
-    testimonials,
-    websiteContent,
-    frameWoodTypes,
-    frameDesigns,
-    frameRatios,
-    frameOrders,
-    notifications,
-    googleReviewsMeta,
-  } = useAdminData();
+  const { settings, updateSettings } = useAdminData();
   const { addToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState("profile");
-  const [isExporting, setIsExporting] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+
+  const getInitialTab = () => {
+    const rawTab = searchParams.get("tab") || location.hash.replace("#", "");
+    if (rawTab && VALID_TABS.includes(rawTab)) {
+      return rawTab;
+    }
+    return "profile";
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  // If URL query points to removed security tab, cleanly sanitize the search param
+  useEffect(() => {
+    if (searchParams.get("tab") === "security") {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("tab");
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const currentTab = VALID_TABS.includes(activeTab) ? activeTab : "profile";
 
   // Profile Form
   const [profileForm, setProfileForm] = useState({
@@ -118,8 +244,12 @@ export default function Settings() {
       addToast("New passwords do not match.", "error");
       return;
     }
-    if (securityForm.newPassword.length < 4) {
-      addToast("New password must be at least 4 characters long.", "warning");
+    if (securityForm.newPassword.length < 8) {
+      addToast("New password must be at least 8 characters long.", "warning");
+      return;
+    }
+    if (securityForm.currentPassword === securityForm.newPassword) {
+      addToast("New password cannot be the same as the current password.", "warning");
       return;
     }
 
@@ -147,126 +277,6 @@ export default function Settings() {
     addToast("Notification preferences updated.", "success");
   };
 
-  const handleExportDataSnapshot = async () => {
-    setIsExporting(true);
-    try {
-      let exportData = null;
-
-      // 1. Attempt to fetch full, authoritative server snapshot directly from DB
-      try {
-        const serverSnapshot = await api.get("/api/settings/backup/snapshot");
-        if (serverSnapshot && serverSnapshot.counts) {
-          exportData = serverSnapshot;
-        }
-      } catch (apiErr) {
-        console.warn("Backend snapshot API unavailable, falling back to client context snapshot:", apiErr);
-      }
-
-      // 2. Fallback to client-side data context
-      if (!exportData) {
-        // Attempt to refresh in-memory context data
-        if (typeof refreshData === "function") {
-          try {
-            await refreshData();
-          } catch {
-            // Use current state if refresh fails
-          }
-        }
-
-        const bList = Array.isArray(bookings) ? bookings : [];
-        const eList = Array.isArray(enquiries) ? enquiries : [];
-        const gList = Array.isArray(gallery) ? gallery : [];
-        const gcList = Array.isArray(galleryCategories) ? galleryCategories : [];
-        const pList = Array.isArray(portfolio) ? portfolio : [];
-        const pcList = Array.isArray(portfolioCategories) ? portfolioCategories : [];
-        const sList = Array.isArray(services) ? services : [];
-        const fList = Array.isArray(films) ? films : [];
-        const brList = Array.isArray(branches) ? branches : [];
-        const tList = Array.isArray(testimonials) ? testimonials : [];
-        const wtList = Array.isArray(frameWoodTypes) ? frameWoodTypes : [];
-        const fdList = Array.isArray(frameDesigns) ? frameDesigns : [];
-        const frList = Array.isArray(frameRatios) ? frameRatios : [];
-        const foList = Array.isArray(frameOrders) ? frameOrders : [];
-        const nList = Array.isArray(notifications) ? notifications : [];
-
-        exportData = {
-          system: "Subash Studio Atelier Management System",
-          version: "2.0",
-          exportedAt: new Date().toISOString(),
-          studio: "SUBASH STUDIO",
-          exportedBy: adminUser?.email || "admin",
-          counts: {
-            bookings: bList.length,
-            enquiries: eList.length,
-            gallery: gList.length,
-            galleryCategories: gcList.length,
-            portfolio: pList.length,
-            portfolioCategories: pcList.length,
-            services: sList.length,
-            films: fList.length,
-            branches: brList.length,
-            testimonials: tList.length,
-            frameWoodTypes: wtList.length,
-            frameDesigns: fdList.length,
-            frameRatios: frList.length,
-            frameOrders: foList.length,
-            notifications: nList.length,
-          },
-          adminProfile: {
-            adminName: profileForm.adminName,
-            role: profileForm.role,
-            email: profileForm.email,
-            avatar: profileForm.avatar,
-            phone: profileForm.phone,
-          },
-          bookings: bList,
-          enquiries: eList,
-          gallery: gList,
-          galleryCategories: gcList,
-          portfolio: pList,
-          portfolioCategories: pcList,
-          services: sList,
-          films: fList,
-          branches: brList,
-          testimonials: tList,
-          googleReviewsMeta: googleReviewsMeta || null,
-          websiteContent: websiteContent || {},
-          settings: settings || {},
-          frameWoodTypes: wtList,
-          frameDesigns: fdList,
-          frameRatios: frList,
-          frameOrders: foList,
-          notifications: nList,
-        };
-      }
-
-      // 3. Reliable, standard Blob download (no data: URI length limits)
-      const jsonString = JSON.stringify(exportData, null, 2);
-      const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
-      const downloadUrl = URL.createObjectURL(blob);
-      const downloadAnchor = document.createElement("a");
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-      const filename = `subash_studio_backup_${timestamp}.json`;
-
-      downloadAnchor.href = downloadUrl;
-      downloadAnchor.download = filename;
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      document.body.removeChild(downloadAnchor);
-
-      setTimeout(() => URL.revokeObjectURL(downloadUrl), 1500);
-
-      addToast(
-        `Complete studio backup exported successfully as JSON (${filename})`,
-        "success"
-      );
-    } catch (err) {
-      console.error("Export snapshot error:", err);
-      addToast(err.message || "Failed to export data snapshot. Please try again.", "error");
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -286,7 +296,7 @@ export default function Settings() {
           type="button"
           onClick={() => setActiveTab("profile")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-            activeTab === "profile"
+            currentTab === "profile"
               ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
               : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
           }`}
@@ -297,22 +307,9 @@ export default function Settings() {
 
         <button
           type="button"
-          onClick={() => setActiveTab("security")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-            activeTab === "security"
-              ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
-              : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
-          }`}
-        >
-          <Shield className="w-4 h-4" />
-          <span>Security &amp; Password</span>
-        </button>
-
-        <button
-          type="button"
           onClick={() => setActiveTab("studio")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-            activeTab === "studio"
+            currentTab === "studio"
               ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
               : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
           }`}
@@ -325,7 +322,7 @@ export default function Settings() {
           type="button"
           onClick={() => setActiveTab("notifications")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-            activeTab === "notifications"
+            currentTab === "notifications"
               ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
               : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
           }`}
@@ -336,200 +333,147 @@ export default function Settings() {
       </div>
 
       {/* Tab: Profile */}
-      {activeTab === "profile" && (
-        <form onSubmit={handleSaveProfile} className="space-y-6">
-          <div className="bg-white rounded-xl border border-[#E7E0D2] p-5 sm:p-6 shadow-sm space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E7E0D2]">
+      {currentTab === "profile" && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-[#E7E0D2] p-5 sm:p-6 lg:p-8 shadow-sm transition-all space-y-6">
+            {/* Top Card Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 sm:pb-6 border-b border-[#E7E0D2] gap-4">
               <div>
-                <h3 className="text-lg font-display font-bold text-[#2B2B2B]">
+                <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
                   Admin Profile Details
                 </h3>
-                <p className="text-xs text-[#6F6A62]">
-                  Your user identity displayed in the sidebar and header.
+                <p className="text-xs sm:text-sm text-[#6F6A62] mt-0.5">
+                  Your director profile displayed across the admin portal and studio headers.
                 </p>
               </div>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95"
+                form="admin-profile-form"
+                className="self-start sm:self-auto px-6 py-2.5 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer shrink-0"
               >
                 <Save className="w-4 h-4 text-[#E4D3A6]" />
                 <span>Save Profile</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1">
-                <ImageUploader
-                  value={profileForm.avatar}
-                  onChange={(url) => setProfileForm({ ...profileForm, avatar: url })}
-                  label="Profile Avatar Photo"
-                />
-              </div>
-
-              <div className="md:col-span-2 space-y-4 text-xs">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Admin Full Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={profileForm.adminName}
-                      onChange={(e) =>
-                        setProfileForm({ ...profileForm, adminName: e.target.value })
-                      }
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Designation / Role</label>
-                    <input
-                      type="text"
-                      value={profileForm.role}
-                      onChange={(e) =>
-                        setProfileForm({ ...profileForm, role: e.target.value })
-                      }
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Admin Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={profileForm.email}
-                      onChange={(e) =>
-                        setProfileForm({ ...profileForm, email: e.target.value })
-                      }
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Phone Number</label>
-                    <input
-                      type="text"
-                      value={profileForm.phone}
-                      onChange={(e) =>
-                        setProfileForm({ ...profileForm, phone: e.target.value })
-                      }
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
-      )}
-
-      {/* Tab: Security */}
-      {activeTab === "security" && (
-        <form onSubmit={handleSaveSecurity} className="space-y-6">
-          <div className="bg-white rounded-xl border border-[#E7E0D2] p-5 sm:p-6 shadow-sm space-y-6 max-w-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E7E0D2]">
-              <div>
-                <h3 className="text-lg font-display font-bold text-[#2B2B2B]">
-                  Update Password &amp; Credentials
-                </h3>
-                <p className="text-xs text-[#6F6A62]">
-                  Keep your studio administration portal protected.
-                </p>
-              </div>
-              <button
-                type="submit"
-                disabled={savingPassword}
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60"
-              >
-                <Lock className="w-4 h-4 text-[#E4D3A6]" />
-                <span>{savingPassword ? "Updating..." : "Change Password"}</span>
-              </button>
-            </div>
-
-            <div className="space-y-4 text-xs">
-              <div className="space-y-1">
-                <label className="font-semibold text-[#6F6A62]">Current Password</label>
-                <div className="relative">
-                  <input
-                    type={showCurrentPassword ? "text" : "password"}
-                    placeholder="Enter current password"
-                    value={securityForm.currentPassword}
-                    onChange={(e) =>
-                      setSecurityForm({ ...securityForm, currentPassword: e.target.value })
-                    }
-                    className="w-full p-2.5 pr-10 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+            {/* Grid Layout: Left Photo, Right Fields + Password Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+              {/* Photo Preview Column */}
+              <div className="lg:col-span-5 xl:col-span-4 w-full flex flex-col justify-start">
+                <div className="w-full max-w-[320px] sm:max-w-[340px] mx-auto lg:max-w-none lg:mx-0 [&_.group]:!max-w-none [&_.group]:!max-h-none [&_.group]:!w-full [&_.group]:!aspect-square [&_.group]:!h-auto [&_.group]:rounded-2xl [&_img]:!object-cover [&_img]:!object-top [&_.pointer-events-none]:hidden [&_.border-dashed]:!aspect-square [&_.border-dashed]:!h-auto [&_.border-dashed]:!max-w-none [&_.border-dashed]:rounded-2xl">
+                  <ImageUploader
+                    value={profileForm.avatar}
+                    onChange={(url) => setProfileForm({ ...profileForm, avatar: url })}
+                    label="Profile Avatar Photo"
+                    aspect="portrait"
+                    category="profile"
+                    helpText="Portrait or square photo recommended (PNG, JPG, WEBP)."
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B]"
-                    aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
-                  >
-                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">New Password</label>
-                  <div className="relative">
-                    <input
-                      type={showNewPassword ? "text" : "password"}
-                      placeholder="Enter new password"
-                      value={securityForm.newPassword}
-                      onChange={(e) =>
-                        setSecurityForm({ ...securityForm, newPassword: e.target.value })
-                      }
-                      className="w-full p-2.5 pr-10 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B]"
-                      aria-label={showNewPassword ? "Hide new password" : "Show new password"}
-                    >
-                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
+              {/* Form Fields & Password Credentials Column */}
+              <div className="lg:col-span-7 xl:col-span-8 flex flex-col space-y-5 w-full min-w-0">
+                {/* 1. Independent Profile Fields Form */}
+                <form
+                  id="admin-profile-form"
+                  onSubmit={handleSaveProfile}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs sm:text-sm font-semibold text-[#2B2B2B] block">
+                        Admin Full Name <span className="text-[#9C7B3D]">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={profileForm.adminName}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, adminName: e.target.value })
+                        }
+                        placeholder="Enter admin name"
+                        className="w-full px-4 py-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs sm:text-sm text-[#2B2B2B] focus:border-[#C9A669] focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
 
-                <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Confirm New Password</label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm new password"
-                      value={securityForm.confirmPassword}
-                      onChange={(e) =>
-                        setSecurityForm({
-                          ...securityForm,
-                          confirmPassword: e.target.value,
-                        })
-                      }
-                      className="w-full p-2.5 pr-10 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B]"
-                      aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                    <div className="space-y-1.5">
+                      <label className="text-xs sm:text-sm font-semibold text-[#2B2B2B] block">
+                        Designation / Role
+                      </label>
+                      <input
+                        type="text"
+                        value={profileForm.role}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, role: e.target.value })
+                        }
+                        placeholder="e.g. Studio Director & Lead Photographer"
+                        className="w-full px-4 py-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs sm:text-sm text-[#2B2B2B] focus:border-[#C9A669] focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs sm:text-sm font-semibold text-[#2B2B2B] block">
+                        Admin Email <span className="text-[#9C7B3D]">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={profileForm.email}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, email: e.target.value })
+                        }
+                        placeholder="admin@subashstudio.com"
+                        className="w-full px-4 py-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs sm:text-sm text-[#2B2B2B] focus:border-[#C9A669] focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs sm:text-sm font-semibold text-[#2B2B2B] block">
+                        Phone Number
+                      </label>
+                      <input
+                        type="text"
+                        value={profileForm.phone}
+                        onChange={(e) =>
+                          setProfileForm({ ...profileForm, phone: e.target.value })
+                        }
+                        placeholder="+91 93457 06609"
+                        className="w-full px-4 py-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs sm:text-sm text-[#2B2B2B] focus:border-[#C9A669] focus:bg-white focus:outline-none transition-all font-medium"
+                      />
+                    </div>
                   </div>
+                </form>
+
+                {/* 2. Compact Bordered Password & Credentials Section (Independent Sibling Form) */}
+                <PasswordCredentialsCard
+                  formId="admin-profile-password-form"
+                  securityForm={securityForm}
+                  setSecurityForm={setSecurityForm}
+                  handleSaveSecurity={handleSaveSecurity}
+                  savingPassword={savingPassword}
+                  showCurrentPassword={showCurrentPassword}
+                  setShowCurrentPassword={setShowCurrentPassword}
+                  showNewPassword={showNewPassword}
+                  setShowNewPassword={setShowNewPassword}
+                  showConfirmPassword={showConfirmPassword}
+                  setShowConfirmPassword={setShowConfirmPassword}
+                />
+
+                {/* 3. Bottom Helper Text */}
+                <div className="pt-3 border-t border-[#E7E0D2]/80">
+                  <p className="text-xs text-[#6F6A62]">
+                    Updates to your credentials and contact information apply immediately across the studio portal.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-        </form>
+        </div>
       )}
 
       {/* Tab: Studio Business */}
-      {activeTab === "studio" && (
+      {currentTab === "studio" && (
         <form onSubmit={handleSaveStudio} className="space-y-6">
           <div className="bg-white rounded-xl border border-[#E7E0D2] p-5 sm:p-6 shadow-sm space-y-6">
             <div className="flex items-center justify-between pb-4 border-b border-[#E7E0D2]">
@@ -604,7 +548,7 @@ export default function Settings() {
       )}
 
       {/* Tab: Notifications */}
-      {activeTab === "notifications" && (
+      {currentTab === "notifications" && (
         <form onSubmit={handleSaveNotifications} className="space-y-6">
           <div className="bg-white rounded-3xl border border-[#E7E0D2] p-6 sm:p-8 shadow-sm space-y-6 max-w-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-[#E7E0D2]">
@@ -675,47 +619,6 @@ export default function Settings() {
         </form>
       )}
 
-      {/* Data Backup & System Management */}
-      <div className="bg-white rounded-xl border border-[#E7E0D2] p-5 sm:p-6 shadow-sm space-y-4">
-        <div>
-          <h3 className="text-base font-display font-bold text-[#2B2B2B]">
-            Data Management &amp; Backup
-          </h3>
-          <p className="text-xs text-[#6F6A62]">
-            Export snapshots or reset mock demonstration data for client presentations.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 pt-2">
-          <button
-            type="button"
-            disabled={isExporting}
-            onClick={handleExportDataSnapshot}
-            className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] text-xs font-semibold text-[#2B2B2B] flex items-center gap-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-          >
-            {isExporting ? (
-              <Loader2 className="w-4 h-4 animate-spin text-[#9C7B3D]" />
-            ) : (
-              <Download className="w-4 h-4 text-[#9C7B3D]" />
-            )}
-            <span>{isExporting ? "Generating Snapshot..." : "Export Data Snapshot (.JSON)"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm("Reset all data back to original demo seeds?")) {
-                resetAllDemoData();
-                addToast("All studio demo data reset.", "info");
-              }
-            }}
-            className="px-4 py-2.5 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-xs font-semibold text-amber-900 flex items-center gap-2 transition-all"
-          >
-            <RefreshCw className="w-4 h-4 text-amber-700" />
-            <span>Reset Demo Store</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

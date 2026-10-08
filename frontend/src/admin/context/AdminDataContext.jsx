@@ -18,6 +18,7 @@ export function normalizeBooking(booking = {}) {
     email: booking.email || "",
     eventType: booking.eventType || "Wedding",
     eventDate: booking.eventDate || booking.date || "",
+    eventTime: booking.eventTime || (booking.eventDate?.includes("T") ? booking.eventDate.split("T")[1] : "") || "",
     location: booking.location || booking.venue || "",
     numberOfDays: booking.numberOfDays || "1 Day",
     requiredService: booking.requiredService || booking.service || "Wedding Photography",
@@ -611,6 +612,18 @@ export function AdminDataProvider({ children }) {
     }
   }, [isAuthenticated]);
 
+  const refetchFrameOrders = useCallback(async () => {
+    try {
+      if (!isAuthenticated) return;
+      const res = await api.get("/api/frames/orders");
+      if (Array.isArray(res)) {
+        setFrameOrders(res);
+      }
+    } catch (err) {
+      console.error("[Realtime] Failed to refetch frame orders:", err);
+    }
+  }, [isAuthenticated]);
+
   // Central real-time event dispatcher for targeted synchronization
   const handleRealtimeDataChanged = useCallback((data) => {
     if (!data || !data.entity) return;
@@ -655,8 +668,14 @@ export function AdminDataProvider({ children }) {
       case "content":
         refetchWebsiteContent();
         break;
+      case "frame_orders":
+      case "frameOrders":
+      case "frame_order":
+        refetchFrameOrders();
+        break;
       case "frames":
         refetchFramesCatalog();
+        refetchFrameOrders();
         break;
       default:
         break;
@@ -675,6 +694,7 @@ export function AdminDataProvider({ children }) {
     refetchTestimonials,
     refetchWebsiteContent,
     refetchFramesCatalog,
+    refetchFrameOrders,
   ]);
 
   const handleReconnectSync = useCallback(() => {
@@ -1393,6 +1413,7 @@ export function AdminDataProvider({ children }) {
       updateFrameOrderStatus,
       updateFrameOrder,
       deleteFrameOrder,
+      refetchFrameOrders,
 
       // Notifications
       notifications,
@@ -1508,6 +1529,7 @@ export function AdminDataProvider({ children }) {
       updateFrameOrderStatus,
       updateFrameOrder,
       deleteFrameOrder,
+      refetchFrameOrders,
       notifications,
       unreadNotificationCount,
       markNotificationAsRead,

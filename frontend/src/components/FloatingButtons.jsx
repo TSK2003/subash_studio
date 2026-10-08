@@ -23,9 +23,13 @@ export default function FloatingButtons({ introActive = false }) {
         aria-label="Instagram"
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-        className="w-12 h-12 rounded-full bg-white shadow-[0_6px_20px_rgba(0,0,0,0.12)] border border-[#E7E0D2] flex items-center justify-center text-[#1C1B19] hover:text-[#B38F4D] hover:border-[#B38F4D] transition-all duration-300"
+        className="w-12 h-12 rounded-full shadow-[0_6px_20px_rgba(214,36,159,0.35)] flex items-center justify-center text-white hover:brightness-110 transition-all duration-300"
+        style={{
+          background:
+            "radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%)",
+        }}
       >
-        <FaInstagram size={19} />
+        <FaInstagram size={20} />
       </motion.a>
       <motion.a
         href={whatsappHref}

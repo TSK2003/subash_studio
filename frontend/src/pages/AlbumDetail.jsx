@@ -6,7 +6,6 @@ import {
   Share2,
   Check,
   Maximize2,
-  Sparkles,
   AlertCircle,
 } from "lucide-react";
 import LightGallery from "lightgallery/react";
@@ -234,7 +233,7 @@ export default function AlbumDetail() {
 
           <button
             onClick={handleShare}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 hover:bg-white border border-[#E7E0D2] hover:border-[#C9A669]/40 text-xs font-semibold text-[#1C1B19] shadow-sm transition-all"
+            className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 hover:bg-white border border-[#E7E0D2] hover:border-[#C9A669]/40 text-xs font-semibold text-[#1C1B19] shadow-sm transition-all"
             title="Share Album"
           >
             {copied ? (
@@ -280,10 +279,6 @@ export default function AlbumDetail() {
         <div className="flex items-center justify-between text-xs text-[#8C8270] mb-6">
           <span className="tracking-wide">
             Natural aspect viewing • Click any photo to expand full-screen
-          </span>
-          <span className="hidden sm:inline-flex items-center gap-1 text-[#9C7B3D]">
-            <Sparkles size={13} />
-            <span>Curated Collection</span>
           </span>
         </div>
 

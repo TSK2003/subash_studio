@@ -16,11 +16,24 @@ const app = express();
 // Trust reverse proxies (AWS CloudFront / ALB / EC2 Nginx)
 app.set("trust proxy", 1);
 
-// Correlation ID & Request Tracking (AWS CloudWatch Observability)
+// Correlation ID & Request Tracking (AWS CloudWatch & Performance Observability)
 app.use((req, res, next) => {
   const requestId = req.headers["x-request-id"] || crypto.randomUUID();
+  const startTime = performance.now();
   req.id = requestId;
   res.setHeader("X-Request-Id", requestId);
+
+  // Measure backend response execution duration
+  res.on("finish", () => {
+    const elapsed = Math.round(performance.now() - startTime);
+    if (req.originalUrl.startsWith("/api") && !req.originalUrl.startsWith("/api/realtime")) {
+      // Safe timing log without logging passwords, tokens, or personal info
+      if (elapsed > 400) {
+        console.warn(`[Latency Warning] ${req.method} ${req.originalUrl} - ${elapsed}ms (status: ${res.statusCode})`);
+      }
+    }
+  });
+
   next();
 });
 

@@ -1,8 +1,28 @@
-import { defineConfig } from 'vite'
+import { defineConfig, createLogger } from 'vite'
 import react from '@vitejs/plugin-react'
+
+const customLogger = createLogger()
+const loggerError = customLogger.error.bind(customLogger)
+
+customLogger.error = (msg, options) => {
+  const text = typeof msg === 'string' ? msg : ''
+  const errCode = options?.error?.code
+  if (
+    errCode === 'ECONNRESET' ||
+    errCode === 'ECONNREFUSED' ||
+    errCode === 'EPIPE' ||
+    text.includes('ECONNRESET') ||
+    text.includes('ECONNREFUSED') ||
+    text.includes('EPIPE')
+  ) {
+    return
+  }
+  loggerError(msg, options)
+}
 
 // https://vite.dev/config/
 export default defineConfig({
+  customLogger,
   plugins: [react()],
   server: {
     port: 5173,

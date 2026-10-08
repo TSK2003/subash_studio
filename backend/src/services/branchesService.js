@@ -1,14 +1,23 @@
 import prisma from "../config/prisma.js";
+import { getCached, setCached, invalidateCache } from "../utils/cache.js";
 
 export async function getAllBranches(includeInactive = false) {
+  const cacheKey = includeInactive ? "branches:all" : "branches:active";
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
   const where = includeInactive ? {} : { active: true };
-  return prisma.branch.findMany({
+  const branches = await prisma.branch.findMany({
     where,
     orderBy: { createdAt: "asc" },
   });
+
+  setCached(cacheKey, branches, 120);
+  return branches;
 }
 
 export async function createBranch(data) {
+  invalidateCache("branches");
   const id = data.id || `BR-${Math.floor(100 + Math.random() * 900)}`;
 
   // 1. Branch Studio Exterior Photo (Required)
@@ -241,6 +250,7 @@ export async function updateBranch(id, data) {
   }
   if (data.active !== undefined) updatePayload.active = Boolean(data.active);
 
+  invalidateCache("branches");
   return prisma.branch.update({
     where: { id },
     data: updatePayload,
@@ -248,12 +258,14 @@ export async function updateBranch(id, data) {
 }
 
 export async function deleteBranch(id) {
+  invalidateCache("branches");
   return prisma.branch.delete({
     where: { id },
   });
 }
 
 export async function toggleBranchStatus(id) {
+  invalidateCache("branches");
   const item = await prisma.branch.findUnique({ where: { id } });
   if (!item) throw new Error("Branch not found.");
 

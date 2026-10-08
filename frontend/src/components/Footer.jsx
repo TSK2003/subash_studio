@@ -1,8 +1,9 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { FaWhatsapp, FaInstagram, FaFacebookF, FaYoutube, FaPinterestP } from "react-icons/fa";
+import { FaWhatsapp, FaInstagram, FaFacebookF, FaYoutube } from "react-icons/fa";
 import { MapPin, Phone, Mail, ExternalLink, ChevronRight, Clock } from "lucide-react";
 import { useAdminData } from "../admin/context/AdminDataContext";
+import { scrollToTop } from "../lib/useLenis";
 
 /**
  * Resolves a high-quality studio/interior image for each studio location card.
@@ -29,7 +30,7 @@ function formatBranchTitle(branch) {
 /**
  * Studio Location Card Component (Inspired by Visual Reference Image)
  */
-function StudioCard({ branch }) {
+function StudioCard({ branch, cardHeight }) {
   const imageSrc = getBranchImage(branch);
   const title = formatBranchTitle(branch);
   const mapUrl =
@@ -39,10 +40,19 @@ function StudioCard({ branch }) {
           `Subash Studio, ${branch.address || branch.city || branch.name || ""}`
         )}`;
 
+  // Fixed image height: same proportion at every breakpoint
+  const imgHeight = cardHeight ? Math.round(cardHeight * 0.38) : 128;
+
   return (
-    <div className="bg-[#171614] rounded-lg border border-[#E4D3A6]/15 hover:border-[#E4D3A6]/45 transition-all duration-300 overflow-hidden flex flex-col h-full shadow-[0_8px_24px_rgba(0,0,0,0.45)] group">
-      {/* Studio Image Header */}
-      <div className="relative h-32 sm:h-36 w-full overflow-hidden bg-black/50">
+    <div
+      className="bg-[#171614] rounded-lg border border-[#E4D3A6]/15 hover:border-[#E4D3A6]/45 transition-all duration-300 overflow-hidden flex flex-col shadow-[0_8px_24px_rgba(0,0,0,0.45)] group"
+      style={cardHeight ? { height: `${cardHeight}px` } : undefined}
+    >
+      {/* Studio Image Header — fixed height, object-cover, never affects card height */}
+      <div
+        className="relative w-full overflow-hidden bg-black/50 shrink-0"
+        style={{ height: `${imgHeight}px` }}
+      >
         <img
           src={imageSrc}
           alt={title}
@@ -58,9 +68,9 @@ function StudioCard({ branch }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#171614] via-black/25 to-transparent" />
       </div>
 
-      {/* Studio Details */}
-      <div className="p-4 flex flex-col justify-between flex-1">
-        <div>
+      {/* Studio Details — flex-1 so it fills remaining fixed card height */}
+      <div className="p-4 flex flex-col flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden">
           {/* Studio Name */}
           <h5
             className="text-xs sm:text-[12.5px] font-bold tracking-[0.14em] text-[#E4D3A6] uppercase leading-tight line-clamp-2 mb-3 drop-shadow-sm"
@@ -81,17 +91,17 @@ function StudioCard({ branch }) {
           {branch.hours && (
             <div className="flex items-start gap-2 text-[11px] sm:text-xs text-[#FAF8F5]/60 mb-3.5">
               <Clock size={12} className="text-[#E4D3A6] shrink-0 mt-0.5" />
-              <span>{branch.hours}</span>
+              <span className="line-clamp-2">{branch.hours}</span>
             </div>
           )}
         </div>
 
-        {/* View on Map Link */}
+        {/* View on Map Link — pinned to bottom via mt-auto */}
         <a
           href={mapUrl}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-[#E4D3A6] hover:text-[#FAF8F5] transition-colors font-medium mt-auto group/map pt-1"
+          className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-[#E4D3A6] hover:text-[#FAF8F5] transition-colors font-medium mt-auto shrink-0 group/map pt-2"
         >
           <span>View on Map</span>
           <ExternalLink
@@ -236,6 +246,14 @@ function StudioLocations({ branches = [] }) {
       : 240;
 
   const step = cardWidth + gap;
+
+  // Fixed card height — same for every card at the same breakpoint.
+  // Prevents variable content lengths from causing unequal card heights.
+  const cardHeight = useMemo(() => {
+    if (windowWidth >= 1024) return 340;
+    if (windowWidth >= 640) return 360;
+    return 380;
+  }, [windowWidth]);
 
   // Cloned array for seamless infinite looping (3 sets)
   const clonedBranches = useMemo(() => {
@@ -431,11 +449,11 @@ function StudioLocations({ branches = [] }) {
                 width: `${cardWidth}px`,
                 minWidth: `${cardWidth}px`,
                 maxWidth: `${cardWidth}px`,
+                height: `${cardHeight}px`,
                 flexShrink: 0,
               }}
-              className="h-full flex flex-col"
             >
-              <StudioCard branch={branch} />
+              <StudioCard branch={branch} cardHeight={cardHeight} />
             </div>
           ))}
         </div>
@@ -446,7 +464,7 @@ function StudioLocations({ branches = [] }) {
 
 const EXPLORE_LINKS = [
   { label: "About", to: "/about" },
-  { label: "Services", to: "/order-booking" },
+  { label: "Order Booking", to: "/order-booking" },
   { label: "Order Frames", to: "/frames" },
   { label: "Gallery", to: "/gallery" },
   { label: "Films", to: "/films" },
@@ -470,7 +488,6 @@ export default function Footer() {
   const facebookHref = contactData.facebook || "https://facebook.com";
   const youtubeHref =
     contactData.youtube || "https://youtube.com/@subashstudio";
-  const pinterestHref = contactData.pinterest || "https://pinterest.com";
 
   // Filter only active branches
   const activeBranches = useMemo(
@@ -523,13 +540,19 @@ export default function Footer() {
             {/* Brand Logo Lockup */}
             <Link
               to="/"
+              onClick={(e) => {
+                if (window.location.pathname === "/") {
+                  e.preventDefault();
+                  scrollToTop();
+                }
+              }}
               className="inline-flex items-center gap-3.5 group select-none mb-5"
               aria-label="SUBASH STUDIO Home"
             >
               <img
-                src="/logo.png"
+                src="/logo-white.png"
                 alt="SUBASH STUDIO"
-                className="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0 brightness-110 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
+                className="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
               />
               <div className="h-8 w-[1px] bg-[#E4D3A6]/40 shrink-0" aria-hidden="true" />
               <div className="flex flex-col justify-center">
@@ -606,15 +629,6 @@ export default function Footer() {
                 className="w-9 h-9 rounded-full border border-[#E4D3A6]/30 text-[#FAF8F5]/80 hover:border-[#E4D3A6] hover:text-[#E4D3A6] hover:bg-[#E4D3A6]/10 flex items-center justify-center transition-all duration-300"
               >
                 <FaYoutube size={13} />
-              </a>
-              <a
-                href={pinterestHref}
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Pinterest"
-                className="w-9 h-9 rounded-full border border-[#E4D3A6]/30 text-[#FAF8F5]/80 hover:border-[#E4D3A6] hover:text-[#E4D3A6] hover:bg-[#E4D3A6]/10 flex items-center justify-center transition-all duration-300"
-              >
-                <FaPinterestP size={13} />
               </a>
             </div>
           </div>

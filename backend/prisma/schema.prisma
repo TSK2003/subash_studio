@@ -67,6 +67,7 @@ model Booking {
   email                     String
   eventType                 String
   eventDate                 String
+  eventTime                 String?
   location                  String
   numberOfDays              String        @default("1 Day")
   requiredService           String
@@ -141,6 +142,8 @@ model PortfolioProject {
 
   @@index([category])
   @@index([published])
+  @@index([featured])
+  @@index([createdAt])
   @@map("portfolio_projects")
 }
 
@@ -158,6 +161,7 @@ model Service {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  @@index([status])
   @@map("services")
 }
 
@@ -176,6 +180,9 @@ model Film {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([published])
+  @@index([featured])
+  @@index([createdAt])
   @@map("films")
 }
 
@@ -198,6 +205,7 @@ model Branch {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([active])
   @@map("branches")
 }
 
@@ -223,6 +231,7 @@ model Testimonial {
   updatedAt        DateTime @updatedAt
 
   @@index([approved, hidden])
+  @@index([createdAt])
   @@map("testimonials")
 }
 
@@ -249,6 +258,7 @@ model FrameWoodType {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([active])
   @@map("frame_wood_types")
 }
 
@@ -264,6 +274,7 @@ model FrameDesign {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@index([active])
   @@map("frame_designs")
 }
 
@@ -281,6 +292,7 @@ model FrameRatio {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  @@index([active])
   @@map("frame_ratios")
 }
 
@@ -315,6 +327,7 @@ model FrameOrder {
 
   @@index([status])
   @@index([createdAt])
+  @@index([phone])
   @@map("frame_orders")
 }
 
