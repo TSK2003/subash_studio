@@ -79,7 +79,7 @@ export default function Navbar({
       <AnimatePresence>
         {visible && (
           <motion.header
-            initial={activeIntro ? { y: 0, opacity: 1 } : { y: -100, opacity: 0 }}
+            initial={false}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
@@ -123,6 +123,8 @@ export default function Navbar({
                     id="navbar-logo-img"
                     src="/logo.png"
                     alt="SUBASH STUDIO"
+                    width={44}
+                    height={44}
                     className="h-10 w-10 sm:h-11 sm:w-11 object-contain shrink-0"
                     style={{ filter: "brightness(0) invert(1)" }}
                   />

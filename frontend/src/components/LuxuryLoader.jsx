@@ -4,7 +4,7 @@ export default function LuxuryLoader({ label = "Loading Subash Studio..." }) {
       role="status"
       aria-label={label}
       aria-live="polite"
-      className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center"
+      className="min-h-screen flex flex-col items-center justify-center p-8 text-center"
     >
       <div className="relative w-16 h-16 mb-4 flex items-center justify-center">
         {/* Subtle pulsing background ring */}

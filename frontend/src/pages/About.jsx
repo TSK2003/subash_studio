@@ -13,7 +13,6 @@ import { getLenis } from "../lib/useLenis";
 function AboutReveal({
   children,
   delay = 0,
-  y = 16,
   duration = 0.38,
   className = "",
   as = "div",
@@ -26,8 +25,8 @@ function AboutReveal({
 
   return (
     <Comp
-      initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y }}
-      whileInView={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true, margin: "0px 0px -40px 0px" }}
       transition={{
         duration: prefersReducedMotion ? 0.01 : duration,
@@ -242,6 +241,8 @@ export default function About() {
               alt={intro.imageAlt || "About Subash Studio heritage"}
               fetchPriority="high"
               decoding="async"
+              width={1920}
+              height={1080}
               className="absolute inset-0 w-full h-full object-cover"
             />
           ) : (
@@ -252,6 +253,8 @@ export default function About() {
                 alt="About Subash Studio heritage"
                 fetchPriority="high"
                 decoding="async"
+                width={1920}
+                height={1080}
                 className="absolute inset-0 w-full h-full object-cover"
               />
             </picture>
@@ -325,6 +328,8 @@ export default function About() {
                         <img
                           src={founder.photo1 || "/images/about/founder-camera.jpeg"}
                           alt={founder.photo1Alt || "P. Arunachalam holding camera"}
+                          width={360}
+                          height={450}
                           className="w-full h-full object-cover object-center"
                           loading="eager"
                           decoding="async"
@@ -338,6 +343,8 @@ export default function About() {
                         <img
                           src={founder.photo2 || "/images/about/founder-field.jpeg"}
                           alt={founder.photo2Alt || "P. Arunachalam in marigold flowers"}
+                          width={200}
+                          height={267}
                           className="w-full h-full object-cover object-[center_20%]"
                           loading="eager"
                           decoding="async"
@@ -447,13 +454,15 @@ export default function About() {
               {/* 3. Prominent camera photograph — fixed permanent project asset blending naturally into the dark background */}
               <div className="my-6 sm:my-8 flex items-center justify-center">
                 <div
-                  className="relative mx-auto w-full px-4 sm:px-0"
+                  className="relative mx-auto w-full px-4 sm:px-0 aspect-[560/226]"
                   style={{ maxWidth: "480px" }}
                 >
                   <img
                     src="/images/about/agfa-camera-1987.png"
                     alt={camera.cameraName || "Agfa Click III camera"}
-                    className="w-full h-auto object-contain block mx-auto select-none pointer-events-none drop-shadow-[0_12px_32px_rgba(0,0,0,0.65)]"
+                    width={560}
+                    height={226}
+                    className="w-full h-full object-contain block mx-auto select-none pointer-events-none drop-shadow-[0_12px_32px_rgba(0,0,0,0.65)]"
                     loading="lazy"
                     decoding="async"
                   />
@@ -562,6 +571,8 @@ export default function About() {
                         <img
                           src={community.portrait || "/images/about/founder-field.jpeg"}
                           alt={community.portraitAlt || "P. Arunachalam in flower field"}
+                          width={480}
+                          height={360}
                           className="w-full h-full object-cover object-[center_18%]"
                           loading="lazy"
                           decoding="async"
@@ -1017,6 +1028,8 @@ function MilestonePhotoCard({ milestone }) {
         <img
           src={milestone.image}
           alt={milestone.imageAlt || milestone.heading}
+          width={480}
+          height={360}
           className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
           loading="lazy"
           decoding="async"

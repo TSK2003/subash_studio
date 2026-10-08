@@ -61,7 +61,7 @@ function PageWrapper({ children }) {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.55, ease: [0.65, 0, 0.35, 1] }}
-      className="w-full flex-1"
+      className="w-full flex-1 min-h-screen"
     >
       {children}
     </motion.main>
@@ -125,7 +125,7 @@ function PublicWebsiteLayout() {
           isHomeIntro={introState.active}
           isIntroRevealing={introState.revealing}
         />
-        <div className="flex-1">
+        <div className="flex-1 min-h-screen">
           <Suspense fallback={<LuxuryLoader />}>
             <AnimatePresence mode="wait">
               <Routes location={location} key={location.pathname}>
