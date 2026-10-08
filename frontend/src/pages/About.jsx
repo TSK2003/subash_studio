@@ -2,8 +2,45 @@ import { useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Camera, MapPin } from "lucide-react";
 import Seo from "../components/Seo";
-import Reveal from "../components/Reveal";
 import { useAdminData } from "../admin/context/AdminDataContext";
+import { getLenis } from "../lib/useLenis";
+
+/**
+ * AboutReveal — Entrance reveal animation scoped to the About page.
+ * Uses ~380ms entrance duration, subtle 16px slide, and responsive viewport margin
+ * so reveals start shortly after content enters view without sluggish delays.
+ */
+function AboutReveal({
+  children,
+  delay = 0,
+  y = 16,
+  duration = 0.38,
+  className = "",
+  as = "div",
+}) {
+  const Comp = motion[as] || motion.div;
+  const prefersReducedMotion =
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false;
+
+  return (
+    <Comp
+      initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y }}
+      whileInView={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -40px 0px" }}
+      transition={{
+        duration: prefersReducedMotion ? 0.01 : duration,
+        delay: prefersReducedMotion ? 0 : delay,
+        ease: [0.25, 1, 0.5, 1],
+      }}
+      className={className}
+    >
+      {children}
+    </Comp>
+  );
+}
+
 
 const DEFAULT_ABOUT = {
   intro: {
@@ -39,6 +76,7 @@ const DEFAULT_ABOUT = {
   community: {
     label: "2018 • COMMUNITY & LEADERSHIP",
     heading: "Serving the photography community.",
+    headingAccent: "community.",
     description: "Became Vice President of the Tirunelveli District Photography Labour Welfare Association.",
     role: "VICE PRESIDENT",
     organization: "Tirunelveli District Photography Labour Welfare Association",
@@ -181,6 +219,10 @@ export default function About() {
     ? rawAbout.milestones
     : DEFAULT_ABOUT.milestones;
   const closingSummary = { ...DEFAULT_ABOUT.closingSummary, ...(rawAbout.closingSummary || {}) };
+  const prefersReducedMotion =
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false;
 
   return (
     <>
@@ -217,27 +259,35 @@ export default function About() {
           <div className="absolute inset-0 bg-ink/65" />
           <div className="relative text-center px-6 max-w-3xl mx-auto">
             <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0.01 : 0.38, ease: [0.25, 1, 0.5, 1] }}
               className="eyebrow text-gold-light mb-5"
             >
               {intro.eyebrow || "OUR HERITAGE"}
             </motion.p>
 
             <motion.h1
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 14 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              transition={{
+                duration: prefersReducedMotion ? 0.01 : 0.4,
+                delay: prefersReducedMotion ? 0 : 0.06,
+                ease: [0.25, 1, 0.5, 1],
+              }}
               className="font-display font-medium text-5xl sm:text-6xl text-bg-soft"
             >
               {intro.heroTitle || "About"}
             </motion.h1>
 
             <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              transition={{
+                duration: prefersReducedMotion ? 0.01 : 0.4,
+                delay: prefersReducedMotion ? 0 : 0.12,
+                ease: [0.25, 1, 0.5, 1],
+              }}
               className="mt-5 max-w-xl mx-auto space-y-1.5 text-center"
             >
               <p className="text-bg-soft text-base sm:text-lg font-light leading-relaxed">
@@ -261,7 +311,7 @@ export default function About() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
               {/* Left: Dual Framed Photo Editorial Composition */}
               <div className="lg:col-span-6 flex justify-center lg:justify-start">
-                <Reveal>
+                <AboutReveal>
                   <div className="relative w-full max-w-[460px] pb-10 sm:pb-12 pr-6 sm:pr-8 select-none">
                     {/* Subtle archival backing mat paper peeking behind top-left */}
                     <div
@@ -295,12 +345,12 @@ export default function About() {
                       </div>
                     </div>
                   </div>
-                </Reveal>
+                </AboutReveal>
               </div>
 
               {/* Right: Founder Narrative Content */}
               <div className="lg:col-span-6 text-left">
-                <Reveal delay={0.15}>
+                <AboutReveal delay={0.06}>
                   {/* Eyebrow heading with flanking decorative divider lines */}
                   <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                     <span className="h-[1px] w-10 sm:w-14 bg-[#C5B39E]/80 shrink-0" aria-hidden="true" />
@@ -341,7 +391,7 @@ export default function About() {
                       {renderHighlightedParagraph(founder.descParagraph2)}
                     </p>
                   )}
-                </Reveal>
+                </AboutReveal>
               </div>
             </div>
           </div>
@@ -356,7 +406,7 @@ export default function About() {
           <div className="absolute inset-0 bg-radial from-[#C9A669]/5 via-transparent to-transparent pointer-events-none" />
 
           <div className="max-w-3xl mx-auto text-center relative z-10">
-            <Reveal>
+            <AboutReveal>
               {/* 1. Centred gold year/section label */}
               <p className="text-[11px] sm:text-xs uppercase tracking-[0.25em] text-[#C9A669] font-semibold mb-4 select-none">
                 {camera.label}
@@ -419,90 +469,108 @@ export default function About() {
               <p className="font-body text-xs sm:text-sm text-[#A8A196] max-w-xl mx-auto leading-relaxed font-light tracking-wide">
                 {camera.description}
               </p>
-            </Reveal>
+            </AboutReveal>
           </div>
         </section>
 
         {/* =========================================================================
             SECTION 4: COMMUNITY & LEADERSHIP (2018)
            ========================================================================= */}
-        <section className="py-20 sm:py-28 px-6 border-b border-line/40">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <section className="relative py-20 sm:py-28 lg:py-32 px-6 sm:px-8 lg:px-12 border-b border-[#E7E0D2]/50 bg-[#FAF7F0] overflow-hidden">
+          {/* Subtle ambient luxury tones */}
+          <div
+            className="absolute top-0 left-0 w-80 sm:w-96 h-80 sm:h-96 bg-[#E8DCB8]/20 rounded-full blur-3xl pointer-events-none -translate-x-1/3 -translate-y-1/3"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute bottom-0 right-0 w-96 sm:w-[32rem] h-96 sm:h-[32rem] bg-[#EEDCB5]/20 rounded-full blur-3xl pointer-events-none translate-x-1/4 translate-y-1/4"
+            aria-hidden="true"
+          />
 
-              {/* Left: Large rectangular portrait with ivory frame */}
-              <Reveal>
-                <div className="flex flex-col items-center lg:items-start">
-                  {/* Framed portrait — approximately 4:3 proportions */}
-                  <div className="relative w-full max-w-md mx-auto lg:mx-0">
-                    <div className="bg-white p-3 sm:p-4 shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-[#E8E0D0] rounded-sm">
-                      <div className="aspect-[4/3] w-full overflow-hidden bg-[#EDE8DE] rounded-sm">
+          <div className="max-w-6xl mx-auto relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-20 items-center">
+
+              {/* Left: Content (Order: Label + rule, Heading with gold italic accent, Divider, Description) */}
+              <AboutReveal>
+                <div className="text-left">
+                  {/* Gold uppercase label + thin gold horizontal rule */}
+                  <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-6">
+                    <span className="text-xs sm:text-[13px] uppercase tracking-[0.25em] text-[#B89047] font-semibold select-none">
+                      {community.label || "2018 • COMMUNITY & LEADERSHIP"}
+                    </span>
+                    <span className="w-16 sm:w-24 h-px bg-[#C9A669]/60 shrink-0" aria-hidden="true" />
+                  </div>
+
+                  {/* Large elegant serif heading with configurable gold italic phrase */}
+                  {(() => {
+                    const fullHeading = (community.heading || "Serving the photography community.").trim();
+                    const accentPhrase = (community.headingAccent || "community.").trim();
+
+                    if (accentPhrase && fullHeading.toLowerCase().includes(accentPhrase.toLowerCase())) {
+                      const matchIndex = fullHeading.toLowerCase().indexOf(accentPhrase.toLowerCase());
+                      const before = fullHeading.slice(0, matchIndex).trim();
+                      const matchedAccent = fullHeading.slice(matchIndex, matchIndex + accentPhrase.length).trim();
+                      const after = fullHeading.slice(matchIndex + accentPhrase.length).trim();
+
+                      return (
+                        <h2 className="font-['Cormorant_Garamond',serif] text-4xl sm:text-5xl md:text-6xl lg:text-[3.5rem] xl:text-[3.75rem] text-[#1E1C19] font-normal tracking-tight leading-[1.08] mb-6">
+                          {before && <span className="block">{before}</span>}
+                          <span className="block italic text-[#B8863A] font-['Cormorant_Garamond',serif]">
+                            {matchedAccent}
+                          </span>
+                          {after && <span className="block">{after}</span>}
+                        </h2>
+                      );
+                    }
+
+                    return (
+                      <h2 className="font-['Cormorant_Garamond',serif] text-4xl sm:text-5xl md:text-6xl lg:text-[3.5rem] xl:text-[3.75rem] text-[#1E1C19] font-normal tracking-tight leading-[1.08] mb-6">
+                        {fullHeading}
+                      </h2>
+                    );
+                  })()}
+
+                  {/* Short gold divider */}
+                  <div className="w-12 h-[2px] bg-[#C9A669] my-6" aria-hidden="true" />
+
+                  {/* Description in readable elegant serif body typography */}
+                  <p className="font-['Cormorant_Garamond',serif] text-lg sm:text-xl lg:text-[1.3rem] text-[#3A352E] leading-relaxed font-normal max-w-xl">
+                    {community.description || "Became Vice President of the Tirunelveli District Photography Labour Welfare Association."}
+                  </p>
+                </div>
+              </AboutReveal>
+
+              {/* Right: Framed flower-field portrait with offset gold accents */}
+              <AboutReveal delay={0.06}>
+                <div className="flex justify-center lg:justify-end">
+                  <div className="relative w-full max-w-[480px]">
+                    {/* Layer 1: Behind - Offset thin gold frame border */}
+                    <div
+                      className="absolute inset-0 translate-x-3.5 translate-y-3.5 sm:translate-x-5 sm:translate-y-5 border border-[#C9A669]/80 pointer-events-none rounded-[1px]"
+                      aria-hidden="true"
+                    />
+
+                    {/* Layer 2: Behind - Soft ivory shadow matting */}
+                    <div
+                      className="absolute inset-0 translate-x-2 translate-y-2 sm:translate-x-3 sm:translate-y-3 bg-[#F4EFE6]/70 border border-[#E7E0D2] shadow-[0_12px_32px_rgba(43,43,43,0.08)] pointer-events-none rounded-[1px]"
+                      aria-hidden="true"
+                    />
+
+                    {/* Layer 3: Foreground - Classic ivory/white photograph mount with nearly square corners */}
+                    <div className="relative bg-[#FFFFFF] p-3 sm:p-4 shadow-[0_16px_40px_rgba(43,43,43,0.14)] border border-[#EBE3D5] rounded-[2px]">
+                      <div className="aspect-[4/3] w-full overflow-hidden bg-[#EDE8DE] rounded-[1px]">
                         <img
                           src={community.portrait || "/images/about/founder-field.jpeg"}
-                          alt={community.portraitAlt || community.caption || "P. Arunachalam"}
-                          className="w-full h-full object-cover object-[center_15%]"
+                          alt={community.portraitAlt || "P. Arunachalam in flower field"}
+                          className="w-full h-full object-cover object-[center_18%]"
                           loading="lazy"
                           decoding="async"
                         />
                       </div>
                     </div>
                   </div>
-
-                  {/* Caption with gold accent line */}
-                  {community.caption && (
-                    <div className="flex items-center gap-3 mt-5 mx-auto lg:mx-0">
-                      <div className="w-8 h-[2px] bg-[#C9A669]" />
-                      <p className="text-sm text-[#736B5E] font-medium tracking-wide">
-                        {community.caption}
-                      </p>
-                    </div>
-                  )}
                 </div>
-              </Reveal>
-
-              {/* Right: Text content */}
-              <Reveal delay={0.15}>
-                <div className="text-left">
-                  {/* Small gold label */}
-                  <p className="text-xs uppercase tracking-[0.28em] text-[#9C7B3D] font-bold mb-4">
-                    {community.label}
-                  </p>
-
-                  {/* Large elegant serif heading */}
-                  <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-ink font-normal tracking-tight mb-6 leading-tight">
-                    {community.heading}
-                  </h2>
-
-                  {/* Thin gold divider */}
-                  <div className="w-10 h-[2px] bg-[#C9A669]/70 mb-6" />
-
-                  {/* Description */}
-                  <p className="text-base sm:text-lg text-[#4A453E] leading-relaxed font-light mb-8">
-                    {community.description || community.organization}
-                  </p>
-
-                  {/* Role badge pill */}
-                  <div className="inline-block border border-[#C9A669]/60 px-4 py-2 rounded-full mb-3">
-                    <p className="text-xs uppercase tracking-[0.25em] text-[#9C7B3D] font-bold">
-                      {community.role}
-                    </p>
-                  </div>
-
-                  {/* Organization */}
-                  {community.organization && (
-                    <p className="text-sm text-ink font-medium leading-snug mb-2">
-                      {community.organization}
-                    </p>
-                  )}
-
-                  {/* Appointed year */}
-                  {community.appointedYear && (
-                    <p className="text-xs text-[#736B5E] font-medium tracking-wide">
-                      {community.appointedYear}
-                    </p>
-                  )}
-                </div>
-              </Reveal>
+              </AboutReveal>
 
             </div>
           </div>
@@ -537,198 +605,172 @@ export default function About() {
  */
 function TimelineSection({ milestones, journey, closingSummary }) {
   // Rails & progress bar refs
-  const railRef      = useRef(null);   // wraps the entire milestone list
-  const progressDesktopRef = useRef(null); // the dark fill bar (desktop centre rail)
-  const progressMobileRef  = useRef(null); // the dark fill bar (mobile left rail)
+  const railRef = useRef(null); // wraps the entire milestone list
+  const desktopTrackRef = useRef(null); // background track (desktop centre rail)
+  const mobileTrackRef = useRef(null); // background track (mobile left rail)
+  const progressDesktopRef = useRef(null); // dark foreground fill (desktop)
+  const progressMobileRef = useRef(null); // dark foreground fill (mobile)
 
-  // Per-milestone dot refs  [{ desktop, mobile }]
+  // Per-milestone dot refs [{ desktop, mobile }]
   const dotRefs = useRef([]);
 
-  // Current active index (stored in ref to avoid stale closures in RAF)
-  const activeIdxRef = useRef(-1);
-  // Tiny helper: call useState only for dot re-styling (cheap, index-only)
-  const activeIdxStateRef = useRef(-1); // last value synced to dom dots
+  // Active milestone index tracked to update dot styling only when changed
+  const activeIdxStateRef = useRef(-1);
 
-  // Detect reduced motion preference once
+  // Detect reduced motion preference
   const prefersReducedMotion =
     typeof window !== "undefined"
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
       : false;
 
-  // Transition string used on the progress bars
-  const fillTransition = prefersReducedMotion
-    ? "none"
-    : "height 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-
-  // ── Measurement & update ──────────────────────────────────────────────────
+  // ── Measurement & progress calculation from actual rail geometry ─────────
   const updateProgress = useCallback(() => {
-    if (!railRef.current) return;
+    if (typeof window === "undefined") return;
 
-    const rail = railRef.current;
-    const railRect = rail.getBoundingClientRect();
-    if (railRect.height === 0) return;
+    // Determine active track based on viewport width
+    const isMobile = window.innerWidth < 768;
+    const trackEl = (isMobile ? mobileTrackRef.current : desktopTrackRef.current) || railRef.current;
+    if (!trackEl) return;
 
-    // Viewport midpoint — milestone becomes "active" when its dot crosses here
-    const midY = window.innerHeight / 2;
+    const railRect = trackEl.getBoundingClientRect();
+    // Guard against zero-height measurements
+    if (!railRect || railRect.height <= 0) return;
 
-    // Collect dot centre Y positions relative to the rail top
-    const dotPositions = dotRefs.current.map((ref) => {
-      const el = ref?.desktop || ref?.mobile;
-      if (!el) return 0;
-      const r = el.getBoundingClientRect();
-      // centre of dot relative to rail's top-left
-      return (r.top + r.height / 2) - railRect.top;
-    });
+    // Reading anchor around 70–75% of viewport height (starts as timeline enters view)
+    const anchorY = window.innerHeight * 0.73;
 
-    // Rail bounds in viewport
-    const railTop    = railRect.top;                   // top of rail relative to viewport
-    const railHeight = railRect.height;
+    // progress = clamp((anchorY - railRect.top) / railRect.height, 0, 1)
+    const rawProgress = (anchorY - railRect.top) / railRect.height;
+    const progress = Math.min(Math.max(rawProgress, 0), 1);
 
-    // ── Determine active milestone ──────────────────────────────────────────
-    // Active = the last dot whose viewport Y is above midY
-    let newActive = -1;
-    dotRefs.current.forEach((ref, i) => {
-      const el = ref?.desktop || ref?.mobile;
-      if (!el) return;
-      const dotViewportY = el.getBoundingClientRect().top + el.getBoundingClientRect().height / 2;
-      if (dotViewportY <= midY) newActive = i;
-    });
-
-    // ── Calculate fill height (px within rail) ──────────────────────────────
-    let fillPx = 0;
-
-    if (newActive >= 0) {
-      const lastDotPos = dotPositions[dotPositions.length - 1] ?? 0;
-      const firstDotPos = dotPositions[0] ?? 0;
-
-      if (newActive >= milestones.length - 1) {
-        // Past the last milestone — fill all the way to rail bottom
-        fillPx = railHeight;
-      } else {
-        // Interpolate between current active dot and the next dot
-        // based on how far the next dot is from the midpoint
-        const currDotPos = dotPositions[newActive];
-        const nextDotPos = dotPositions[newActive + 1] ?? currDotPos;
-
-        // How far through the segment between curr and next are we?
-        const currDotViewY = dotRefs.current[newActive]?.desktop?.getBoundingClientRect().top
-          ?? dotRefs.current[newActive]?.mobile?.getBoundingClientRect().top
-          ?? 0;
-        const nextDotViewY = dotRefs.current[newActive + 1]?.desktop?.getBoundingClientRect().top
-          ?? dotRefs.current[newActive + 1]?.mobile?.getBoundingClientRect().top
-          ?? 0;
-
-        // Progress ratio 0→1 between curr and next dots crossing midY
-        // When currDotViewY === midY → ratio = 0; when nextDotViewY === midY → ratio = 1
-        const segmentViewHeight = currDotViewY - nextDotViewY; // both decrease as we scroll down
-        const ratio = segmentViewHeight > 0
-          ? Math.min(1, Math.max(0, (currDotViewY - midY) / segmentViewHeight))
-          : 0;
-
-        fillPx = currDotPos + (nextDotPos - currDotPos) * ratio;
-      }
-
-      // Always show at least up to the first active dot so there is a visible fill
-      fillPx = Math.max(fillPx, dotPositions[0] ?? 0);
-    }
-
-    // Clamp within rail
-    fillPx = Math.min(Math.max(fillPx, 0), railHeight);
-
-    // ── Mutate DOM directly (no React state) ──────────────────────────────
+    // Update full-height dark overlay vertical scale directly — no transition delay
     if (progressDesktopRef.current) {
-      progressDesktopRef.current.style.height = `${fillPx}px`;
+      progressDesktopRef.current.style.transform = `scaleY(${progress})`;
     }
     if (progressMobileRef.current) {
-      progressMobileRef.current.style.height = `${fillPx}px`;
+      progressMobileRef.current.style.transform = `scaleY(${progress})`;
     }
 
-    // ── Update dot styles only when active index changes ──────────────────
-    if (newActive !== activeIdxStateRef.current) {
-      activeIdxStateRef.current = newActive;
+    // Determine reached dots using the exact same reading anchor and actual dot positions
+    let lastReached = -1;
+    dotRefs.current.forEach((ref, i) => {
+      const el = (isMobile ? ref?.mobile : ref?.desktop) || ref?.desktop || ref?.mobile;
+      if (!el) return;
+      const dotRect = el.getBoundingClientRect();
+      const dotCenterY = dotRect.top + dotRect.height / 2;
+      if (dotCenterY <= anchorY) {
+        lastReached = i;
+      }
+    });
+
+    if (lastReached !== activeIdxStateRef.current) {
+      activeIdxStateRef.current = lastReached;
       dotRefs.current.forEach((ref, i) => {
-        const state = i < newActive ? "reached" : i === newActive ? "active" : "future";
-        applyDotState(ref?.desktop, state, "desktop");
-        applyDotState(ref?.mobile,  state, "mobile");
+        const state = i < lastReached ? "reached" : i === lastReached ? "active" : "future";
+        applyDotState(ref?.desktop, state, prefersReducedMotion);
+        applyDotState(ref?.mobile, state, prefersReducedMotion);
       });
     }
-  }, [milestones.length]);
+  }, [prefersReducedMotion]);
 
-  // ── Lenis / scroll subscription ──────────────────────────────────────────
+  // ── Scroll & Lenis listener integration ───────────────────────────────────
   useEffect(() => {
-    // Try to attach to the existing Lenis singleton.
-    // @studio-freight/lenis exposes a module-level instance that we can
-    // reach via the dynamic import trick or — simpler — by listening to
-    // the native 'scroll' event which Lenis still fires on window.
-    // We also try the Lenis emitter if lenis is exported globally.
+    let attachedLenis = null;
+    let usingWindow = false;
 
-    let rafId = null;
-    let lenisUnsub = null;
-    let scrolling = false;
-
-    // Debounced rAF flush
-    const scheduleUpdate = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        updateProgress();
-      });
+    const setupListener = () => {
+      const lenis = getLenis();
+      if (lenis && typeof lenis.on === "function") {
+        attachedLenis = lenis;
+        lenis.on("scroll", updateProgress);
+      } else {
+        usingWindow = true;
+        window.addEventListener("scroll", updateProgress, { passive: true });
+      }
     };
 
-    // Try to grab lenis from the module singleton
-    // useLenis.js exports lenisInstance as a module variable — we import
-    // the module dynamically to read it without re-creating Lenis.
-    let lenisAttached = false;
-    import("../lib/useLenis.js")
-      .then((mod) => {
-        // The module keeps lenisInstance in closure; it doesn't export it.
-        // Fall through to window scroll listener.
-      })
-      .catch(() => {});
+    setupListener();
 
-    // window scroll works perfectly with Lenis because Lenis drives
-    // document.scrollingElement.scrollTop — native scroll events still fire.
-    const onScroll = () => scheduleUpdate();
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    // Initial measurement
-    scheduleUpdate();
+    // Check if Lenis mounted slightly after component mount (e.g. root App mount)
+    const upgradeTimer = setTimeout(() => {
+      if (!attachedLenis) {
+        const lenis = getLenis();
+        if (lenis && typeof lenis.on === "function") {
+          if (usingWindow) {
+            window.removeEventListener("scroll", updateProgress);
+            usingWindow = false;
+          }
+          attachedLenis = lenis;
+          lenis.on("scroll", updateProgress);
+        }
+      }
+    }, 50);
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (rafId) cancelAnimationFrame(rafId);
-      if (lenisUnsub) lenisUnsub();
+      clearTimeout(upgradeTimer);
+      if (attachedLenis && typeof attachedLenis.off === "function") {
+        attachedLenis.off("scroll", updateProgress);
+      }
+      if (usingWindow) {
+        window.removeEventListener("scroll", updateProgress);
+      }
     };
   }, [updateProgress]);
 
-  // ── ResizeObserver ────────────────────────────────────────────────────────
+  // ── Initial mount & restored scroll position ──────────────────────────────
   useEffect(() => {
-    if (!railRef.current) return;
-    if (typeof ResizeObserver === "undefined") return;
+    // Initial measurement immediately and on next animation frames for stabilized layout
+    updateProgress();
+    const rafId = requestAnimationFrame(updateProgress);
+    const timer = setTimeout(updateProgress, 120);
 
-    const ro = new ResizeObserver(() => {
-      // Small delay so images have painted
-      setTimeout(updateProgress, 50);
-    });
-    ro.observe(railRef.current);
-    // Also observe document body for large layout shifts
-    ro.observe(document.body);
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timer);
+    };
+  }, [updateProgress]);
 
-    return () => ro.disconnect();
+  // ── Resize handling & ResizeObserver ──────────────────────────────────────
+  useEffect(() => {
+    const handleResize = () => updateProgress();
+    window.addEventListener("resize", handleResize, { passive: true });
+
+    let ro = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        updateProgress();
+      });
+      if (railRef.current) ro.observe(railRef.current);
+      if (document.body) ro.observe(document.body);
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (ro) ro.disconnect();
+    };
   }, [updateProgress]);
 
   // ── Image load events (milestone photographs change rail height) ──────────
   useEffect(() => {
     if (!railRef.current) return;
     const imgs = railRef.current.querySelectorAll("img");
-    const handlers = [];
+    const cleanupHandlers = [];
+
     imgs.forEach((img) => {
-      if (img.complete) return;
-      const fn = () => updateProgress();
-      img.addEventListener("load", fn);
-      handlers.push({ img, fn });
+      if (!img.complete) {
+        const onImgLoad = () => updateProgress();
+        img.addEventListener("load", onImgLoad, { once: true });
+        img.addEventListener("error", onImgLoad, { once: true });
+        cleanupHandlers.push(() => {
+          img.removeEventListener("load", onImgLoad);
+          img.removeEventListener("error", onImgLoad);
+        });
+      }
     });
-    return () => handlers.forEach(({ img, fn }) => img.removeEventListener("load", fn));
+
+    return () => {
+      cleanupHandlers.forEach((fn) => fn());
+    };
   }, [milestones, updateProgress]);
 
   // ── Build dot ref callback ────────────────────────────────────────────────
@@ -742,7 +784,7 @@ function TimelineSection({ milestones, journey, closingSummary }) {
       <div className="max-w-5xl mx-auto">
         {/* Timeline Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-24">
-          <Reveal>
+          <AboutReveal>
             <p className="text-xs uppercase tracking-[0.28em] text-[#9C7B3D] font-bold mb-3">
               {journey.eyebrow}
             </p>
@@ -752,7 +794,7 @@ function TimelineSection({ milestones, journey, closingSummary }) {
             <p className="text-sm sm:text-base text-ink-soft font-light">
               {journey.subtitle}
             </p>
-          </Reveal>
+          </AboutReveal>
         </div>
 
         {/* Timeline Rail */}
@@ -761,18 +803,21 @@ function TimelineSection({ milestones, journey, closingSummary }) {
           {/* ── DESKTOP CENTRE RAIL ─────────────────────────────────────── */}
           {/* Background track — muted gold, always fully visible */}
           <div
-            className="hidden md:block absolute left-1/2 top-4 bottom-4 w-[2px] bg-[#C9A669]/30 -translate-x-1/2"
+            ref={desktopTrackRef}
+            className="hidden md:block absolute top-4 bottom-4 w-[2px] bg-[#C9A669]/30"
+            style={{ left: "calc(50% - 1px)" }}
             aria-hidden="true"
           />
-          {/* Progress overlay — dark charcoal fill, height driven by scroll */}
+          {/* Progress overlay — dark foreground fill, scale driven by scroll */}
           <div
             ref={progressDesktopRef}
-            className="hidden md:block absolute left-1/2 top-4 w-[2px] -translate-x-1/2 z-10 origin-top"
+            className="hidden md:block absolute top-4 bottom-4 w-[2px] z-10 origin-top pointer-events-none"
             style={{
-              height: "0px",
+              left: "calc(50% - 1px)",
+              transform: "scaleY(0)",
+              transformOrigin: "top",
               background: "linear-gradient(to bottom, #3A3530, #5C4F3A)",
-              transition: fillTransition,
-              pointerEvents: "none",
+              willChange: "transform",
             }}
             aria-hidden="true"
           />
@@ -780,18 +825,19 @@ function TimelineSection({ milestones, journey, closingSummary }) {
           {/* ── MOBILE LEFT RAIL ────────────────────────────────────────── */}
           {/* Background track */}
           <div
+            ref={mobileTrackRef}
             className="md:hidden absolute left-5 top-4 bottom-4 w-[2px] bg-[#C9A669]/30"
             aria-hidden="true"
           />
-          {/* Progress overlay */}
+          {/* Progress overlay — dark foreground fill, scale driven by scroll */}
           <div
             ref={progressMobileRef}
-            className="md:hidden absolute left-5 top-4 w-[2px] z-10 origin-top"
+            className="md:hidden absolute left-5 top-4 bottom-4 w-[2px] z-10 origin-top pointer-events-none"
             style={{
-              height: "0px",
+              transform: "scaleY(0)",
+              transformOrigin: "top",
               background: "linear-gradient(to bottom, #3A3530, #5C4F3A)",
-              transition: fillTransition,
-              pointerEvents: "none",
+              willChange: "transform",
             }}
             aria-hidden="true"
           />
@@ -803,7 +849,7 @@ function TimelineSection({ milestones, journey, closingSummary }) {
                 (milestone.layout === undefined && idx % 2 === 0);
 
               return (
-                <Reveal key={milestone.id || `ms-${idx}`} delay={idx * 0.08}>
+                <AboutReveal key={milestone.id || `ms-${idx}`} delay={0}>
                   <div className="relative">
                     {/* Milestone Node Dot (Desktop) */}
                     <div
@@ -811,14 +857,14 @@ function TimelineSection({ milestones, journey, closingSummary }) {
                       className="hidden md:flex absolute left-1/2 top-10 -translate-x-1/2 z-20 w-4 h-4 rounded-full bg-[#FAF7F2] border-2 shadow-sm items-center justify-center"
                       style={{
                         borderColor: "#C9A669",
-                        transition: prefersReducedMotion ? "none" : "border-color 0.35s, box-shadow 0.35s",
+                        transition: prefersReducedMotion ? "none" : "border-color 0.2s, box-shadow 0.2s",
                       }}
                     >
                       <div
                         className="w-1.5 h-1.5 rounded-full"
                         style={{
                           background: "#C9A669",
-                          transition: prefersReducedMotion ? "none" : "background 0.35s, transform 0.35s",
+                          transition: prefersReducedMotion ? "none" : "background 0.2s, transform 0.2s",
                         }}
                       />
                     </div>
@@ -829,14 +875,14 @@ function TimelineSection({ milestones, journey, closingSummary }) {
                       className="md:hidden absolute left-5 top-8 -translate-x-1/2 z-20 w-3.5 h-3.5 rounded-full bg-[#FAF7F2] border-2 shadow-sm items-center justify-center"
                       style={{
                         borderColor: "#C9A669",
-                        transition: prefersReducedMotion ? "none" : "border-color 0.35s, box-shadow 0.35s",
+                        transition: prefersReducedMotion ? "none" : "border-color 0.2s, box-shadow 0.2s",
                       }}
                     >
                       <div
                         className="w-1 h-1 rounded-full"
                         style={{
                           background: "#C9A669",
-                          transition: prefersReducedMotion ? "none" : "background 0.35s, transform 0.35s",
+                          transition: prefersReducedMotion ? "none" : "background 0.2s, transform 0.2s",
                         }}
                       />
                     </div>
@@ -874,7 +920,7 @@ function TimelineSection({ milestones, journey, closingSummary }) {
                       </div>
                     </div>
                   </div>
-                </Reveal>
+                </AboutReveal>
               );
             })}
           </div>
@@ -882,7 +928,7 @@ function TimelineSection({ milestones, journey, closingSummary }) {
 
         {/* ── CLOSING LOCATION SUMMARY ────────────────────────────────── */}
         <div className="mt-24 sm:mt-32 pt-16 border-t border-line/60 text-center max-w-2xl mx-auto">
-          <Reveal>
+          <AboutReveal>
             <div className="flex items-center justify-center gap-2 mb-3 text-[#9C7B3D]">
               <MapPin size={18} />
               <p className="font-display text-2xl sm:text-3xl text-ink font-medium tracking-tight">
@@ -892,7 +938,7 @@ function TimelineSection({ milestones, journey, closingSummary }) {
             <p className="text-xs uppercase tracking-[0.25em] text-[#9C7B3D] font-bold">
               {closingSummary.tagline}
             </p>
-          </Reveal>
+          </AboutReveal>
         </div>
       </div>
     </section>
@@ -903,7 +949,7 @@ function TimelineSection({ milestones, journey, closingSummary }) {
  * Apply dot visual state: future / reached / active
  * Mutates style directly — keeps scroll-driven updates off React's scheduler.
  */
-function applyDotState(el, state, variant) {
+function applyDotState(el, state, prefersReducedMotion = false) {
   if (!el) return;
   const inner = el.firstElementChild;
 
@@ -912,7 +958,7 @@ function applyDotState(el, state, variant) {
     el.style.boxShadow   = "0 0 0 3px rgba(201,166,105,0.35)";
     if (inner) {
       inner.style.background  = "#9C7B3D";
-      inner.style.transform   = "scale(1.35)";
+      inner.style.transform   = prefersReducedMotion ? "none" : "scale(1.35)";
     }
   } else if (state === "reached") {
     el.style.borderColor = "#3A3530";

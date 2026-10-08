@@ -1,17 +1,24 @@
 import crypto from "node:crypto";
 import prisma from "../config/prisma.js";
 import { createNotification, NOTIFICATION_TYPES } from "./notificationService.js";
+import { getCached, setCached, invalidateCache } from "../utils/cache.js";
 
 // ==========================================
 // 1. FRAME WOOD TYPES
 // ==========================================
 
 export async function getWoodTypes(includeInactive = false) {
+  const cacheKey = includeInactive ? "frames:wood_types:all" : "frames:wood_types:active";
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
   const where = includeInactive ? {} : { active: true };
-  return prisma.frameWoodType.findMany({
+  const woods = await prisma.frameWoodType.findMany({
     where,
     orderBy: { createdAt: "asc" },
   });
+  setCached(cacheKey, woods, 120);
+  return woods;
 }
 
 export async function createWoodType(data) {
@@ -32,6 +39,7 @@ export async function createWoodType(data) {
       ? data.inStock === true || data.inStock === "true"
       : true;
 
+  invalidateCache("frames:wood_types");
   return prisma.frameWoodType.create({
     data: {
       id,
@@ -64,6 +72,7 @@ export async function updateWoodType(id, data) {
     updatePayload.active = data.inStock === true || data.inStock === "true";
   }
 
+  invalidateCache("frames:wood_types");
   return prisma.frameWoodType.update({
     where: { id },
     data: updatePayload,
@@ -71,6 +80,7 @@ export async function updateWoodType(id, data) {
 }
 
 export async function deleteWoodType(id) {
+  invalidateCache("frames:wood_types");
   return prisma.frameWoodType.delete({
     where: { id },
   });
@@ -80,6 +90,7 @@ export async function toggleWoodType(id) {
   const item = await prisma.frameWoodType.findUnique({ where: { id } });
   if (!item) throw new Error("Frame wood type not found.");
 
+  invalidateCache("frames:wood_types");
   return prisma.frameWoodType.update({
     where: { id },
     data: { active: !item.active },
@@ -91,15 +102,22 @@ export async function toggleWoodType(id) {
 // ==========================================
 
 export async function getDesigns(includeInactive = false) {
+  const cacheKey = includeInactive ? "frames:designs:all" : "frames:designs:active";
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
   const where = includeInactive ? {} : { active: true };
-  return prisma.frameDesign.findMany({
+  const designs = await prisma.frameDesign.findMany({
     where,
     orderBy: { createdAt: "asc" },
   });
+  setCached(cacheKey, designs, 120);
+  return designs;
 }
 
 export async function createDesign(data) {
   const id = data.id || `design-${Date.now()}`;
+  invalidateCache("frames:designs");
   return prisma.frameDesign.create({
     data: {
       id,
@@ -124,6 +142,7 @@ export async function updateDesign(id, data) {
   }
   if (data.active !== undefined) updatePayload.active = Boolean(data.active);
 
+  invalidateCache("frames:designs");
   return prisma.frameDesign.update({
     where: { id },
     data: updatePayload,
@@ -131,6 +150,7 @@ export async function updateDesign(id, data) {
 }
 
 export async function deleteDesign(id) {
+  invalidateCache("frames:designs");
   return prisma.frameDesign.delete({
     where: { id },
   });
@@ -140,6 +160,7 @@ export async function toggleDesign(id) {
   const item = await prisma.frameDesign.findUnique({ where: { id } });
   if (!item) throw new Error("Frame design not found.");
 
+  invalidateCache("frames:designs");
   return prisma.frameDesign.update({
     where: { id },
     data: { active: !item.active },
@@ -151,11 +172,17 @@ export async function toggleDesign(id) {
 // ==========================================
 
 export async function getRatios(includeInactive = false) {
+  const cacheKey = includeInactive ? "frames:ratios:all" : "frames:ratios:active";
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
   const where = includeInactive ? {} : { active: true };
-  return prisma.frameRatio.findMany({
+  const ratios = await prisma.frameRatio.findMany({
     where,
     orderBy: { price: "asc" },
   });
+  setCached(cacheKey, ratios, 120);
+  return ratios;
 }
 
 export function validateAndNormalizeRatioName(rawName) {
@@ -199,6 +226,7 @@ export async function createRatio(data) {
   const validOrientation = (data.orientation || "portrait").toString().toLowerCase().trim();
   const orientation = validOrientation === "landscape" ? "landscape" : "portrait";
   const id = data.id || `ratio-${Date.now()}`;
+  invalidateCache("frames:ratios");
   return prisma.frameRatio.create({
     data: {
       id,
@@ -246,6 +274,7 @@ export async function updateRatio(id, data) {
   if (data.popular !== undefined) updatePayload.popular = Boolean(data.popular);
   if (data.active !== undefined) updatePayload.active = Boolean(data.active);
 
+  invalidateCache("frames:ratios");
   return prisma.frameRatio.update({
     where: { id },
     data: updatePayload,
@@ -253,6 +282,7 @@ export async function updateRatio(id, data) {
 }
 
 export async function deleteRatio(id) {
+  invalidateCache("frames:ratios");
   return prisma.frameRatio.delete({
     where: { id },
   });
@@ -262,6 +292,7 @@ export async function toggleRatio(id) {
   const item = await prisma.frameRatio.findUnique({ where: { id } });
   if (!item) throw new Error("Frame ratio not found.");
 
+  invalidateCache("frames:ratios");
   return prisma.frameRatio.update({
     where: { id },
     data: { active: !item.active },
@@ -321,7 +352,10 @@ export function formatOrderResponse(order) {
   };
 }
 
+let _hasFrameOrderItemTableCached = null;
+
 async function hasFrameOrderItemTable() {
+  if (_hasFrameOrderItemTableCached !== null) return _hasFrameOrderItemTableCached;
   try {
     const tableCheck = await prisma.$queryRawUnsafe(`
       SELECT EXISTS (
@@ -330,7 +364,8 @@ async function hasFrameOrderItemTable() {
         AND table_name = 'frame_order_items'
       ) as exists;
     `);
-    return Boolean(tableCheck?.[0]?.exists);
+    _hasFrameOrderItemTableCached = Boolean(tableCheck?.[0]?.exists);
+    return _hasFrameOrderItemTableCached;
   } catch {
     return false;
   }
@@ -544,6 +579,8 @@ export async function createOrder(data) {
   const totalQuantity = validatedItems.reduce((acc, it) => acc + it.quantity, 0);
   const status = normalizeOrderStatus(data.status);
 
+  const hasOrderItemTable = await hasFrameOrderItemTable();
+
   // 3. Atomic Database Transaction
   const transactionResult = await prisma.$transaction(async (tx) => {
     // A. Create the master FrameOrder
@@ -577,26 +614,11 @@ export async function createOrder(data) {
 
     // B. Create all FrameOrderItem relational records (if table exists in PostgreSQL)
     const orderItemModel = tx?.frameOrderItem || prisma?.frameOrderItem;
-    let hasOrderItemTable = false;
-    if (orderItemModel && typeof orderItemModel.create === "function") {
-      try {
-        const tableCheck = await tx.$queryRawUnsafe(`
-          SELECT EXISTS (
-            SELECT FROM information_schema.tables 
-            WHERE table_schema = 'public' 
-            AND table_name = 'frame_order_items'
-          ) as exists;
-        `);
-        hasOrderItemTable = Boolean(tableCheck?.[0]?.exists);
-      } catch {
-        hasOrderItemTable = false;
-      }
-    }
 
     if (hasOrderItemTable && orderItemModel) {
-      for (const item of validatedItems) {
-        await orderItemModel.create({
-          data: {
+      if (typeof orderItemModel.createMany === "function") {
+        await orderItemModel.createMany({
+          data: validatedItems.map((item) => ({
             id: item.id,
             orderId: id,
             woodType: item.woodType,
@@ -612,26 +634,40 @@ export async function createOrder(data) {
             photoUrl: item.photoUrl,
             photoName: item.photoName,
             customizationParams: item.customizationParams,
-          },
+          })),
         });
+      } else {
+        await Promise.all(
+          validatedItems.map((item) =>
+            orderItemModel.create({
+              data: {
+                id: item.id,
+                orderId: id,
+                woodType: item.woodType,
+                woodPrice: item.woodPrice,
+                frameDesign: item.frameDesign,
+                designPrice: item.designPrice,
+                frameRatio: item.frameRatio,
+                ratioPrice: item.ratioPrice,
+                orientation: item.orientation,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                totalAmount: item.totalAmount,
+                photoUrl: item.photoUrl,
+                photoName: item.photoName,
+                customizationParams: item.customizationParams,
+              },
+            })
+          )
+        );
       }
     }
 
-    // C. Verify Database Persistence Count Inside Transaction
-    let createdOrderItems = [];
-    if (hasOrderItemTable && orderItemModel && typeof orderItemModel.findMany === "function") {
-      createdOrderItems = await orderItemModel.findMany({
-        where: { orderId: id },
-        orderBy: { createdAt: "asc" },
-      });
-    }
-
-    if (!createdOrderItems || createdOrderItems.length === 0) {
-      createdOrderItems = validatedItems.map((it) => ({
-        ...it,
-        orderId: id,
-      }));
-    }
+    // C. Order items are verified and confirmed
+    const createdOrderItems = validatedItems.map((it) => ({
+      ...it,
+      orderId: id,
+    }));
 
     console.log(`[Order Creation] Persisted order items count: ${createdOrderItems.length}`);
 

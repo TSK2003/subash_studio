@@ -227,7 +227,7 @@ export default function Contact() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const cleanPhone = phoneValue.replace(/\D/g, "");
@@ -267,14 +267,16 @@ export default function Contact() {
       status: "New",
     };
 
-    if (addEnquiry) {
-      addEnquiry(enquiryData);
-    }
-
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      if (addEnquiry) {
+        await addEnquiry(enquiryData);
+      }
       setSent(true);
-    }, 600);
+    } catch (err) {
+      console.error("Enquiry submission error:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

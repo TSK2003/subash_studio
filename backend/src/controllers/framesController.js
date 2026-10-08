@@ -221,6 +221,11 @@ export async function createOrder(req, res, next) {
     }
 
     res.status(201).json(order);
+
+    // Real-time notification dispatched asynchronously right after successful commit
+    setImmediate(() => {
+      notifyDataChanged({ entity: "frame_orders", action: "created", id: order.id });
+    });
   } catch (err) {
     console.error("[FramesController] Order creation error:", err.message || err);
     return res.status(400).json({
@@ -235,6 +240,9 @@ export async function updateOrderStatus(req, res, next) {
     const { status } = req.body;
     const order = await framesService.updateOrderStatus(req.params.id, status);
     res.json(order);
+    setImmediate(() => {
+      notifyDataChanged({ entity: "frame_orders", action: "status_changed", id: order.id });
+    });
   } catch (err) {
     next(err);
   }
@@ -244,6 +252,9 @@ export async function updateOrder(req, res, next) {
   try {
     const order = await framesService.updateOrder(req.params.id, req.body);
     res.json(order);
+    setImmediate(() => {
+      notifyDataChanged({ entity: "frame_orders", action: "updated", id: order.id });
+    });
   } catch (err) {
     next(err);
   }
@@ -253,6 +264,9 @@ export async function deleteOrder(req, res, next) {
   try {
     await framesService.deleteOrder(req.params.id);
     res.json({ success: true, message: "Order deleted successfully." });
+    setImmediate(() => {
+      notifyDataChanged({ entity: "frame_orders", action: "deleted", id: req.params.id });
+    });
   } catch (err) {
     next(err);
   }

@@ -1,9 +1,16 @@
 import prisma from "../config/prisma.js";
+import { getCached, setCached, invalidateCache } from "../utils/cache.js";
 
 export async function getAllServices() {
-  return prisma.service.findMany({
+  const cached = getCached("services:all");
+  if (cached) return cached;
+
+  const services = await prisma.service.findMany({
     orderBy: { createdAt: "asc" },
   });
+
+  setCached("services:all", services, 120);
+  return services;
 }
 
 export async function getServiceById(id) {
@@ -13,6 +20,7 @@ export async function getServiceById(id) {
 }
 
 export async function createService(data) {
+  invalidateCache("services");
   const id = data.id || `SRV-${Math.floor(100 + Math.random() * 900)}`;
   const name = (data.name || data.title || "Subash Studio Service").trim();
   const slug = data.slug || name.toLowerCase().replace(/\s+/g, "-");
@@ -62,6 +70,7 @@ export async function updateService(id, data) {
   }
   if (data.status !== undefined) updatePayload.status = data.status;
 
+  invalidateCache("services");
   return prisma.service.update({
     where: { id },
     data: updatePayload,
@@ -69,12 +78,14 @@ export async function updateService(id, data) {
 }
 
 export async function deleteService(id) {
+  invalidateCache("services");
   return prisma.service.delete({
     where: { id },
   });
 }
 
 export async function toggleServiceStatus(id) {
+  invalidateCache("services");
   const item = await prisma.service.findUnique({ where: { id } });
   if (!item) throw new Error("Service not found.");
 

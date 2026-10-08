@@ -33,7 +33,7 @@ export function getClientCount() {
  * Never sends sensitive personal information, credentials, or private customer records.
  *
  * @param {Object} event
- * @param {string} event.entity - "portfolio" | "gallery" | "portfolio_categories" | "gallery_categories" | "services" | "branches" | "testimonials" | "films" | "content" | "frames"
+ * @param {string} event.entity - "portfolio" | "gallery" | "portfolio_categories" | "gallery_categories" | "services" | "branches" | "testimonials" | "films" | "content" | "frames" | "frame_orders"
  * @param {string} [event.action="updated"] - "created" | "updated" | "deleted" | "status_changed"
  * @param {string|null} [event.id=null] - Optional public entity identifier
  */

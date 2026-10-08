@@ -13,8 +13,10 @@ export async function getAllEnquiries(req, res, next) {
 export async function createEnquiry(req, res, next) {
   try {
     const enquiry = await enquiriesService.createEnquiry(req.body);
-    notifyDataChanged({ entity: "enquiries", action: "created", id: enquiry.id });
     res.status(201).json(enquiry);
+    setImmediate(() => {
+      notifyDataChanged({ entity: "enquiries", action: "created", id: enquiry.id });
+    });
   } catch (err) {
     next(err);
   }

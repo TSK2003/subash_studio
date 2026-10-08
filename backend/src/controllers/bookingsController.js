@@ -13,8 +13,10 @@ export async function getAllBookings(req, res, next) {
 export async function createBooking(req, res, next) {
   try {
     const booking = await bookingsService.createBooking(req.body);
-    notifyDataChanged({ entity: "bookings", action: "created", id: booking.id });
     res.status(201).json(booking);
+    setImmediate(() => {
+      notifyDataChanged({ entity: "bookings", action: "created", id: booking.id });
+    });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message || "Failed to create booking." });
   }

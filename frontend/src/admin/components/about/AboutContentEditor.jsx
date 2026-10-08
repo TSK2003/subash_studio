@@ -51,6 +51,7 @@ const INITIAL_ABOUT_FALLBACK = {
   community: {
     label: "2018 • COMMUNITY & LEADERSHIP",
     heading: "Serving the photography community.",
+    headingAccent: "community.",
     description: "Became Vice President of the Tirunelveli District Photography Labour Welfare Association.",
     role: "VICE PRESIDENT",
     organization: "Tirunelveli District Photography Labour Welfare Association",
@@ -816,13 +817,13 @@ export default function AboutContentEditor({
             />
           </div>
 
-          <div className="sm:col-span-2">
+          <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
-              Section Heading
+              Full Section Heading
             </label>
             <input
               type="text"
-              value={formData.community.heading}
+              value={formData.community.heading || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -832,6 +833,30 @@ export default function AboutContentEditor({
               placeholder="Serving the photography community."
               className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
             />
+            <p className="text-[11px] text-[#8E867B] mt-1">
+              Main editorial heading text.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+              Gold Italic Heading Phrase (Accent Text)
+            </label>
+            <input
+              type="text"
+              value={formData.community.headingAccent ?? "community."}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  community: { ...prev.community, headingAccent: e.target.value },
+                }))
+              }
+              placeholder="community."
+              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+            />
+            <p className="text-[11px] text-[#8E867B] mt-1">
+              Phrase within the heading styled on line 2 in warm gold italics.
+            </p>
           </div>
 
           <div className="sm:col-span-2">

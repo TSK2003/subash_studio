@@ -120,13 +120,15 @@ export async function createBooking(data) {
     },
   });
 
-  // Server-side admin notification creation
-  await createNotification({
+  // Secondary admin notification creation - executed asynchronously so it does not block user response
+  createNotification({
     type: NOTIFICATION_TYPES.BOOKING,
     title: "New Shoot Booking",
     message: `${customerName} booked ${requiredService} for ${eventDate || "upcoming date"}.`,
     relatedEntityId: newBooking.id,
     relatedEntityType: "Booking",
+  }).catch((notifErr) => {
+    console.warn("[Booking] Notification creation warning:", notifErr.message);
   });
 
   return newBooking;

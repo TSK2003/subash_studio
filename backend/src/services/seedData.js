@@ -571,6 +571,7 @@ export const initialWebsiteContent = {
     community: {
       label: "2018 • COMMUNITY & LEADERSHIP",
       heading: "Serving the photography community.",
+      headingAccent: "community.",
       description: "Became Vice President of the Tirunelveli District Photography Labour Welfare Association.",
       role: "VICE PRESIDENT",
       organization: "Tirunelveli District Photography Labour Welfare Association",

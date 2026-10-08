@@ -56,3 +56,7 @@ coverage/
 playwright-report/
 test-results/
 scratch/
+
+# Local Project / Agent Files
+/.agent/
+/docs/

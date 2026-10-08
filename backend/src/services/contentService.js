@@ -1,5 +1,6 @@
 import prisma from "../config/prisma.js";
 import { deleteStorageFile } from "../utils/storage.js";
+import { getCached, setCached, invalidateCache } from "../utils/cache.js";
 
 const VALID_SECTIONS = ["home", "about", "contact"];
 
@@ -218,6 +219,7 @@ function validateSectionData(section, data) {
       result.community = {
         label: sanitizeString(data.community.label ?? "2018 • COMMUNITY & LEADERSHIP", 120),
         heading: sanitizeString(data.community.heading ?? "Serving the photography community.", 200),
+        headingAccent: sanitizeString(data.community.headingAccent ?? "community.", 120),
         description: sanitizeString(data.community.description ?? "Became Vice President of the Tirunelveli District Photography Labour Welfare Association.", 2000),
         role: sanitizeString(data.community.role ?? "VICE PRESIDENT", 120),
         organization: sanitizeString(data.community.organization ?? "Tirunelveli District Photography Labour Welfare Association", 200),
@@ -324,11 +326,16 @@ function validateSectionData(section, data) {
 }
 
 export async function getAllContent() {
+  const cached = getCached("content:all");
+  if (cached) return cached;
+
   const contents = await prisma.websiteContent.findMany();
   const map = {};
   contents.forEach((item) => {
     map[item.section] = item.data;
   });
+
+  setCached("content:all", map, 120);
   return map;
 }
 
@@ -336,10 +343,17 @@ export async function getContentBySection(section) {
   if (!VALID_SECTIONS.includes(section)) {
     return null;
   }
+  const cached = getCached(`content:${section}`);
+  if (cached) return cached;
+
   const item = await prisma.websiteContent.findUnique({
     where: { section },
   });
-  return item ? item.data : null;
+  const data = item ? item.data : null;
+  if (data) {
+    setCached(`content:${section}`, data, 120);
+  }
+  return data;
 }
 
 export async function updateContent(section, data) {
@@ -355,8 +369,9 @@ export async function updateContent(section, data) {
 
   // Preserve existing video files in storage without deleting them
 
-
   const merged = existing ? { ...(existing.data || {}), ...validated } : validated;
+
+  invalidateCache("content");
 
   return prisma.websiteContent.upsert({
     where: { section },

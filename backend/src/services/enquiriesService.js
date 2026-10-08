@@ -94,13 +94,15 @@ export async function createEnquiry(data) {
     },
   });
 
-  // Server-side admin notification creation
-  await createNotification({
+  // Secondary admin notification creation - executed asynchronously so it does not block user response
+  createNotification({
     type: NOTIFICATION_TYPES.ENQUIRY,
     title: "New Client Enquiry",
     message: `${clientName} submitted an enquiry for ${interestedService}.`,
     relatedEntityId: newEnquiry.id,
     relatedEntityType: "Enquiry",
+  }).catch((notifErr) => {
+    console.warn("[Enquiry] Notification creation warning:", notifErr.message);
   });
 
   return newEnquiry;
