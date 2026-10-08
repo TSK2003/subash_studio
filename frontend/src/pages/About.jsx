@@ -100,6 +100,73 @@ const DEFAULT_ABOUT = {
   },
 };
 
+// Helpers for Section 2: Luxury editorial typography & highlighting
+const formatFounderRole = (role) => {
+  if (!role) return "FOUNDER   |   SUBASH STUDIO";
+  if (role.includes(",")) {
+    return role.split(",").map((s) => s.trim()).join("   |   ");
+  }
+  return role;
+};
+
+const renderHighlightedQuote = (text) => {
+  if (!text) return null;
+  if (text.includes("*")) {
+    const parts = text.split(/(\*[^*]+\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith("*") && part.endsWith("*")) {
+        return (
+          <span key={idx} className="text-[#8C6D46] font-semibold italic">
+            {part.slice(1, -1)}
+          </span>
+        );
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  }
+  const highlightWord = "Western Ghats";
+  if (text.includes(highlightWord)) {
+    const parts = text.split(highlightWord);
+    return (
+      <>
+        {parts[0]}
+        <span className="text-[#8C6D46] font-semibold italic">{highlightWord}</span>
+        {parts.slice(1).join(highlightWord)}
+      </>
+    );
+  }
+  return text;
+};
+
+const renderHighlightedParagraph = (text) => {
+  if (!text) return null;
+  if (text.includes("*")) {
+    const parts = text.split(/(\*[^*]+\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith("*") && part.endsWith("*")) {
+        return (
+          <span key={idx} className="text-[#8C6D46] font-medium italic">
+            {part.slice(1, -1)}
+          </span>
+        );
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  }
+  const highlightWord = "three branches";
+  if (text.includes(highlightWord)) {
+    const parts = text.split(highlightWord);
+    return (
+      <>
+        {parts[0]}
+        <span className="text-[#8C6D46] font-medium italic">{highlightWord}</span>
+        {parts.slice(1).join(highlightWord)}
+      </>
+    );
+  }
+  return text;
+};
+
 export default function About() {
   const { websiteContent } = useAdminData();
   const rawAbout = websiteContent?.about || {};
@@ -187,81 +254,95 @@ export default function About() {
 
         {/* =========================================================================
             SECTION 2: THE STORY OF THE FOUNDER
+            (Luxury Editorial Founder Spread matching reference design)
            ========================================================================= */}
-        <section className="max-w-6xl mx-auto px-6 pt-20 sm:pt-28 pb-20 sm:pb-28">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-            {/* Left: Dual Photo Framed Composition */}
-            <div className="lg:col-span-6 flex flex-col items-center">
-              <Reveal>
-                <div className="relative w-full max-w-md mx-auto pt-4 pb-2 px-3">
-                  {/* Photo 1: Founder with camera (back/left) */}
-                  <div className="relative w-[72%] sm:w-[68%] aspect-[3/4] bg-white p-2.5 sm:p-3 rounded-lg shadow-card border border-line/60 -rotate-2 transform hover:rotate-0 transition-transform duration-500 z-10">
-                    <div className="w-full h-full overflow-hidden rounded bg-[#EDE8DE]">
-                      <img
-                        src={founder.photo1 || "/images/about/founder-camera.jpeg"}
-                        alt={founder.photo1Alt || "P. Arunachalam holding camera"}
-                        className="w-full h-full object-cover object-center"
-                        loading="eager"
-                        decoding="async"
-                      />
+        <section className="bg-[#F4EEE5] relative py-20 sm:py-28 lg:py-32 overflow-hidden border-b border-[#E8DEC8]/50">
+          <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+              {/* Left: Dual Framed Photo Editorial Composition */}
+              <div className="lg:col-span-6 flex justify-center lg:justify-start">
+                <Reveal>
+                  <div className="relative w-full max-w-[460px] pb-10 sm:pb-12 pr-6 sm:pr-8 select-none">
+                    {/* Subtle archival backing mat paper peeking behind top-left */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute -top-2.5 -left-2.5 sm:-top-3.5 sm:-left-3.5 w-[80%] sm:w-[78%] aspect-[4/5] bg-[#EAE2D5]/70 rounded-[2px] shadow-sm pointer-events-none -z-10"
+                    />
+
+                    {/* Main framed photo: Founder with camera */}
+                    <div className="relative w-[80%] sm:w-[78%] aspect-[4/5] bg-white p-3 sm:p-4 shadow-[0_22px_55px_-15px_rgba(35,25,12,0.2),0_4px_12px_rgba(0,0,0,0.04)] rounded-[2px] ring-1 ring-black/[0.04] transition-transform duration-700 ease-out hover:scale-[1.01] z-10">
+                      <div className="w-full h-full overflow-hidden bg-[#EDE8DE]">
+                        <img
+                          src={founder.photo1 || "/images/about/founder-camera.jpeg"}
+                          alt={founder.photo1Alt || "P. Arunachalam holding camera"}
+                          className="w-full h-full object-cover object-center"
+                          loading="eager"
+                          decoding="async"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Secondary overlapping framed photo: Founder in marigold field */}
+                    <div className="absolute right-0 bottom-0 w-[44%] sm:w-[42%] aspect-[3/4] bg-white p-2 sm:p-2.5 shadow-[0_24px_50px_-10px_rgba(30,20,10,0.26),0_6px_16px_rgba(0,0,0,0.05)] rounded-[2px] ring-1 ring-black/[0.05] transition-transform duration-700 ease-out hover:scale-[1.02] z-20">
+                      <div className="w-full h-full overflow-hidden bg-[#EDE8DE]">
+                        <img
+                          src={founder.photo2 || "/images/about/founder-field.jpeg"}
+                          alt={founder.photo2Alt || "P. Arunachalam in marigold flowers"}
+                          className="w-full h-full object-cover object-[center_20%]"
+                          loading="eager"
+                          decoding="async"
+                        />
+                      </div>
                     </div>
                   </div>
-
-                  {/* Photo 2: Founder in flower field (front/right, overlapping) */}
-                  <div className="absolute right-2 sm:right-4 bottom-4 w-[66%] sm:w-[62%] aspect-[3/4] bg-white p-2.5 sm:p-3 rounded-lg shadow-soft border border-line/60 rotate-3 transform hover:rotate-0 transition-transform duration-500 z-20">
-                    <div className="w-full h-full overflow-hidden rounded bg-[#EDE8DE]">
-                      <img
-                        src={founder.photo2 || "/images/about/founder-field.jpeg"}
-                        alt={founder.photo2Alt || "P. Arunachalam in marigold flowers"}
-                        className="w-full h-full object-cover object-[center_20%]"
-                        loading="eager"
-                        decoding="async"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </Reveal>
-
-              {/* Handwritten script caption */}
-              {founder.caption && (
-                <Reveal delay={0.2}>
-                  <p className="font-['Alex_Brush',_cursive] text-2xl sm:text-3xl text-[#827869] text-center mt-6 tracking-wide select-none">
-                    {founder.caption}
-                  </p>
                 </Reveal>
-              )}
-            </div>
+              </div>
 
-            {/* Right: Founder Narrative Content */}
-            <div className="lg:col-span-6 text-left">
-              <Reveal delay={0.15}>
-                <p className="text-xs uppercase tracking-[0.25em] text-[#9C7B3D] font-bold mb-2.5">
-                  {founder.label}
-                </p>
+              {/* Right: Founder Narrative Content */}
+              <div className="lg:col-span-6 text-left">
+                <Reveal delay={0.15}>
+                  {/* Eyebrow heading with flanking decorative divider lines */}
+                  <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    <span className="h-[1px] w-10 sm:w-14 bg-[#C5B39E]/80 shrink-0" aria-hidden="true" />
+                    <span className="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-[#8C6D46] uppercase select-none">
+                      {founder.label || "THE STORY OF THE FOUNDER"}
+                    </span>
+                    <span className="h-[1px] flex-1 max-w-[140px] sm:max-w-[200px] bg-[#C5B39E]/80 shrink-0" aria-hidden="true" />
+                  </div>
 
-                <h2 className="font-display text-4xl sm:text-5xl text-ink font-normal tracking-tight mb-2">
-                  {founder.name}
-                </h2>
+                  {/* Large luxury serif founder name */}
+                  <h2 className="font-['Cormorant_Garamond',_'Fraunces',_serif] text-5xl sm:text-6xl md:text-7xl lg:text-[4.75rem] text-[#1A1815] font-normal tracking-[-0.01em] leading-[1.04] mb-2 sm:mb-2.5">
+                    {founder.name}
+                  </h2>
 
-                <p className="text-xs uppercase tracking-[0.2em] text-[#736B5E] font-semibold mb-6">
-                  {founder.role}
-                </p>
+                  {/* Uppercase role / studio metadata */}
+                  <p className="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-[#8C6D46] uppercase mb-8 sm:mb-10">
+                    {formatFounderRole(founder.role)}
+                  </p>
 
-                <div className="w-12 h-[2px] bg-[#C9A669]/60 mb-6" />
-
-                <div className="space-y-4 text-ink-soft text-base sm:text-lg leading-relaxed font-light">
+                  {/* Editorial quote block with oversized quotation mark */}
                   {founder.descParagraph1 && (
-                    <p className="text-[#3F3B35] leading-relaxed">
-                      {founder.descParagraph1}
-                    </p>
+                    <div className="relative pl-5 sm:pl-6 border-l border-[#C5B39E]/80 mb-6 sm:mb-7">
+                      <blockquote className="font-['Cormorant_Garamond',_'Fraunces',_serif] italic text-2xl sm:text-3xl lg:text-[2.05rem] text-[#1A1815] leading-[1.32] tracking-[-0.01em]">
+                        <span className="font-serif text-3xl sm:text-4xl lg:text-[2.5rem] text-[#8C6D46] not-italic leading-none mr-2 align-top select-none inline-block -mt-1">
+                          &ldquo;
+                        </span>
+                        {renderHighlightedQuote(founder.descParagraph1)}
+                      </blockquote>
+                    </div>
                   )}
+
+                  {/* Thin divider line below quote */}
+                  <div className="w-24 sm:w-28 h-[1px] bg-[#C5B39E]/80 mb-6 sm:mb-7" aria-hidden="true" />
+
+                  {/* Supporting biographical paragraph */}
                   {founder.descParagraph2 && (
-                    <p className="text-[#3F3B35] leading-relaxed">
-                      {founder.descParagraph2}
+                    <p className="text-sm sm:text-base leading-[1.8] text-[#554F46] font-light max-w-xl">
+                      {renderHighlightedParagraph(founder.descParagraph2)}
                     </p>
                   )}
-                </div>
-              </Reveal>
+                </Reveal>
+              </div>
             </div>
           </div>
         </section>

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ArrowRight, Sparkles, FolderHeart } from "lucide-react";
@@ -12,6 +12,29 @@ export default function Gallery() {
 
   const initialCategory = searchParams.get("category") || "All";
   const [active, setActive] = useState(initialCategory);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+  const scrollContainerRef = useRef(null);
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  };
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 10);
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  };
 
   // Sync category changes to URL query param
   const handleSelectCategory = (cat) => {
@@ -77,6 +100,10 @@ export default function Gallery() {
     ];
   }, [activeCategories, publishedAlbums]);
 
+  useEffect(() => {
+    handleScroll();
+  }, [categories]);
+
   // Filter albums by selected category
   const filteredAlbums = useMemo(() => {
     if (active === "All") {
@@ -98,13 +125,8 @@ export default function Gallery() {
           GALLERY HERO HEADER
       ===================================================== */}
       <section className="pt-36 sm:pt-40 pb-12 max-w-7xl mx-auto px-6 lg:px-10">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C9A669]/10 border border-[#C9A669]/30 text-[#9C7B3D] text-xs uppercase font-bold tracking-[0.2em] mb-4">
-            <Sparkles size={13} />
-            <span>Curated Event Albums</span>
-          </div>
-
-          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-[#1C1B19] leading-tight font-normal">
+<div className="max-w-3xl">
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-[#1C1B19] leading-tight font-normal">
             Timeless stories.
             <br />
             Captured in albums.
@@ -124,8 +146,27 @@ export default function Gallery() {
         className="sticky top-[72px] sm:top-[80px] z-30 bg-[#FAF8F5]/90 backdrop-blur-md border-y border-[#E7E0D2] shadow-[0_2px_12px_rgba(0,0,0,0.02)]"
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
-          <div className="py-3.5 flex gap-2.5 overflow-x-auto no-scrollbar scroll-smooth">
-            {categories.map((category) => {
+          <div className="relative py-3.5">
+            {/* Left Arrow */}
+            {showLeftArrow && (
+              <button
+                type="button"
+                onClick={scrollLeft}
+                className="absolute left-[-10px] top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white/90 border border-[#E7E0D2] text-[#736B5E] hover:bg-white hover:border-[#C9A669]/60 hover:text-[#1C1B19] shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A669]"
+                aria-label="Scroll categories left"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+            )}
+
+            <div
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              className={`flex gap-2.5 overflow-x-auto no-scrollbar scroll-smooth pb-1 pr-10 ${showLeftArrow ? "pl-14" : ""}`}
+            >
+              {categories.map((category) => {
               const isSelected = active.toLowerCase() === category.toLowerCase();
               const count =
                 category === "All"
@@ -171,6 +212,20 @@ export default function Gallery() {
                 </button>
               );
             })}
+          </div>
+            {/* Right Arrow */}
+            {showRightArrow && (
+              <button
+                type="button"
+                onClick={scrollRight}
+                className="absolute right-[-10px] top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-white/90 border border-[#E7E0D2] text-[#736B5E] hover:bg-white hover:border-[#C9A669]/60 hover:text-[#1C1B19] shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A669]"
+                aria-label="Scroll categories right"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       </nav>
