@@ -221,26 +221,31 @@ export default function WebsiteContent() {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
-          Website Content Management (CMS)
-        </h2>
-        <p className="text-xs text-[#6F6A62] mt-0.5">
-          Edit headlines, hero banners, studio story paragraphs, and contact information displayed across the public website.
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#E5EAF1] text-[#334155] flex items-center justify-center border border-[#CAD3DF] shadow-xs">
+          <PanelsTopLeft className="w-5 h-5 stroke-[1.75]" />
+        </div>
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+            Website Content Management (CMS)
+          </h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Edit headlines, hero banners, studio story paragraphs, and contact information displayed across the public website.
+          </p>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E7E0D2] pb-2">
+      <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
         <button
           type="button"
           onClick={() => setActiveTab("home")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
             activeTab === "home"
-              ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
-              : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
+              ? "bg-black text-white shadow-xs font-medium"
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           }`}
         >
           <Home className="w-4 h-4" />
@@ -250,10 +255,10 @@ export default function WebsiteContent() {
         <button
           type="button"
           onClick={() => setActiveTab("about")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
             activeTab === "about"
-              ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
-              : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
+              ? "bg-black text-white shadow-xs font-medium"
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           }`}
         >
           <Info className="w-4 h-4" />
@@ -263,10 +268,10 @@ export default function WebsiteContent() {
         <button
           type="button"
           onClick={() => setActiveTab("contact")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
             activeTab === "contact"
-              ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
-              : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
+              ? "bg-black text-white shadow-xs font-medium"
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           }`}
         >
           <PhoneCall className="w-4 h-4" />
@@ -277,17 +282,17 @@ export default function WebsiteContent() {
       {/* Tab 1: Homepage */}
       {activeTab === "home" && (
         <form onSubmit={handleSaveHome} className="space-y-6">
-          <div className="bg-white rounded-xl border border-[#E7E0D2] p-5 sm:p-6 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7E0D2] gap-3">
+          <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-3">
               <div>
-                <h3 className="text-lg font-display font-bold text-[#2B2B2B] flex items-center gap-2">
+                <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                   <span>Hero Section Content</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E4D3A6]/25 text-[#9C7B3D] font-sans font-semibold uppercase tracking-wider">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium uppercase tracking-wider border border-gray-200">
                     4 Core Fields
                   </span>
                 </h3>
-                <p className="text-xs text-[#6F6A62]">
-                  The first visual headlines brides and grooms see upon landing on SUBASH STUDIO.
+                <p className="text-xs text-gray-500 mt-0.5">
+                  The primary headlines and brand statements visitors see upon landing on SUBASH STUDIO.
                 </p>
               </div>
 
@@ -295,12 +300,12 @@ export default function WebsiteContent() {
                 <button
                   type="submit"
                   disabled={savingSection !== null || savingField !== null}
-                  className="px-4 sm:px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 text-xs font-medium flex items-center gap-2 shadow-xs transition-colors disabled:opacity-60 cursor-pointer"
                 >
                   {savingSection === "home" ? (
-                    <Loader2 className="w-4 h-4 text-[#E4D3A6] animate-spin" />
+                    <Loader2 className="w-4 h-4 text-white animate-spin" />
                   ) : (
-                    <Save className="w-4 h-4 text-[#E4D3A6]" />
+                    <Save className="w-4 h-4 text-white" />
                   )}
                   <span>{savingSection === "home" ? "Saving..." : "Save Changes"}</span>
                 </button>
@@ -309,12 +314,12 @@ export default function WebsiteContent() {
 
             <div className="space-y-5 text-xs">
               {/* HERO SECTION CONTENT (4 EDITABLE TEXT FIELDS) */}
-              <div className="space-y-3.5">
-                <div className="flex items-center justify-between pb-1 border-b border-[#E7E0D2]/60">
-                  <span className="text-xs font-bold text-[#2B2B2B] uppercase tracking-wider">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+                  <span className="text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Editorial Text Hierarchy
                   </span>
-                  <span className="text-[11px] text-[#8C8275]">
+                  <span className="text-[11px] text-gray-400">
                     Click &ldquo;Edit&rdquo; on any field to modify or save independently
                   </span>
                 </div>
@@ -332,27 +337,27 @@ export default function WebsiteContent() {
                         key={field.key}
                         className={`rounded-xl border transition-all ${
                           isEditing
-                            ? "border-[#C9A669] bg-[#FAF8F5] shadow-xs p-4 sm:p-5"
-                            : "border-[#E7E0D2] bg-[#FBF9F6]/70 hover:bg-[#FBF9F6] p-4"
+                            ? "border-black bg-gray-50/60 shadow-xs p-4 sm:p-5"
+                            : "border-gray-200 bg-white hover:bg-gray-50/50 p-4"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[11.5px] font-bold text-[#9C7B3D] tracking-wide uppercase">
+                              <span className="text-[11px] font-semibold text-gray-900 tracking-wide uppercase">
                                 {idx + 1}. {field.label}
                               </span>
-                              <span className="text-[10.5px] text-[#8C8275]">
+                              <span className="text-[10.5px] text-gray-400">
                                 (Max {field.max} chars)
                               </span>
                             </div>
 
                             {!isEditing ? (
                               <div className="mt-1">
-                                <p className="text-sm font-semibold text-[#2B2B2B] tracking-wide break-words">
-                                  {currentVal || <span className="text-[#8C8275] italic">Not set</span>}
+                                <p className="text-sm font-semibold text-gray-900 tracking-wide break-words">
+                                  {currentVal || <span className="text-gray-400 italic">Not set</span>}
                                 </p>
-                                <p className="text-[11px] text-[#8C8275] mt-1">
+                                <p className="text-[11px] text-gray-500 mt-1">
                                   {field.description}
                                 </p>
                               </div>
@@ -366,15 +371,15 @@ export default function WebsiteContent() {
                                   onChange={(e) => handleFieldChange(field.key, e.target.value.slice(0, field.max))}
                                   placeholder={field.defaultValue}
                                   autoFocus
-                                  className="w-full p-2.5 bg-white border border-[#E7E0D2] rounded-lg text-xs font-semibold text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none transition-colors shadow-2xs"
+                                  className="w-full p-2.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 transition-all shadow-xs"
                                 />
                                 <div className="flex items-center justify-between text-[11px]">
-                                  <span className="text-[#8C8275]">{field.description}</span>
+                                  <span className="text-gray-400">{field.description}</span>
                                   <span
                                     className={
                                       charCount > field.max
                                         ? "text-rose-600 font-semibold"
-                                        : "text-[#9C7B3D] font-medium"
+                                        : "text-gray-500 font-medium"
                                     }
                                   >
                                     {charCount} / {field.max}
@@ -401,7 +406,7 @@ export default function WebsiteContent() {
                                     }));
                                   }
                                 }}
-                                className="px-3.5 py-1.5 rounded-lg border border-[#E7E0D2] bg-white hover:bg-[#F4EFE6] text-[#2B2B2B] hover:text-[#9C7B3D] text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                                 <span>Edit</span>
@@ -412,19 +417,19 @@ export default function WebsiteContent() {
                                   type="button"
                                   disabled={isSavingThis}
                                   onClick={() => handleSaveIndividualField(field.key, field.label)}
-                                  className="px-3 py-1.5 rounded-lg bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-60 cursor-pointer shadow-xs"
+                                  className="px-3 py-1.5 rounded-lg bg-black text-white hover:bg-gray-800 text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-60 cursor-pointer shadow-xs"
                                 >
                                   {isSavingThis ? (
-                                    <Loader2 className="w-3.5 h-3.5 text-[#E4D3A6] animate-spin" />
+                                    <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
                                   ) : (
-                                    <Save className="w-3.5 h-3.5 text-[#E4D3A6]" />
+                                    <Save className="w-3.5 h-3.5 text-white" />
                                   )}
                                   <span>Save</span>
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setEditingField(null)}
-                                  className="px-2.5 py-1.5 rounded-lg border border-[#E7E0D2] bg-white hover:bg-[#F4EFE6] text-[#6F6A62] text-xs font-medium transition-all cursor-pointer"
+                                  className="px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium transition-colors cursor-pointer"
                                 >
                                   Done
                                 </button>
@@ -438,7 +443,7 @@ export default function WebsiteContent() {
                 </div>
               </div>
 
-              {/* HERO IMAGES SECTION (Screenshot 2) */}
+              {/* HERO IMAGES SECTION */}
               <HeroImageManager
                 images={Array.isArray(homeForm.heroImages) ? homeForm.heroImages : []}
                 onChange={(updatedImages) => {
@@ -478,25 +483,25 @@ export default function WebsiteContent() {
       {/* Tab 3: Contact & Social */}
       {activeTab === "contact" && (
         <form onSubmit={handleSaveContact} className="space-y-6">
-          <div className="bg-white rounded-xl border border-[#E7E0D2] p-5 sm:p-6 shadow-sm space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E7E0D2]">
+          <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div>
-                <h3 className="text-lg font-display font-bold text-[#2B2B2B]">
+                <h3 className="text-base font-semibold text-gray-900">
                   Studio Contact Details &amp; Social Channels
                 </h3>
-                <p className="text-xs text-[#6F6A62]">
+                <p className="text-xs text-gray-500 mt-0.5">
                   Manage central phone number, WhatsApp, email address, and social links.
                 </p>
               </div>
               <button
                 type="submit"
                 disabled={savingSection !== null}
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60"
+                className="px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 text-xs font-medium flex items-center gap-2 shadow-xs transition-colors active:scale-95 disabled:opacity-60"
               >
                 {savingSection === "contact" ? (
-                  <Loader2 className="w-4 h-4 text-[#E4D3A6] animate-spin" />
+                  <Loader2 className="w-4 h-4 text-white animate-spin" />
                 ) : (
-                  <Save className="w-4 h-4 text-[#E4D3A6]" />
+                  <Save className="w-4 h-4 text-white" />
                 )}
                 <span>{savingSection === "contact" ? "Saving..." : "Save Contact Details"}</span>
               </button>
@@ -505,61 +510,61 @@ export default function WebsiteContent() {
             <div className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Primary Phone</label>
+                  <label className="text-xs font-medium text-gray-700">Primary Phone</label>
                   <input
                     type="text"
                     value={contactForm.phone || ""}
                     onChange={(e) =>
                       setContactForm({ ...contactForm, phone: e.target.value })
                     }
-                    className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+                    className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all font-medium"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">WhatsApp Hotline</label>
+                  <label className="text-xs font-medium text-gray-700">WhatsApp Hotline</label>
                   <input
                     type="text"
                     value={contactForm.whatsapp || ""}
                     onChange={(e) =>
                       setContactForm({ ...contactForm, whatsapp: e.target.value })
                     }
-                    className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+                    className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all font-medium"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-semibold text-[#6F6A62]">Studio Email</label>
+                  <label className="text-xs font-medium text-gray-700">Studio Email</label>
                   <input
                     type="email"
                     value={contactForm.email || ""}
                     onChange={(e) =>
                       setContactForm({ ...contactForm, email: e.target.value })
                     }
-                    className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+                    className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all font-medium"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="font-semibold text-[#6F6A62]">Business &amp; Atelier Hours</label>
+                <label className="text-xs font-medium text-gray-700">Business &amp; Atelier Hours</label>
                 <input
                   type="text"
                   value={contactForm.hours || ""}
                   onChange={(e) =>
                     setContactForm({ ...contactForm, hours: e.target.value })
                   }
-                  className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+                  className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all font-medium"
                 />
               </div>
 
-              <div className="pt-4 border-t border-[#E7E0D2] space-y-4">
-                <h4 className="font-display font-semibold text-sm text-[#2B2B2B]">
+              <div className="pt-4 border-t border-gray-100 space-y-4">
+                <h4 className="font-semibold text-sm text-gray-900">
                   Social Media Links
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62] flex items-center gap-1.5">
+                    <label className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
                       <FaInstagram className="w-3.5 h-3.5 text-pink-600" />
                       <span>Instagram URL</span>
                     </label>
@@ -569,12 +574,12 @@ export default function WebsiteContent() {
                       onChange={(e) =>
                         setContactForm({ ...contactForm, instagram: e.target.value })
                       }
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                      className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62] flex items-center gap-1.5">
+                    <label className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
                       <FaFacebookF className="w-3.5 h-3.5 text-blue-600" />
                       <span>Facebook URL</span>
                     </label>
@@ -584,12 +589,12 @@ export default function WebsiteContent() {
                       onChange={(e) =>
                         setContactForm({ ...contactForm, facebook: e.target.value })
                       }
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                      className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62] flex items-center gap-1.5">
+                    <label className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
                       <FaYoutube className="w-3.5 h-3.5 text-red-600" />
                       <span>YouTube Channel</span>
                     </label>
@@ -599,7 +604,7 @@ export default function WebsiteContent() {
                       onChange={(e) =>
                         setContactForm({ ...contactForm, youtube: e.target.value })
                       }
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                      className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
                     />
                   </div>
                 </div>

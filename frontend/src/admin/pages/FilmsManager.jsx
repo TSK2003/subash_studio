@@ -179,44 +179,49 @@ export default function FilmsManager() {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
-            Cinematic Films &amp; Teasers
-          </h2>
-          <p className="text-xs text-[#6F6A62] mt-0.5">
-            Manage 4K wedding cinema films, teasers, highlight reels, and streaming links.
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#E5EAF1] text-[#334155] flex items-center justify-center border border-[#CAD3DF] shadow-xs">
+            <Film className="w-5 h-5 stroke-[1.75]" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+              Cinematic Films &amp; Teasers
+            </h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Manage 4K wedding cinema films, teasers, highlight reels, and streaming links.
+            </p>
+          </div>
         </div>
 
         <button
           type="button"
           onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-black hover:bg-gray-800 text-white rounded-xl text-xs font-medium shadow-xs transition-colors shrink-0"
         >
-          <Plus className="w-4 h-4 text-[#E4D3A6]" />
+          <Plus className="w-4 h-4" />
           <span>Add Film</span>
         </button>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-[#E7E0D2] shadow-sm space-y-3">
+      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-gray-200 shadow-xs space-y-3">
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8E867B]" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search films by title, couple or category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-[#F8F6F2] border border-[#E7E0D2] rounded-lg text-xs text-[#2B2B2B] placeholder:text-[#8E867B] focus:outline-none focus:border-[#C9A669]"
+            className="w-full pl-10 pr-4 py-2 bg-gray-50/50 border border-gray-200 rounded-lg text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
           />
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-[#F8F6F2]">
-          <span className="text-[11px] text-[#6F6A62] font-semibold mr-1 shrink-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-2 border-t border-gray-100">
+          <span className="text-[11px] text-gray-500 font-medium mr-1 shrink-0">
             Category:
           </span>
           {CATEGORIES.map((cat) => {
@@ -233,16 +238,16 @@ export default function FilmsManager() {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   isSelected
-                    ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm font-semibold"
-                    : "bg-[#F8F6F2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8]"
+                    ? "bg-black text-white shadow-xs font-medium"
+                    : "bg-gray-50 text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-gray-200/60"
                 }`}
               >
                 <span>{cat}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full ${
                     isSelected
-                      ? "bg-[#3D3A34] text-[#E4D3A6]"
-                      : "bg-[#E7E0D2] text-[#6F6A62]"
+                      ? "bg-gray-800 text-gray-200"
+                      : "bg-gray-200/70 text-gray-600"
                   }`}
                 >
                   {count}
@@ -267,11 +272,11 @@ export default function FilmsManager() {
           {filteredFilms.map((film) => (
             <div
               key={film.id}
-              className="bg-white rounded-xl border border-[#E7E0D2] overflow-hidden shadow-sm hover:shadow-md hover:border-[#C9A669]/60 transition-all flex flex-col justify-between group"
+              className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs hover:shadow-sm hover:border-gray-300 transition-all flex flex-col justify-between group"
             >
               <div>
                 {/* Video Thumbnail */}
-                <div className="relative aspect-[16/9] bg-[#1C1B19] overflow-hidden">
+                <div className="relative aspect-[16/9] bg-gray-900 overflow-hidden">
                   <img
                     src={film.thumbnail || "/images/portfolio/port-1.jpg"}
                     alt={film.title}
@@ -287,50 +292,50 @@ export default function FilmsManager() {
                     aria-label={`Play ${film.title}`}
                     className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors cursor-pointer"
                   >
-                    <div className="w-12 h-12 rounded-full bg-white/90 text-[#1C1B19] flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-[#C9A669] transition-all">
+                    <div className="w-12 h-12 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all">
                       <Play className="w-5 h-5 fill-current ml-0.5" />
                     </div>
                   </button>
 
                   {/* Top Badges */}
                   <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 max-w-[85%]">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#1C1B19]/80 backdrop-blur-md text-[#E4D3A6]">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-black/75 backdrop-blur-md text-white">
                       {film.category}
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/60 backdrop-blur-md text-white/90">
                       {film.videoSourceType === "upload" || film.videoUrl?.startsWith("/uploads/") ? "Uploaded Video" : "External Stream"}
                     </span>
                     {film.featured && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#9C7B3D] text-[#1C1B19]">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500 text-white shadow-xs">
                         Featured
                       </span>
                     )}
                   </div>
 
                   {film.duration && (
-                    <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-black/80 text-white text-[10px] font-mono font-semibold">
+                    <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-black/80 text-white text-[10px] font-mono font-medium">
                       {film.duration}
                     </div>
                   )}
                 </div>
 
                 {/* Details */}
-                <div className="p-5 space-y-2">
-                  <h3 className="font-display font-bold text-base text-[#2B2B2B] line-clamp-1">
+                <div className="p-4 sm:p-5 space-y-2">
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-1">
                     {film.title}
                   </h3>
-                  <p className="text-xs text-[#6F6A62] line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
                     {film.description}
                   </p>
                 </div>
               </div>
 
               {/* Actions Footer */}
-              <div className="p-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-between text-xs">
+              <div className="p-3.5 sm:p-4 bg-gray-50/70 border-t border-gray-100 flex items-center justify-between text-xs">
                 <button
                   type="button"
                   onClick={() => setPlayingFilm(film)}
-                  className="text-[#9C7B3D] hover:underline font-semibold flex items-center gap-1.5 cursor-pointer"
+                  className="text-gray-900 hover:text-black font-medium flex items-center gap-1.5 cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
                   <span>Watch Video</span>
@@ -340,7 +345,7 @@ export default function FilmsManager() {
                   <button
                     type="button"
                     onClick={() => handleOpenEdit(film)}
-                    className="p-1.5 text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white rounded-lg transition-colors"
+                    className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-white rounded-lg border border-transparent hover:border-gray-200 transition-colors"
                     title="Edit Film"
                   >
                     <Edit3 className="w-4 h-4" />
@@ -348,7 +353,7 @@ export default function FilmsManager() {
                   <button
                     type="button"
                     onClick={() => handleDeletePrompt(film)}
-                    className="p-1.5 text-[#6F6A62] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                     title="Delete Film"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -366,7 +371,7 @@ export default function FilmsManager() {
           <AnimatePresence>
             {modalOpen && (
               <div
-                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden admin-portal"
                 role="dialog"
                 aria-modal="true"
               >
@@ -378,203 +383,203 @@ export default function FilmsManager() {
                   className="fixed inset-0"
                 />
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.96, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.98, y: 8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: 8 }}
                   transition={{ duration: 0.2 }}
-                  className="relative w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
+                  className="relative w-full max-w-xl bg-white rounded-2xl shadow-xl border border-gray-200 z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
-              {/* Fixed Header */}
-              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
-                <div>
-                  <span className="text-[11px] font-bold uppercase tracking-widest2 text-[#9C7B3D]">
-                    {editingFilm ? "Edit Cinematic Film" : "New Cinematic Film"}
-                  </span>
-                  <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
-                    {editingFilm ? `Edit ${editingFilm.title}` : "Upload Film Showcase"}
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
-                  aria-label="Close modal"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Form with scrollable body & pinned footer */}
-              <form onSubmit={handleSave} autoComplete="off" className="flex flex-col flex-1 min-h-0">
-                <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-4 text-xs modal-scrollbar">
-                  <ImageUploader
-                    value={formData.thumbnail}
-                    onChange={(url) => setFormData({ ...formData, thumbnail: url })}
-                    label="Film Video Poster / Thumbnail"
-                  />
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Film Title *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. A Story Written in the Stars — Ananya & Siddharth"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
+                  {/* Fixed Header */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0 bg-white">
+                    <div>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                        {editingFilm ? "Edit Cinematic Film" : "New Cinematic Film"}
+                      </span>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {editingFilm ? `Edit ${editingFilm.title}` : "Upload Film Showcase"}
+                      </h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCloseModal}
+                      className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                      aria-label="Close modal"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Category</label>
-                      <select
-                        value={formData.category}
-                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                      >
-                        <option value="">Select category</option>
-                        {CATEGORIES.filter((c) => c !== "All").map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Runtime Duration</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. 4:32 or 10 mins"
-                        value={formData.duration}
-                        onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                  {/* Form with scrollable body & pinned footer */}
+                  <form onSubmit={handleSave} autoComplete="off" className="flex flex-col flex-1 min-h-0">
+                    <div className="overflow-y-auto flex-1 p-6 space-y-4 text-xs modal-scrollbar">
+                      <ImageUploader
+                        value={formData.thumbnail}
+                        onChange={(url) => setFormData({ ...formData, thumbnail: url })}
+                        label="Film Video Poster / Thumbnail"
                       />
-                    </div>
-                  </div>
 
-                  {/* Video Source Selector & Input / Uploader */}
-                  <div className="space-y-3">
-                    <label className="font-semibold text-[#6F6A62] block">Video Source *</label>
-                    <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1EFEA] rounded-xl">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            videoSourceType: "upload",
-                            videoUrl: prev.videoSourceType === "upload" ? prev.videoUrl : "",
-                          }))
-                        }
-                        className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                          formData.videoSourceType === "upload"
-                            ? "bg-white text-[#1C1B19] shadow-sm"
-                            : "text-[#6F6A62] hover:text-[#1C1B19]"
-                        }`}
-                      >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Upload Video</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            videoSourceType: "external",
-                            videoUrl: prev.videoSourceType === "external" ? prev.videoUrl : "",
-                          }))
-                        }
-                        className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                          formData.videoSourceType === "external"
-                            ? "bg-white text-[#1C1B19] shadow-sm"
-                            : "text-[#6F6A62] hover:text-[#1C1B19]"
-                        }`}
-                      >
-                        <Link2 className="w-3.5 h-3.5" />
-                        <span>YouTube / Vimeo URL</span>
-                      </button>
-                    </div>
-
-                    {formData.videoSourceType === "upload" ? (
-                      <VideoUploader
-                        value={formData.videoUrl}
-                        onChange={(url) => setFormData((prev) => ({ ...prev, videoUrl: url }))}
-                      />
-                    ) : (
                       <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-700">Film Title *</label>
                         <input
-                          type="url"
-                          placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
-                          value={formData.videoUrl}
-                          onChange={(e) => setFormData((prev) => ({ ...prev, videoUrl: e.target.value }))}
-                          className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                          type="text"
+                          required
+                          placeholder="e.g. A Story Written in the Stars — Ananya & Siddharth"
+                          value={formData.title}
+                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                          className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
                         />
-                        <p className="text-[11px] text-[#6F6A62]">
-                          Paste a valid YouTube (standard, shorts, embed) or Vimeo link.
-                        </p>
                       </div>
-                    )}
-                  </div>
 
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Film Description</label>
-                    <textarea
-                      rows={3}
-                      placeholder="Story narrative, equipment used, music composers, location..."
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-700">Category</label>
+                          <select
+                            value={formData.category}
+                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                            className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
+                          >
+                            <option value="">Select category</option>
+                            {CATEGORIES.filter((c) => c !== "All").map((cat) => (
+                              <option key={cat} value={cat}>
+                                {cat}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
 
-                  <div className="flex items-center gap-6 pt-2">
-                    <label className="flex items-center gap-2 cursor-pointer font-medium text-[#2B2B2B]">
-                      <input
-                        type="checkbox"
-                        checked={formData.featured}
-                        onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                        className="w-4 h-4 rounded border-[#E7E0D2] text-[#9C7B3D] focus:ring-[#C9A669]"
-                      />
-                      <span>Feature on Homepage</span>
-                    </label>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-700">Runtime Duration</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 4:32 or 10 mins"
+                            value={formData.duration}
+                            onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                            className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
+                          />
+                        </div>
+                      </div>
 
-                    <label className="flex items-center gap-2 cursor-pointer font-medium text-[#2B2B2B]">
-                      <input
-                        type="checkbox"
-                        checked={formData.published}
-                        onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
-                        className="w-4 h-4 rounded border-[#E7E0D2] text-[#9C7B3D] focus:ring-[#C9A669]"
-                      />
-                      <span>Publish to Live Site</span>
-                    </label>
-                  </div>
-                </div>
+                      {/* Video Source Selector & Input / Uploader */}
+                      <div className="space-y-2.5">
+                        <label className="text-xs font-medium text-gray-700 block">Video Source *</label>
+                        <div className="grid grid-cols-2 gap-1.5 p-1 bg-gray-100 rounded-xl">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                videoSourceType: "upload",
+                                videoUrl: prev.videoSourceType === "upload" ? prev.videoUrl : "",
+                              }))
+                            }
+                            className={`py-2 px-3 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                              formData.videoSourceType === "upload"
+                                ? "bg-white text-gray-900 shadow-xs"
+                                : "text-gray-600 hover:text-gray-900"
+                            }`}
+                          >
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>Upload Video</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                videoSourceType: "external",
+                                videoUrl: prev.videoSourceType === "external" ? prev.videoUrl : "",
+                              }))
+                            }
+                            className={`py-2 px-3 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                              formData.videoSourceType === "external"
+                                ? "bg-white text-gray-900 shadow-xs"
+                                : "text-gray-600 hover:text-gray-900"
+                            }`}
+                          >
+                            <Link2 className="w-3.5 h-3.5" />
+                            <span>YouTube / Vimeo URL</span>
+                          </button>
+                        </div>
 
-                {/* Pinned Action Footer */}
-                <div className="px-6 sm:px-8 py-5 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] font-semibold shadow-md active:scale-95 transition-all"
-                  >
-                    {editingFilm ? "Save Film" : "Publish Film"}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
+                        {formData.videoSourceType === "upload" ? (
+                          <VideoUploader
+                            value={formData.videoUrl}
+                            onChange={(url) => setFormData((prev) => ({ ...prev, videoUrl: url }))}
+                          />
+                        ) : (
+                          <div className="space-y-1">
+                            <input
+                              type="url"
+                              placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..."
+                              value={formData.videoUrl}
+                              onChange={(e) => setFormData((prev) => ({ ...prev, videoUrl: e.target.value }))}
+                              className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
+                            />
+                            <p className="text-[11px] text-gray-500">
+                              Paste a valid YouTube (standard, shorts, embed) or Vimeo link.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-700">Film Description</label>
+                        <textarea
+                          rows={3}
+                          placeholder="Story narrative, equipment used, music composers, location..."
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-6 pt-2">
+                        <label className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={formData.featured}
+                            onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                            className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black/20 accent-black"
+                          />
+                          <span>Feature on Homepage</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={formData.published}
+                            onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
+                            className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black/20 accent-black"
+                          />
+                          <span>Publish to Live Site</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Pinned Action Footer */}
+                    <div className="px-6 py-3.5 bg-gray-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={handleCloseModal}
+                        className="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-white text-xs font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl bg-black text-white hover:bg-gray-800 text-xs font-medium shadow-xs active:scale-95 transition-all"
+                      >
+                        {editingFilm ? "Save Changes" : "Publish Film"}
+                      </button>
+                    </div>
+                  </form>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>,
-      document.body
-    )}
 
       {/* Delete Confirm */}
       <ConfirmModal

@@ -283,7 +283,7 @@ export default function HeroVideoManager({
   };
 
   return (
-    <div className="space-y-4 pt-4 border-t border-[#E7E0D2]">
+    <div className="space-y-4 pt-4 border-t border-gray-200">
       {/* Hidden File Picker */}
       <input
         ref={fileInputRef}
@@ -299,31 +299,31 @@ export default function HeroVideoManager({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Film className="w-4 h-4 text-[#9C7B3D]" />
-            <h4 className="text-sm font-display font-bold text-[#2B2B2B] uppercase tracking-wider">
+            <Film className="w-4 h-4 text-blue-600" />
+            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
               HERO VIDEOS
             </h4>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#F2ECE4] text-[#8C7A58] border border-[#E7E0D2]">
+            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">
               {videos.length} {videos.length === 1 ? "video" : "videos"}
             </span>
           </div>
-          <p className="text-xs text-[#6F6A62] mt-0.5">
+          <p className="text-xs text-gray-500 mt-0.5">
             Upload and manage the videos displayed in the homepage hero section.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Loop Setting Switch */}
-          <label className="flex items-center gap-2 cursor-pointer select-none bg-[#F8F6F2] hover:bg-[#F2ECE4] border border-[#E7E0D2] px-3 py-1.5 rounded-xl transition-colors">
+          <label className="flex items-center gap-2 cursor-pointer select-none bg-white hover:bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors">
             <input
               type="checkbox"
               checked={Boolean(loopEnabled)}
               onChange={(e) => onLoopChange(e.target.checked)}
               disabled={disabled}
-              className="w-4 h-4 rounded text-[#9C7B3D] focus:ring-[#C9A669] border-[#D5CEBF] accent-[#9C7B3D] cursor-pointer"
+              className="w-4 h-4 rounded text-black focus:ring-black border-gray-300 accent-black cursor-pointer"
             />
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#2B2B2B]">
-              <Repeat className="w-3.5 h-3.5 text-[#9C7B3D]" />
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+              <Repeat className="w-3.5 h-3.5 text-gray-500" />
               <span>Loop Hero Videos</span>
             </div>
           </label>
@@ -333,7 +333,7 @@ export default function HeroVideoManager({
             type="button"
             disabled={disabled}
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 bg-[#2B2B2B] hover:bg-[#1C1B19] text-[#E4D3A6] hover:text-white rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg text-xs font-semibold tracking-wide flex items-center gap-2 shadow-xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Video</span>
@@ -342,13 +342,13 @@ export default function HeroVideoManager({
       </div>
 
       {/* Helper explanation for loop mode */}
-      <div className="text-[11px] text-[#8C8275] bg-[#FAF8F5] border border-[#E7E0D2]/70 rounded-lg p-2.5 flex items-center justify-between">
+      <div className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-2.5 flex items-center justify-between">
         <span>
           {loopEnabled
             ? "Loop ON: Videos play sequentially (1 → 2 → 3 → 1...) continuously without stopping."
             : "Loop OFF: Videos play in sequence once (1 → 2 → 3), then remain on the final frame."}
         </span>
-        <span className="text-[10px] text-[#A69C8D]">Drag or use arrows to reorder</span>
+        <span className="text-[10px] text-gray-400">Drag or use arrows to reorder</span>
       </div>
 
       {/* Error Alert */}
@@ -375,18 +375,18 @@ export default function HeroVideoManager({
           {activeUploads.map((upl) => (
             <div
               key={upl.id}
-              className="p-3 bg-[#FAF8F5] rounded-xl border border-[#C9A669] flex flex-col gap-2 transition-all"
+              className="p-3 bg-gray-50 rounded-xl border border-gray-900 flex flex-col gap-2 transition-all"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-[#C9A669]/20 text-[#9C7B3D] flex items-center justify-center shrink-0 animate-pulse">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 animate-pulse">
                     <Upload className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-[#2B2B2B] truncate">
+                    <p className="text-xs font-bold text-gray-900 truncate">
                       {upl.fileName}
                     </p>
-                    <p className="text-[11px] text-[#6F6A62]">
+                    <p className="text-[11px] text-gray-500">
                       Uploading... {formatBytes(upl.loaded)} /{" "}
                       {formatBytes(upl.total)} ({upl.progress}%)
                       {upl.duration !== "00:00" && ` • ${upl.duration}`}
@@ -397,16 +397,16 @@ export default function HeroVideoManager({
                 <button
                   type="button"
                   onClick={() => handleCancelUpload(upl.id)}
-                  className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white rounded-lg border border-[#E7E0D2] hover:border-rose-300 transition-colors"
+                  className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white rounded-lg border border-gray-200 hover:border-rose-300 transition-colors"
                 >
                   Cancel
                 </button>
               </div>
 
               {/* Progress bar */}
-              <div className="w-full bg-[#E7E0D2] rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className="bg-[#C9A669] h-full rounded-full transition-all duration-150 ease-out"
+                  className="bg-black h-full rounded-full transition-all duration-150 ease-out"
                   style={{
                     width: `${Math.min(100, Math.max(0, upl.progress))}%`,
                   }}
@@ -421,19 +421,19 @@ export default function HeroVideoManager({
       {videos.length === 0 && activeUploads.length === 0 && (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="cursor-pointer group p-8 rounded-2xl border-2 border-dashed border-[#E7E0D2] hover:border-[#C9A669] bg-[#FAF8F5]/60 hover:bg-[#FAF8F5] transition-all flex flex-col items-center justify-center text-center space-y-2 select-none"
+          className="cursor-pointer group p-8 rounded-2xl border-2 border-dashed border-gray-200 hover:border-gray-400 bg-gray-50/50 hover:bg-gray-50 transition-all flex flex-col items-center justify-center text-center space-y-2 select-none"
         >
-          <div className="w-12 h-12 rounded-full bg-[#C9A669]/10 text-[#9C7B3D] group-hover:scale-110 flex items-center justify-center transition-transform">
+          <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 group-hover:scale-110 flex items-center justify-center transition-transform">
             <Film className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-[#2B2B2B]">
+            <p className="text-xs font-bold text-gray-900">
               No hero videos uploaded yet
             </p>
-            <p className="text-[11px] text-[#6F6A62] mt-0.5">
+            <p className="text-[11px] text-gray-500 mt-0.5">
               Click &quot;+ Add Video&quot; to upload MP4, WebM, or MOV videos (up to 100MB).
             </p>
-            <p className="text-[10px] text-[#A69C8D] mt-1">
+            <p className="text-[10px] text-gray-400 mt-1">
               When no videos are uploaded, the landing page safely falls back to the default studio storefront image.
             </p>
           </div>
@@ -450,27 +450,27 @@ export default function HeroVideoManager({
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDrop={(e) => handleDrop(e, index)}
-              className={`p-3 bg-[#FAF8F5] rounded-xl border transition-all flex items-center justify-between gap-3 ${
+              className={`p-3 bg-white rounded-xl border transition-all flex items-center justify-between gap-3 ${
                 draggedIndex === index
-                  ? "border-[#C9A669] opacity-40 shadow-sm"
-                  : "border-[#E7E0D2] hover:border-[#C9A669]/70 hover:shadow-sm"
+                  ? "border-gray-900 opacity-40 shadow-xs"
+                  : "border-gray-200 hover:border-gray-300 shadow-xs"
               }`}
             >
               {/* Left: Drag handle & Order & Thumbnail Preview */}
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className="cursor-grab active:cursor-grabbing p-1 text-[#A69C8D] hover:text-[#2B2B2B] transition-colors"
+                  className="cursor-grab active:cursor-grabbing p-1 text-gray-400 hover:text-gray-900 transition-colors"
                   title="Drag to reorder"
                 >
                   <GripVertical className="w-4 h-4" />
                 </div>
 
-                <span className="w-5 text-center text-xs font-bold text-[#9C7B3D]">
+                <span className="w-5 text-center text-xs font-bold text-gray-900">
                   {index + 1}
                 </span>
 
                 {/* Video Preview Thumbnail */}
-                <div className="relative w-24 sm:w-28 h-16 rounded-lg overflow-hidden bg-black border border-[#E7E0D2] shrink-0 shadow-inner group">
+                <div className="relative w-24 sm:w-28 h-16 rounded-lg overflow-hidden bg-black border border-gray-200 shrink-0 shadow-inner group">
                   <video
                     src={video.url}
                     preload="metadata"
@@ -490,18 +490,18 @@ export default function HeroVideoManager({
                 {/* Video Info */}
                 <div className="min-w-0 flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#2B2B2B] truncate max-w-[200px] sm:max-w-[280px] md:max-w-md">
+                    <span className="text-xs font-bold text-gray-900 truncate max-w-[200px] sm:max-w-[280px] md:max-w-md">
                       {video.name || video.filename || video.url.split("/").pop()}
                     </span>
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 shrink-0">
                       Ready
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-[11px] text-[#6F6A62] mt-0.5">
-                    <span className="font-medium text-[#9C7B3D]">
+                  <div className="flex items-center gap-3 text-[11px] text-gray-500 mt-0.5">
+                    <span className="font-medium text-gray-700">
                       Duration: {video.duration || "00:00"}
                     </span>
-                    <span className="truncate text-[#8C8275] max-w-[180px] sm:max-w-[240px]">
+                    <span className="truncate text-gray-400 max-w-[180px] sm:max-w-[240px]">
                       {video.url}
                     </span>
                   </div>
@@ -514,7 +514,7 @@ export default function HeroVideoManager({
                   type="button"
                   disabled={disabled || index === 0}
                   onClick={() => handleMoveUp(index)}
-                  className="p-1.5 rounded-lg text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white border border-transparent hover:border-[#E7E0D2] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 border border-gray-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                   title="Move Up"
                   aria-label={`Move video ${index + 1} up`}
                 >
@@ -525,14 +525,14 @@ export default function HeroVideoManager({
                   type="button"
                   disabled={disabled || index === videos.length - 1}
                   onClick={() => handleMoveDown(index)}
-                  className="p-1.5 rounded-lg text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white border border-transparent hover:border-[#E7E0D2] disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 border border-gray-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                   title="Move Down"
                   aria-label={`Move video ${index + 1} down`}
                 >
                   <ChevronDown className="w-4 h-4" />
                 </button>
 
-                <div className="w-[1px] h-4 bg-[#E7E0D2] mx-1" />
+                <div className="w-[1px] h-4 bg-gray-200 mx-1" />
 
                 <button
                   type="button"

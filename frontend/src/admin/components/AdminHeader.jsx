@@ -84,7 +84,6 @@ export default function AdminHeader({ onMobileMenuClick }) {
       case ADMIN_ROUTES.ENQUIRIES:
         return { title: "Lead Inquiries", subtitle: "Track and follow up on client contact messages" };
       case ADMIN_ROUTES.GALLERY:
-      case ADMIN_ROUTES.PORTFOLIO:
         return { title: "Gallery Albums", subtitle: "Curate event and client photo albums with category filters" };
       case ADMIN_ROUTES.SERVICES:
         return { title: "Studio Offerings", subtitle: "Configure photography packages, pricing & descriptions" };
@@ -116,36 +115,38 @@ export default function AdminHeader({ onMobileMenuClick }) {
   };
 
   return (
-    <header className="h-16 bg-white/90 backdrop-blur-md border-b border-[#E7E0D2] sticky top-0 z-20 px-3 sm:px-6 lg:px-8 flex items-center justify-between transition-all min-w-0">
+    <header className="h-16 bg-[#E7EBF0] border-b border-[#C9D1DC] sticky top-0 z-20 px-3 sm:px-6 lg:px-8 flex items-center justify-between transition-all min-w-0">
       {/* Left Title & Mobile Trigger */}
-      <div className="flex items-center gap-2 sm:gap-4 min-w-0 mr-2">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 mr-2">
         <button
           type="button"
           onClick={onMobileMenuClick}
-          className="lg:hidden p-2 rounded-lg text-[#2B2B2B] hover:bg-[#F8F6F2] border border-[#E7E0D2] shrink-0"
+          className="lg:hidden p-2 rounded-lg text-[#334155] hover:bg-[#DFE5EC] border border-[#C9D1DC] bg-[#EEF1F5] shrink-0"
           aria-label="Open Sidebar Menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="min-w-0">
-          <h1 className="text-lg sm:text-xl xl:text-2xl font-display font-bold text-[#2B2B2B] tracking-tight truncate">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50/80 text-rose-600 border border-rose-200/70 shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+            ADMIN PORTAL
+          </span>
+          <span className="text-[#C9D1DC] font-normal select-none">/</span>
+          <h1 className="text-xs sm:text-sm md:text-base font-bold text-[#111827] tracking-tight truncate">
             {pageMeta.title}
           </h1>
-          <p className="text-xs text-[#6F6A62] hidden sm:block truncate">
-            {pageMeta.subtitle}
-          </p>
         </div>
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
         {/* Quick Add Booking */}
         <Link
           to={`${ADMIN_ROUTES.BOOKINGS}?new=true`}
-          className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0"
+          className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg bg-[#111827] text-white hover:bg-black text-xs font-semibold shadow-xs transition-all active:scale-95 shrink-0"
         >
-          <Plus className="w-4 h-4 text-[#E4D3A6]" />
+          <Plus className="w-4 h-4 text-white" />
           <span>New Booking</span>
         </Link>
         {/* Live Site Link */}
@@ -153,10 +154,10 @@ export default function AdminHeader({ onMobileMenuClick }) {
           href="/"
           target="_blank"
           rel="noreferrer"
-          className="p-2 sm:px-3 sm:py-2 rounded-lg border border-[#E7E0D2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] transition-colors flex items-center gap-1.5 text-xs font-medium shrink-0"
+          className="px-2.5 sm:px-3 py-1.5 rounded-lg border border-[#C9D1DC] bg-[#EEF1F5] text-[#334155] hover:text-[#111827] hover:bg-[#DFE5EC] transition-colors flex items-center gap-1.5 text-xs font-medium shrink-0 shadow-xs"
           title="Open Public Website"
         >
-          <ExternalLink className="w-4 h-4 text-[#9C7B3D]" />
+          <ExternalLink className="w-3.5 h-3.5 text-[#475569]" />
           <span className="hidden sm:inline">Live Site</span>
         </a>
 
@@ -165,22 +166,22 @@ export default function AdminHeader({ onMobileMenuClick }) {
           <button
             type="button"
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative p-2.5 rounded-lg border border-[#E7E0D2] text-[#2B2B2B] hover:bg-[#F8F6F2] transition-colors cursor-pointer"
+            className="relative p-2 rounded-lg border border-[#C9D1DC] bg-[#EEF1F5] text-[#334155] hover:bg-[#DFE5EC] transition-colors cursor-pointer shadow-xs"
             aria-label="View notifications"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-4 h-4 text-[#475569]" />
             {unreadNotificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#C9A669] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">
+              <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">
                 {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
               </span>
             )}
           </button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 mt-3 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-xl border border-[#E7E0D2] p-4 z-50 animate-fadeIn">
-              <div className="flex items-center justify-between pb-3 border-b border-[#E7E0D2]">
+            <div className="absolute right-0 mt-3 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-[#EEF1F5] rounded-xl shadow-xl border border-[#C9D1DC] p-4 z-50 animate-fadeIn">
+              <div className="flex items-center justify-between pb-3 border-b border-[#C9D1DC]">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-display font-semibold text-sm text-[#2B2B2B]">
+                  <h4 className="font-semibold text-sm text-[#111827]">
                     Studio Activity
                   </h4>
                   {unreadNotificationCount > 0 && (
@@ -193,16 +194,16 @@ export default function AdminHeader({ onMobileMenuClick }) {
                   <button
                     type="button"
                     onClick={() => markAllNotificationsAsRead()}
-                    className="text-xs text-[#9C7B3D] hover:underline font-medium cursor-pointer"
+                    className="text-xs text-[#475569] hover:text-[#111827] hover:underline font-medium cursor-pointer"
                   >
                     Mark all read
                   </button>
                 ) : (
-                  <span className="text-[11px] text-[#8E867B]">All caught up</span>
+                  <span className="text-[11px] text-[#475569]">All caught up</span>
                 )}
               </div>
 
-              <div className="divide-y divide-[#F8F6F2] max-h-72 overflow-y-auto mt-2">
+              <div className="divide-y divide-gray-100 max-h-72 overflow-y-auto mt-2">
                 {notifications && notifications.length > 0 ? (
                   notifications.map((notif) => (
                     <div
@@ -210,8 +211,8 @@ export default function AdminHeader({ onMobileMenuClick }) {
                       onClick={() => handleNotificationClick(notif)}
                       className={`py-2.5 px-2.5 rounded-lg cursor-pointer transition-colors ${
                         !notif.isRead
-                          ? "bg-[#FDFBF7] hover:bg-[#F8F4EA]"
-                          : "hover:bg-[#FDFBF7]"
+                          ? "bg-gray-50/80 hover:bg-gray-100"
+                          : "hover:bg-gray-50"
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
@@ -223,19 +224,19 @@ export default function AdminHeader({ onMobileMenuClick }) {
                             <span
                               className={`text-xs truncate ${
                                 !notif.isRead
-                                  ? "font-bold text-[#2B2B2B]"
-                                  : "font-medium text-[#4A463F]"
+                                  ? "font-bold text-gray-900"
+                                  : "font-medium text-gray-700"
                               }`}
                             >
                               {notif.title}
                             </span>
-                            <span className="text-[10px] text-[#8E867B] shrink-0">
+                            <span className="text-[10px] text-gray-400 shrink-0">
                               {formatRelativeTime(notif.createdAt)}
                             </span>
                           </div>
                           <p
                             className={`text-[11px] mt-0.5 line-clamp-2 leading-relaxed ${
-                              !notif.isRead ? "text-[#2B2B2B]" : "text-[#6F6A62]"
+                              !notif.isRead ? "text-gray-900" : "text-gray-500"
                             }`}
                           >
                             {notif.message}
@@ -243,7 +244,7 @@ export default function AdminHeader({ onMobileMenuClick }) {
                         </div>
                         {!notif.isRead && (
                           <span
-                            className="w-2 h-2 rounded-full bg-[#C9A669] shrink-0 mt-1.5"
+                            className="w-2 h-2 rounded-full bg-amber-500 shrink-0 mt-1.5"
                             title="Unread"
                           />
                         )}
@@ -251,7 +252,7 @@ export default function AdminHeader({ onMobileMenuClick }) {
                     </div>
                   ))
                 ) : (
-                  <div className="py-6 text-center text-xs text-[#6F6A62]">
+                  <div className="py-6 text-center text-xs text-gray-400">
                     No notifications at this time.
                   </div>
                 )}

@@ -3,7 +3,6 @@ export default function AdminStatusBadge({
   size = "sm",
   className = "",
 }) {
-  // Support boolean, string "Active"/"Inactive", or null/undefined (default active)
   const isActive =
     typeof active === "boolean"
       ? active
@@ -23,11 +22,11 @@ export default function AdminStatusBadge({
   if (isActive) {
     return (
       <span
-        className={`inline-flex items-center gap-1.5 rounded-full border font-semibold tracking-wider uppercase transition-colors whitespace-nowrap bg-[#EBF3EC] text-[#2E683E] border-[#CDE3D2] ${sizeClasses} ${className}`}
+        className={`inline-flex items-center gap-1.5 rounded-full border font-semibold tracking-wider uppercase transition-colors whitespace-nowrap bg-emerald-50 text-emerald-700 border-emerald-200 ${sizeClasses} ${className}`}
         aria-label="Active status"
       >
         <span
-          className="w-1.5 h-1.5 rounded-full bg-[#2E683E] shrink-0"
+          className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"
           aria-hidden="true"
         />
         <span>ACTIVE</span>
@@ -37,11 +36,11 @@ export default function AdminStatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border font-semibold tracking-wider uppercase transition-colors whitespace-nowrap bg-[#F2EFE9] text-[#6E685F] border-[#DFDAD0] ${sizeClasses} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border font-semibold tracking-wider uppercase transition-colors whitespace-nowrap bg-gray-100 text-gray-500 border-gray-200 ${sizeClasses} ${className}`}
       aria-label="Inactive status"
     >
       <span
-        className="w-1.5 h-1.5 rounded-full border border-[#8C8479] bg-transparent shrink-0"
+        className="w-1.5 h-1.5 rounded-full border border-gray-400 bg-transparent shrink-0"
         aria-hidden="true"
       />
       <span>INACTIVE</span>
@@ -71,7 +70,7 @@ export function AdminStatusButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`text-xs font-semibold text-[#6F6A62] hover:text-[#1C1B19] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${className}`}
+      className={`text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${className}`}
     >
       {nextActionText}
     </button>

@@ -11,7 +11,6 @@ import {
   MapPin,
   Plus,
   ArrowRight,
-  Briefcase,
   Clapperboard,
   Eye,
   Frame,
@@ -38,7 +37,6 @@ export default function Dashboard() {
     gallery,
     services,
     branches,
-    portfolio,
     films,
     frameOrders,
     testimonials,
@@ -62,7 +60,6 @@ export default function Dashboard() {
     totalEnquiries,
     newEnquiries,
     totalGallery,
-    totalPortfolio,
     totalServices,
     totalFilms,
     totalBranches,
@@ -102,7 +99,6 @@ export default function Dashboard() {
       totalEnquiries: totalEnq,
       newEnquiries: newEnq,
       totalGallery: gallery.length,
-      totalPortfolio: (portfolio || []).length,
       totalServices: services.length,
       totalFilms: (films || []).length,
       totalBranches: branches.length,
@@ -110,7 +106,7 @@ export default function Dashboard() {
       totalFrameOrders: (frameOrders || []).length,
       newFrameOrders: newOrders,
     };
-  }, [bookings, enquiries, gallery, portfolio, services, films, branches, testimonials, frameOrders]);
+  }, [bookings, enquiries, gallery, services, films, branches, testimonials, frameOrders]);
 
   // Upcoming shoots: actual future or today bookings, sorted nearest-date first, excluding COMPLETED and CANCELLED
   const upcomingShoots = useMemo(() => {
@@ -210,72 +206,67 @@ export default function Dashboard() {
   }, [services, bookings]);
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Welcome Banner */}
-      <div className="bg-white rounded-xl p-5 sm:p-6 text-[#2B2B2B] shadow-sm border border-[#E7E0D2] flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-[#C9A669] before:via-[#DFCA9F] before:to-[#9C7B3D]">
-        {/* Subtle decorative warm background aura */}
-        <div className="pointer-events-none absolute -right-16 -top-16 w-64 h-64 bg-[#FBF7F0] rounded-full blur-2xl opacity-70" />
-
-        <div className="space-y-1.5 relative z-10 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-[#8E867B] font-medium">
-              {new Date().toLocaleDateString("en-IN", {
-                weekday: "long",
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
-            </span>
-          </div>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B] tracking-tight">
+    <div className="space-y-6 animate-fadeIn">
+      {/* Top Greeting Header Row */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1 min-w-0">
+          <p className="text-xs text-[#475569] font-medium">
+            {new Date().toLocaleDateString("en-IN", {
+              weekday: "long",
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </p>
+          <h2 className="text-2xl font-bold text-[#111827] tracking-tight">
             {getGreeting()}, {adminUser?.name || "Subash"}
           </h2>
-          <p className="text-xs text-[#6F6A62] max-w-xl">
-            Real-time synchronization across bookings, client enquiries, portfolio, framing orders, and studio operations.
+          <p className="text-xs text-[#475569] max-w-2xl">
+            Real-time synchronization across bookings, client enquiries, gallery, framing orders, and studio operations.
           </p>
         </div>
 
         {/* Action Button & Quick Status */}
-        <div className="flex items-center gap-2.5 relative z-10 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           {newFrameOrders > 0 ? (
             <Link
               to={ADMIN_ROUTES.FRAMES}
-              className="px-3.5 py-2.5 bg-[#FAF8F5] hover:bg-[#F3EFE8] text-[#2B2B2B] border border-[#E7E0D2] rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shadow-sm group"
+              className="px-3.5 py-2 bg-[#EEF1F5] hover:bg-[#DFE5EC] text-[#111827] border border-[#C9D1DC] rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shadow-xs group"
             >
-              <Frame className="w-3.5 h-3.5 text-[#C9A669] group-hover:scale-110 transition-transform" />
+              <Frame className="w-3.5 h-3.5 text-[#334155] group-hover:scale-105 transition-transform" />
               <span>Frame Orders</span>
-              <span className="px-1.5 py-0.5 rounded-md bg-[#C9A669]/15 text-[#8C6D32] text-[10px] font-bold">
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
                 {newFrameOrders}
               </span>
             </Link>
           ) : (
             <Link
               to={ADMIN_ROUTES.BOOKINGS}
-              className="px-3.5 py-2.5 bg-[#FAF8F5] hover:bg-[#F3EFE8] text-[#2B2B2B] border border-[#E7E0D2] rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shadow-sm group"
+              className="px-3.5 py-2 bg-[#EEF1F5] hover:bg-[#DFE5EC] text-[#111827] border border-[#C9D1DC] rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shadow-xs group"
             >
-              <CalendarDays className="w-3.5 h-3.5 text-[#C9A669] group-hover:scale-110 transition-transform" />
+              <CalendarDays className="w-3.5 h-3.5 text-[#334155] group-hover:scale-105 transition-transform" />
               <span>Shoot Schedule</span>
             </Link>
           )}
 
           <Link
             to={`${ADMIN_ROUTES.BOOKINGS}?new=true`}
-            className="px-4 py-2.5 bg-gradient-to-r from-[#C9A669] to-[#9C7B3D] hover:from-[#D4B376] hover:to-[#A88544] text-[#1C1B19] rounded-lg text-xs font-bold shadow-sm hover:shadow transition-all flex items-center gap-2 active:scale-95 shrink-0"
+            className="px-3.5 py-2 bg-[#111827] hover:bg-black text-white rounded-lg text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 active:scale-95 shrink-0"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-white" />
             <span>New Booking</span>
           </Link>
         </div>
       </div>
 
-      {/* Dynamic Statistics Cards Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      {/* Dynamic Statistics Cards Grid - Row 1 (5 Cards) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
         <StatCard
           title="Total Bookings"
           value={totalBookings}
           icon={CalendarDays}
           description="All studio shoots"
-          accent="neutral"
+          accent="blue"
           onClick={() => navigate(ADMIN_ROUTES.BOOKINGS)}
         />
         <StatCard
@@ -283,7 +274,7 @@ export default function Dashboard() {
           value={pendingBookings}
           icon={Clock}
           description="Awaiting shoot date"
-          accent={pendingBookings > 0 ? "gold" : "neutral"}
+          accent="lavender"
           onClick={() => navigate(ADMIN_ROUTES.BOOKINGS)}
         />
         <StatCard
@@ -292,7 +283,7 @@ export default function Dashboard() {
           icon={MessageSquare}
           trend={newEnquiries > 0 ? `${newEnquiries} new lead${newEnquiries > 1 ? "s" : ""}` : undefined}
           description={newEnquiries === 0 ? "All leads addressed" : undefined}
-          accent={newEnquiries > 0 ? "gold" : "neutral"}
+          accent="amber"
           onClick={() => navigate(ADMIN_ROUTES.ENQUIRIES)}
         />
         <StatCard
@@ -301,7 +292,7 @@ export default function Dashboard() {
           icon={Frame}
           trend={newFrameOrders > 0 ? `${newFrameOrders} new order${newFrameOrders > 1 ? "s" : ""}` : undefined}
           description={newFrameOrders === 0 ? "Bespoke framing orders" : undefined}
-          accent={newFrameOrders > 0 ? "gold" : "neutral"}
+          accent="coral"
           onClick={() => navigate(ADMIN_ROUTES.FRAMES)}
         />
         <StatCard
@@ -309,23 +300,19 @@ export default function Dashboard() {
           value={totalGallery}
           icon={Images}
           description="High-res photos"
-          accent="neutral"
+          accent="mint"
           onClick={() => navigate(ADMIN_ROUTES.GALLERY)}
         />
-        <StatCard
-          title="Portfolio Items"
-          value={totalPortfolio}
-          icon={Briefcase}
-          description="Curated stories"
-          accent="neutral"
-          onClick={() => navigate(ADMIN_ROUTES.PORTFOLIO)}
-        />
+      </div>
+
+      {/* Dynamic Statistics Cards Grid - Row 2 (6 Cards) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
         <StatCard
           title="Services"
           value={totalServices}
           icon={Camera}
           description="Active packages"
-          accent="neutral"
+          accent="blue"
           onClick={() => navigate(ADMIN_ROUTES.SERVICES)}
         />
         <StatCard
@@ -333,7 +320,7 @@ export default function Dashboard() {
           value={totalFilms}
           icon={Clapperboard}
           description="Cinematic films"
-          accent="neutral"
+          accent="coral"
           onClick={() => navigate(ADMIN_ROUTES.FILMS)}
         />
         <StatCard
@@ -341,7 +328,7 @@ export default function Dashboard() {
           value={totalBranches}
           icon={MapPin}
           description="Studios & lounges"
-          accent="neutral"
+          accent="mint"
           onClick={() => navigate(ADMIN_ROUTES.BRANCHES)}
         />
         <StatCard
@@ -349,7 +336,7 @@ export default function Dashboard() {
           value={totalTestimonials}
           icon={Star}
           description="Client reviews"
-          accent="neutral"
+          accent="lavender"
           onClick={() => navigate(ADMIN_ROUTES.TESTIMONIALS)}
         />
         <StatCard
@@ -357,7 +344,7 @@ export default function Dashboard() {
           value={confirmedBookings}
           icon={CheckCircle2}
           description="Confirmed on calendar"
-          accent="neutral"
+          accent="green"
           onClick={() => navigate(ADMIN_ROUTES.BOOKINGS)}
         />
         <StatCard
@@ -365,68 +352,55 @@ export default function Dashboard() {
           value={completedShoots}
           icon={Clock}
           description="Successfully archived"
-          accent="neutral"
+          accent="amber"
           onClick={() => navigate(ADMIN_ROUTES.BOOKINGS)}
         />
       </div>
 
-      {/* Quick Actions Strip */}
-      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-[#E7E0D2] shadow-sm min-w-0">
-        <div className="flex items-center justify-between mb-3 gap-2">
-          <h3 className="font-display font-semibold text-sm text-[#2B2B2B] truncate">
-            Quick Management Actions
-          </h3>
-          <span className="text-xs text-[#6F6A62] shrink-0">One-click shortcuts</span>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5">
+      {/* Quick Management Actions Strip */}
+      <div className="space-y-2.5">
+        <h3 className="font-bold text-xs sm:text-sm text-[#111827]">
+          Quick Management Actions
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <Link
             to={`${ADMIN_ROUTES.BOOKINGS}?new=true`}
-            className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
+            className="p-3.5 sm:p-4 rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] hover:border-[#B5BFCF] hover:shadow-xs transition-all flex flex-col items-center text-center gap-2 group min-w-0"
           >
-            <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
-              <Plus className="w-3.5 h-3.5" />
+            <div className="p-2 rounded-lg bg-[#E5EAF1] text-[#334155] border border-[#CAD3DF] group-hover:scale-105 transition-transform">
+              <Plus className="w-4 h-4 stroke-[1.75]" />
             </div>
-            <span className="text-xs font-semibold text-[#2B2B2B] truncate w-full">+ New Booking</span>
+            <span className="text-xs font-semibold text-[#111827] group-hover:text-black truncate w-full">+ New Booking</span>
           </Link>
 
           <Link
             to={`${ADMIN_ROUTES.GALLERY}?new=true`}
-            className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
+            className="p-3.5 sm:p-4 rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] hover:border-[#B5BFCF] hover:shadow-xs transition-all flex flex-col items-center text-center gap-2 group min-w-0"
           >
-            <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
-              <Images className="w-3.5 h-3.5" />
+            <div className="p-2 rounded-lg bg-[#E5EAF1] text-[#334155] border border-[#CAD3DF] group-hover:scale-105 transition-transform">
+              <Images className="w-4 h-4 stroke-[1.75]" />
             </div>
-            <span className="text-xs font-semibold text-[#2B2B2B] truncate w-full">+ Upload Image</span>
-          </Link>
-
-          <Link
-            to={`${ADMIN_ROUTES.PORTFOLIO}?new=true`}
-            className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
-          >
-            <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
-              <Briefcase className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-xs font-semibold text-[#2B2B2B] truncate w-full">+ Add Project</span>
+            <span className="text-xs font-semibold text-[#111827] group-hover:text-black truncate w-full">+ Upload Image</span>
           </Link>
 
           <Link
             to={`${ADMIN_ROUTES.SERVICES}?new=true`}
-            className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
+            className="p-3.5 sm:p-4 rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] hover:border-[#B5BFCF] hover:shadow-xs transition-all flex flex-col items-center text-center gap-2 group min-w-0"
           >
-            <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
-              <Camera className="w-3.5 h-3.5" />
+            <div className="p-2 rounded-lg bg-[#E5EAF1] text-[#334155] border border-[#CAD3DF] group-hover:scale-105 transition-transform">
+              <Camera className="w-4 h-4 stroke-[1.75]" />
             </div>
-            <span className="text-xs font-semibold text-[#2B2B2B] truncate w-full">+ Add Service</span>
+            <span className="text-xs font-semibold text-[#111827] group-hover:text-black truncate w-full">+ Add Service</span>
           </Link>
 
           <Link
             to={`${ADMIN_ROUTES.FILMS}?new=true`}
-            className="p-2.5 sm:p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] transition-all flex flex-col items-center text-center gap-1.5 group min-w-0"
+            className="p-3.5 sm:p-4 rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] hover:border-[#B5BFCF] hover:shadow-xs transition-all flex flex-col items-center text-center gap-2 group min-w-0"
           >
-            <div className="p-2 rounded-md bg-[#F8F6F2] group-hover:bg-[#F4EFE6] text-[#9C7B3D] transition-colors">
-              <Clapperboard className="w-3.5 h-3.5" />
+            <div className="p-2 rounded-lg bg-[#E5EAF1] text-[#334155] border border-[#CAD3DF] group-hover:scale-105 transition-transform">
+              <Clapperboard className="w-4 h-4 stroke-[1.75]" />
             </div>
-            <span className="text-xs font-semibold text-[#2B2B2B] truncate w-full">+ Add Film</span>
+            <span className="text-xs font-semibold text-[#111827] group-hover:text-black truncate w-full">+ Add Film</span>
           </Link>
         </div>
       </div>
@@ -434,42 +408,40 @@ export default function Dashboard() {
       {/* Analytics Section: Monthly Shoot Visualizer & Dynamic Service Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-w-0">
         {/* Left: Monthly Shoots Visualizer */}
-        <div className="lg:col-span-7 bg-white rounded-xl p-4 sm:p-5 border border-[#E7E0D2] shadow-sm space-y-5 min-w-0">
+        <div className="lg:col-span-7 bg-white rounded-xl p-5 border border-gray-200 shadow-xs space-y-4 min-w-0">
           <div className="flex items-center justify-between gap-2 min-w-0">
             <div className="min-w-0">
-              <span className="text-[11px] uppercase font-bold tracking-wider text-[#6F6A62]">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
                 Studio Analytics
               </span>
-              <h3 className="font-display font-semibold text-base sm:text-lg text-[#2B2B2B] truncate">
+              <h3 className="font-bold text-base text-gray-900 truncate">
                 Monthly Bookings &amp; Shoots
               </h3>
             </div>
-            <span className="text-xs px-2.5 py-1 bg-[#F8F6F2] text-[#9C7B3D] rounded-full font-semibold border border-[#E7E0D2] shrink-0">
+            <span className="text-xs px-2.5 py-0.5 bg-amber-50 text-amber-800 rounded-full font-medium border border-amber-200/60 shrink-0">
               {new Date().getFullYear()} Season
             </span>
           </div>
 
           {/* Minimalist Interactive Bar Chart */}
-          <div className="h-56 flex items-end justify-between gap-2 sm:gap-3 pt-8 pb-2 px-1 sm:px-2 border-b border-[#E7E0D2] relative">
+          <div className="h-48 flex items-end justify-between gap-2 sm:gap-3 pt-6 pb-2 px-1 sm:px-2 border-b border-gray-100 relative">
             {monthlyData.map((item, idx) => {
               const heightPercent = Math.max(item.count > 0 ? 8 : 2, (item.count / maxCount) * 100);
               return (
                 <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group relative min-w-0">
                   {/* Tooltip on hover */}
                   <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-center pointer-events-none z-20">
-                    <span className="bg-[#2B2B2B] text-[#E4D3A6] text-[10px] py-1 px-2 rounded-md font-bold shadow whitespace-nowrap">
+                    <span className="bg-gray-900 text-white text-[10px] py-1 px-2 rounded-md font-bold shadow whitespace-nowrap">
                       {item.count} Shoot{item.count === 1 ? "" : "s"} ({item.revenue})
                     </span>
                   </div>
                   {/* Bar */}
                   <div
-                    className="w-full max-w-[42px] bg-[#F4EFE6] group-hover:bg-[#C9A669] rounded-t-xl transition-all duration-300 relative overflow-hidden"
+                    className="w-full max-w-[42px] bg-slate-200 group-hover:bg-slate-700 rounded-t-lg transition-all duration-200 relative overflow-hidden"
                     style={{ height: `${heightPercent}%` }}
-                  >
-                    <div className="absolute inset-x-0 bottom-0 top-0 bg-gradient-to-t from-[#9C7B3D]/30 to-transparent opacity-0 group-hover:opacity-100" />
-                  </div>
+                  />
                   {/* Label */}
-                  <span className="text-xs font-semibold text-[#6F6A62] mt-3 group-hover:text-[#2B2B2B]">
+                  <span className="text-[11px] font-medium text-gray-500 mt-2.5 group-hover:text-gray-900">
                     {item.month}
                   </span>
                 </div>
@@ -477,60 +449,60 @@ export default function Dashboard() {
             })}
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs text-[#6F6A62] pt-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs text-gray-500 pt-1 min-w-0">
             <span className="flex items-center gap-2 min-w-0 truncate">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#C9A669] shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-slate-700 shrink-0" />
               <span className="truncate">Active Calendar Shoots &amp; Muhurtham Seasons</span>
             </span>
-            <span className="font-semibold text-[#2B2B2B] shrink-0 pl-4 sm:pl-0">
+            <span className="font-semibold text-gray-900 shrink-0">
               {totalBookings} Total Shoot{totalBookings === 1 ? "" : "s"} YTD
             </span>
           </div>
         </div>
 
         {/* Right: Popular Services Breakdown (Dynamically Computed) */}
-        <div className="lg:col-span-5 bg-white rounded-xl p-4 sm:p-5 border border-[#E7E0D2] shadow-sm space-y-4 min-w-0">
+        <div className="lg:col-span-5 bg-white rounded-xl p-5 border border-gray-200 shadow-xs space-y-4 min-w-0 flex flex-col justify-between">
           <div>
-            <span className="text-[11px] uppercase font-bold tracking-wider text-[#6F6A62]">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
               Package Demand
             </span>
-            <h3 className="font-display font-semibold text-base sm:text-lg text-[#2B2B2B]">
+            <h3 className="font-bold text-base text-gray-900">
               Popular Studio Services
             </h3>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3.5 my-auto">
             {serviceStats.length > 0 ? (
               serviceStats.map((srv, idx) => (
-                <div key={idx} className="space-y-1.5 min-w-0">
+                <div key={idx} className="space-y-1 min-w-0">
                   <div className="flex items-center justify-between text-xs font-medium gap-2 min-w-0">
-                    <span className="text-[#2B2B2B] truncate">{srv.name}</span>
-                    <span className="text-[#9C7B3D] font-bold shrink-0 pl-2">
+                    <span className="text-gray-900 truncate">{srv.name}</span>
+                    <span className="text-gray-500 font-semibold shrink-0">
                       {srv.count} shoot{srv.count === 1 ? "" : "s"} ({srv.percentage}%)
                     </span>
                   </div>
-                  <div className="w-full h-2.5 bg-[#F8F6F2] rounded-full overflow-hidden border border-[#E7E0D2]/80">
+                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#C9A669] to-[#9C7B3D] rounded-full transition-all duration-500"
+                      className="h-full bg-[#1E293B] rounded-full transition-all duration-500"
                       style={{ width: `${Math.max(srv.percentage > 0 ? 4 : 0, srv.percentage)}%` }}
                     />
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-[#6F6A62] py-4 text-center">
+              <p className="text-xs text-gray-400 py-4 text-center">
                 No services configured yet.
               </p>
             )}
           </div>
 
-          <div className="pt-2 border-t border-[#E7E0D2]/80">
+          <div className="pt-2 border-t border-gray-100">
             <Link
               to={ADMIN_ROUTES.SERVICES}
-              className="text-xs text-[#9C7B3D] hover:underline font-semibold flex items-center justify-between"
+              className="text-xs text-gray-700 hover:text-black hover:underline font-semibold flex items-center justify-between"
             >
               <span>Manage Service Pricing &amp; Features</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -539,17 +511,17 @@ export default function Dashboard() {
       {/* Two Column Layout: Upcoming Shoots & Recent Enquiries */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Upcoming Shoots Table */}
-        <div className="lg:col-span-7 bg-white rounded-xl p-4 sm:p-5 border border-[#E7E0D2] shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-[#E7E0D2]">
+        <div className="lg:col-span-7 bg-white rounded-xl p-5 border border-gray-200 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-gray-100">
             <div>
-              <h3 className="font-display font-semibold text-base text-[#2B2B2B]">
+              <h3 className="font-bold text-base text-gray-900">
                 Upcoming Scheduled Shoots
               </h3>
-              <p className="text-xs text-[#6F6A62]">Next client sessions in calendar order</p>
+              <p className="text-xs text-gray-400">Next client sessions in calendar order</p>
             </div>
             <Link
               to={ADMIN_ROUTES.BOOKINGS}
-              className="text-xs text-[#9C7B3D] hover:underline font-semibold flex items-center gap-1"
+              className="text-xs text-gray-600 hover:text-gray-900 hover:underline font-semibold flex items-center gap-1"
             >
               <span>View All Bookings</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -559,33 +531,33 @@ export default function Dashboard() {
           <div className="overflow-x-auto w-full min-w-0">
             <table className="w-full text-left text-xs min-w-[500px]">
               <thead>
-                <tr className="text-[#6F6A62] border-b border-[#F8F6F2]">
-                  <th className="pb-3 font-semibold">Customer</th>
-                  <th className="pb-3 font-semibold">Service</th>
-                  <th className="pb-3 font-semibold">Date</th>
-                  <th className="pb-3 font-semibold">Status</th>
-                  <th className="pb-3 text-right font-semibold">Action</th>
+                <tr className="text-gray-400 border-b border-gray-100">
+                  <th className="pb-2.5 font-semibold">Customer</th>
+                  <th className="pb-2.5 font-semibold">Service</th>
+                  <th className="pb-2.5 font-semibold">Date</th>
+                  <th className="pb-2.5 font-semibold">Status</th>
+                  <th className="pb-2.5 text-right font-semibold">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F8F6F2]">
+              <tbody className="divide-y divide-gray-100">
                 {upcomingShoots.length > 0 ? (
                   upcomingShoots.map((b) => (
-                    <tr key={b.id} className="hover:bg-[#FDFBF7] transition-colors">
-                      <td className="py-3 font-medium text-[#2B2B2B]">
+                    <tr key={b.id} className="hover:bg-gray-50/80 transition-colors">
+                      <td className="py-2.5 font-medium text-gray-900">
                         <div className="font-semibold">{b.customerName || b.clientName || "Client"}</div>
-                        <div className="text-[10px] text-[#8E867B]">{b.location || b.venue || "Studio Location"}</div>
+                        <div className="text-[10px] text-gray-400">{b.location || b.venue || "Studio Location"}</div>
                       </td>
-                      <td className="py-3 text-[#6F6A62]">{b.requiredService || b.service || "Photography Session"}</td>
-                      <td className="py-3 font-medium text-[#2B2B2B]">
+                      <td className="py-2.5 text-gray-600">{b.requiredService || b.service || "Photography Session"}</td>
+                      <td className="py-2.5 font-medium text-gray-900">
                         {formatShootDate(b.eventDate || b.date)}
                       </td>
-                      <td className="py-3">
+                      <td className="py-2.5">
                         <StatusBadge status={b.status} size="sm" />
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-2.5 text-right">
                         <button
                           onClick={() => navigate(`${ADMIN_ROUTES.BOOKINGS}?id=${b.id}`)}
-                          className="p-1.5 text-[#6F6A62] hover:text-[#9C7B3D] rounded-lg hover:bg-[#F8F6F2]"
+                          className="p-1.5 text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 cursor-pointer"
                           title="View Shoot Details"
                         >
                           <Eye className="w-4 h-4" />
@@ -595,8 +567,11 @@ export default function Dashboard() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="py-6 text-center text-xs text-[#6F6A62]">
-                      No upcoming shoots scheduled.
+                    <td colSpan={5} className="py-8 text-center text-xs text-gray-400">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <CalendarDays className="w-8 h-8 text-gray-300 stroke-[1.5]" />
+                        <span>No upcoming shoots scheduled.</span>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -605,18 +580,18 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Enquiries Box */}
-        <div className="lg:col-span-5 bg-white rounded-xl p-4 sm:p-5 border border-[#E7E0D2] shadow-sm space-y-4 min-w-0">
-          <div className="flex items-center justify-between pb-2 border-b border-[#E7E0D2]">
+        {/* Recent Client Enquiries Box */}
+        <div className="lg:col-span-5 bg-white rounded-xl p-5 border border-gray-200 shadow-xs space-y-4 min-w-0">
+          <div className="flex items-center justify-between pb-2 border-b border-gray-100">
             <div>
-              <h3 className="font-display font-semibold text-base text-[#2B2B2B]">
+              <h3 className="font-bold text-base text-gray-900">
                 Recent Client Enquiries
               </h3>
-              <p className="text-xs text-[#6F6A62]">Leads received via website</p>
+              <p className="text-xs text-gray-400">Leads received via website</p>
             </div>
             <Link
               to={ADMIN_ROUTES.ENQUIRIES}
-              className="text-xs text-[#9C7B3D] hover:underline font-semibold flex items-center gap-1"
+              className="text-xs text-gray-600 hover:text-gray-900 hover:underline font-semibold flex items-center gap-1"
             >
               <span>View All</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -625,34 +600,43 @@ export default function Dashboard() {
 
           <div className="space-y-2.5">
             {recentEnquiries.length > 0 ? (
-              recentEnquiries.map((enq) => (
-                <div
-                  key={enq.id}
-                  onClick={() => navigate(ADMIN_ROUTES.ENQUIRIES)}
-                  className="p-3 rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] hover:bg-[#FDFBF7] cursor-pointer transition-all space-y-1.5 min-w-0"
-                >
-                  <div className="flex items-start justify-between gap-2 min-w-0">
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-[#2B2B2B] truncate">
-                        {enq.clientName || enq.name || "Anonymous"}
-                      </h4>
-                      <p className="text-[11px] text-[#9C7B3D] font-medium truncate">
-                        {enq.interestedService || enq.service || "General Inquiry"}
-                      </p>
+              recentEnquiries.map((enq, idx) => {
+                const borderColors = [
+                  "border-l-indigo-500",
+                  "border-l-blue-500",
+                  "border-l-purple-500",
+                  "border-l-amber-500",
+                ];
+                const borderClass = borderColors[idx % borderColors.length];
+                return (
+                  <div
+                    key={enq.id}
+                    onClick={() => navigate(ADMIN_ROUTES.ENQUIRIES)}
+                    className={`p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50/70 cursor-pointer transition-all space-y-1.5 min-w-0 border-l-4 ${borderClass}`}
+                  >
+                    <div className="flex items-start justify-between gap-2 min-w-0">
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-gray-900 truncate">
+                          {enq.clientName || enq.name || "Anonymous"}
+                        </h4>
+                        <p className="text-[11px] text-gray-500 font-medium truncate">
+                          {enq.interestedService || enq.service || "General Inquiry"}
+                        </p>
+                      </div>
+                      <StatusBadge status={enq.status} size="sm" />
                     </div>
-                    <StatusBadge status={enq.status} size="sm" />
+                    <p className="text-xs text-gray-600 line-clamp-1 leading-relaxed break-words">
+                      "{enq.message || enq.notes || enq.clientMessage || "No message provided."}"
+                    </p>
+                    <div className="flex items-center justify-between text-[11px] text-gray-400 pt-0.5">
+                      <span>{enq.phone || "No phone"}</span>
+                      <span>{enq.receivedDate || enq.createdAt || ""}</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-[#6F6A62] line-clamp-2 leading-relaxed break-words">
-                    "{enq.message || enq.notes || enq.clientMessage || "No message provided."}"
-                  </p>
-                  <div className="flex items-center justify-between text-[11px] text-[#8E867B] pt-1">
-                    <span>{enq.phone || "No phone"}</span>
-                    <span>{enq.receivedDate || enq.createdAt || ""}</span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
-              <div className="py-6 text-center text-xs text-[#6F6A62]">
+              <div className="py-8 text-center text-xs text-gray-400">
                 No client enquiries yet.
               </div>
             )}

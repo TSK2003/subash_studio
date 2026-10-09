@@ -339,9 +339,9 @@ function Time12Picker({ value, onChange, id }) {
   };
 
   return (
-    <div className="flex items-center justify-between w-full p-2 bg-[#F8F6F2] border border-[#E7E0D2] focus-within:border-[#C9A669] focus-within:ring-1 focus-within:ring-[#C9A669]/30 rounded-xl transition-all">
-      <div className="flex items-center gap-1.5 text-xs text-[#2B2B2B]">
-        <Clock className="w-4 h-4 text-[#8E867B] shrink-0 ml-1" />
+    <div className="flex items-center justify-between w-full p-2 bg-gray-50 border border-gray-200 focus-within:border-black focus-within:ring-1 focus-within:ring-black/10 focus-within:bg-white rounded-xl transition-all">
+      <div className="flex items-center gap-1.5 text-xs text-gray-900">
+        <Clock className="w-4 h-4 text-gray-400 shrink-0 ml-1" />
 
         {/* Hour Input (1-12) */}
         <input
@@ -356,10 +356,10 @@ function Time12Picker({ value, onChange, id }) {
           onBlur={handleHourBlur}
           maxLength={2}
           aria-label="Hour (1 to 12)"
-          className="w-7 text-center bg-transparent text-xs font-semibold text-[#2B2B2B] placeholder:text-[#A8A196] focus:outline-none select-all"
+          className="w-7 text-center bg-transparent text-xs font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none select-all"
         />
 
-        <span className="text-[#8E867B] font-bold select-none">:</span>
+        <span className="text-gray-400 font-bold select-none">:</span>
 
         {/* Minute Input (0-59) */}
         <input
@@ -373,20 +373,20 @@ function Time12Picker({ value, onChange, id }) {
           onBlur={handleMinuteBlur}
           maxLength={2}
           aria-label="Minute (0 to 59)"
-          className="w-7 text-center bg-transparent text-xs font-semibold text-[#2B2B2B] placeholder:text-[#A8A196] focus:outline-none select-all"
+          className="w-7 text-center bg-transparent text-xs font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none select-all"
         />
       </div>
 
       {/* AM / PM Segmented Control & Optional Clear */}
       <div className="flex items-center gap-1.5 shrink-0">
-        <div className="inline-flex items-center p-0.5 bg-[#EAE4D7] rounded-lg border border-[#DDD5C5]">
+        <div className="inline-flex items-center p-0.5 bg-gray-100 rounded-lg border border-gray-200">
           <button
             type="button"
             onClick={() => handlePeriodChange("AM")}
             className={`px-2.5 py-0.5 text-[10px] font-bold tracking-wider rounded-md transition-all ${
               period === "AM"
-                ? "bg-[#2B2B2B] text-[#F9F6F0] shadow-xs"
-                : "text-[#6F6A62] hover:text-[#2B2B2B]"
+                ? "bg-black text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             AM
@@ -396,8 +396,8 @@ function Time12Picker({ value, onChange, id }) {
             onClick={() => handlePeriodChange("PM")}
             className={`px-2.5 py-0.5 text-[10px] font-bold tracking-wider rounded-md transition-all ${
               period === "PM"
-                ? "bg-[#2B2B2B] text-[#F9F6F0] shadow-xs"
-                : "text-[#6F6A62] hover:text-[#2B2B2B]"
+                ? "bg-black text-white shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             PM
@@ -410,7 +410,7 @@ function Time12Picker({ value, onChange, id }) {
             onClick={handleClear}
             title="Clear time"
             aria-label="Clear time"
-            className="p-1 text-[#8E867B] hover:text-rose-500 rounded-md transition-colors"
+            className="p-1 text-gray-400 hover:text-rose-600 rounded-md transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -828,10 +828,10 @@ export default function Bookings() {
       {/* Header & Main Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
+          <h2 className="text-xl sm:text-2xl font-display font-bold text-gray-900">
             Studio Shoot Bookings
           </h2>
-          <p className="text-xs text-[#6F6A62] mt-0.5">
+          <p className="text-xs text-gray-500 mt-0.5">
             Manage upcoming client shoots, venue schedules, and project requirements.
           </p>
         </div>
@@ -839,19 +839,19 @@ export default function Bookings() {
         <button
           type="button"
           onClick={handleOpenAddModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-black text-white hover:bg-gray-800 rounded-xl text-xs font-semibold shadow-xs transition-all active:scale-95 shrink-0"
         >
-          <Plus className="w-4 h-4 text-[#E4D3A6]" />
+          <Plus className="w-4 h-4 text-white" />
           <span>Add Booking</span>
         </button>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-[#E7E0D2] shadow-sm space-y-3">
+      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-gray-200 shadow-xs space-y-3">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
           {/* Search Box */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8E867B]" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search by customer, booking ID, phone, venue..."
@@ -860,7 +860,7 @@ export default function Bookings() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] placeholder:text-[#8E867B] focus:outline-none focus:border-[#C9A669]"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white"
             />
           </div>
 
@@ -872,7 +872,7 @@ export default function Bookings() {
               setCurrentPage(1);
             }}
             aria-label="Filter by Service"
-            className="px-3 py-2 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:outline-none focus:border-[#C9A669]"
+            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:bg-white"
           >
             <option value="All">All Services</option>
             {services.map((s) => (
@@ -890,7 +890,7 @@ export default function Bookings() {
               setCurrentPage(1);
             }}
             aria-label="Filter by Branch"
-            className="px-3 py-2 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:outline-none focus:border-[#C9A669]"
+            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:bg-white"
           >
             <option value="All">All Branches</option>
             {branches.map((b) => (
@@ -912,8 +912,8 @@ export default function Bookings() {
         </div>
 
         {/* Status Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-[#F8F6F2]">
-          <span className="text-[11px] text-[#6F6A62] font-semibold mr-1 shrink-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-gray-100">
+          <span className="text-[11px] text-gray-500 font-semibold mr-1 shrink-0">
             Status:
           </span>
           {BOOKING_STATUS_FILTERS.map(({ key, label }) => {
@@ -933,16 +933,16 @@ export default function Bookings() {
                 }}
                 className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   isSelected
-                    ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm font-semibold"
-                    : "bg-[#F8F6F2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8]"
+                    ? "bg-black text-white shadow-xs font-semibold"
+                    : "bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
                 }`}
               >
                 <span>{label}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full ${
                     isSelected
-                      ? "bg-[#3D3A34] text-[#E4D3A6]"
-                      : "bg-[#E7E0D2] text-[#6F6A62]"
+                      ? "bg-gray-800 text-white"
+                      : "bg-gray-200 text-gray-700"
                   }`}
                 >
                   {count}
@@ -963,11 +963,11 @@ export default function Bookings() {
           onAction={handleOpenAddModal}
         />
       ) : (
-        <div className="bg-white rounded-xl border border-[#E7E0D2] shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
           {/* Desktop Table View */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#FDFBF7] border-b border-[#E7E0D2] text-[#6F6A62]">
+              <thead className="bg-gray-50/80 border-b border-gray-200 text-gray-500">
                 <tr>
                   <th className="py-3.5 px-4 font-semibold">Booking ID</th>
                   <th className="py-3.5 px-4 font-semibold">Customer Details</th>
@@ -978,33 +978,33 @@ export default function Bookings() {
                   <th className="py-3.5 px-4 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F8F6F2]">
+              <tbody className="divide-y divide-gray-100">
                 {paginatedBookings.map((b) => (
                   <tr
                     key={b.id}
-                    className="hover:bg-[#FDFBF7] transition-colors group cursor-pointer"
+                    className="hover:bg-gray-50/80 transition-colors group cursor-pointer"
                     onClick={() => {
                       setActiveBooking(b);
                       setDrawerOpen(true);
                     }}
                   >
-                    <td className="py-3.5 px-4 font-mono font-bold text-[#9C7B3D]">
+                    <td className="py-3.5 px-4 font-mono font-bold text-blue-600">
                       {b.id}
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-[#2B2B2B]">
+                      <div className="font-bold text-gray-900">
                         {b.customerName}
                       </div>
-                      <div className="text-[11px] text-[#6F6A62] flex items-center gap-1 mt-0.5">
-                        <Phone className="w-3 h-3 text-[#8E867B]" />
+                      <div className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
+                        <Phone className="w-3 h-3 text-gray-400" />
                         {b.phone}
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-medium text-[#2B2B2B]">
+                      <div className="font-medium text-gray-900">
                         {b.requiredService}
                       </div>
-                      <div className="text-[11px] text-[#8E867B]">
+                      <div className="text-[11px] text-gray-400">
                         {b.eventType} ({b.numberOfDays})
                       </div>
                     </td>
@@ -1013,16 +1013,16 @@ export default function Bookings() {
                         const { date: fDate, time: fTime } = formatBookingDateTime(b.eventDate, b.eventTime);
                         return (
                           <>
-                            <div className="font-semibold text-[#2B2B2B] flex items-center gap-1.5 flex-wrap">
+                            <div className="font-semibold text-gray-900 flex items-center gap-1.5 flex-wrap">
                               <span>{fDate}</span>
                               {fTime && (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#9C7B3D] bg-[#F9F5EC] px-1.5 py-0.5 rounded-md border border-[#E7E0D2]/80">
-                                  <Clock className="w-3 h-3 text-[#C9A669]" />
+                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded-md border border-gray-200">
+                                  <Clock className="w-3 h-3 text-gray-400" />
                                   {fTime}
                                 </span>
                               )}
                             </div>
-                            <div className="text-[11px] text-[#8E867B]">
+                            <div className="text-[11px] text-gray-400">
                               Budget: {b.budget || "N/A"}
                             </div>
                           </>
@@ -1030,10 +1030,10 @@ export default function Bookings() {
                       })()}
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-medium text-[#2B2B2B]">
+                      <div className="font-medium text-gray-900">
                         {b.branch}
                       </div>
-                      <div className="text-[11px] text-[#8E867B] truncate max-w-[140px]">
+                      <div className="text-[11px] text-gray-400 truncate max-w-[140px]">
                         {b.location}
                       </div>
                     </td>
@@ -1053,7 +1053,7 @@ export default function Bookings() {
                             setActiveBooking(b);
                             setDrawerOpen(true);
                           }}
-                          className="p-1.5 text-[#6F6A62] hover:text-[#9C7B3D] hover:bg-[#F8F6F2] rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
@@ -1061,7 +1061,7 @@ export default function Bookings() {
                         <button
                           type="button"
                           onClick={() => handleOpenEditModal(b)}
-                          className="p-1.5 text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                           title="Edit Booking"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -1069,7 +1069,7 @@ export default function Bookings() {
                         <button
                           type="button"
                           onClick={() => handleDeletePrompt(b)}
-                          className="p-1.5 text-[#6F6A62] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                           title="Delete Booking"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1083,7 +1083,7 @@ export default function Bookings() {
           </div>
 
           {/* Pagination */}
-          <div className="p-3 border-t border-[#E7E0D2]">
+          <div className="p-3 border-t border-gray-200">
             <Pagination
               currentPage={currentPage}
               totalItems={filteredBookings.length}
@@ -1100,7 +1100,7 @@ export default function Bookings() {
           <AnimatePresence>
             {drawerOpen && activeBooking && (
               <div
-                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+                className="admin-portal fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
                 role="dialog"
                 aria-modal="true"
               >
@@ -1119,22 +1119,22 @@ export default function Bookings() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
+                  className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-200 z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
               {/* Fixed Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 shrink-0 bg-white">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-mono font-bold text-[#9C7B3D]">
+                    <span className="text-[11px] font-mono font-bold text-blue-600">
                       {activeBooking.id}
                     </span>
                     <StatusBadge status={activeBooking.status} size="sm" />
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
+                  <h3 className="text-xl sm:text-2xl font-display font-bold text-gray-900">
                     {activeBooking.customerName || activeBooking.clientName || "Valued Client"}
                   </h3>
-                  <p className="text-xs text-[#6F6A62]">
+                  <p className="text-xs text-gray-500">
                     Booked on {activeBooking.createdAt ? (activeBooking.createdAt.includes("T") ? activeBooking.createdAt.split("T")[0] : activeBooking.createdAt) : "Recent"}
                   </p>
                 </div>
@@ -1144,7 +1144,7 @@ export default function Bookings() {
                     setDrawerOpen(false);
                     setActiveBooking(null);
                   }}
-                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-900 rounded-xl hover:bg-gray-100 transition-colors"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -1158,14 +1158,14 @@ export default function Bookings() {
                   {activeBooking.phone ? (
                     <a
                       href={`tel:${activeBooking.phone}`}
-                      className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] hover:border-[#C9A669] text-[#2B2B2B] font-semibold flex items-center justify-center gap-1.5 transition-all"
+                      className="p-2.5 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-900 font-semibold flex items-center justify-center gap-1.5 transition-all"
                     >
-                      <PhoneCall className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                      <PhoneCall className="w-3.5 h-3.5 text-gray-500" />
                       <span>{activeBooking.phone}</span>
                     </a>
                   ) : (
-                    <div className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] text-[#8E867B] flex items-center justify-center gap-1.5 opacity-60">
-                      <PhoneCall className="w-3.5 h-3.5 text-[#8E867B]" />
+                    <div className="p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 flex items-center justify-center gap-1.5 opacity-60">
+                      <PhoneCall className="w-3.5 h-3.5 text-gray-400" />
                       <span>No Phone</span>
                     </div>
                   )}
@@ -1175,7 +1175,7 @@ export default function Bookings() {
                       href={`https://wa.me/${activeBooking.phone.replace(/[^0-9]/g, "")}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-900 font-semibold flex items-center justify-center gap-1.5 transition-all"
+                      className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 font-semibold flex items-center justify-center gap-1.5 transition-all"
                     >
                       <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
                       <span>WhatsApp</span>
@@ -1190,29 +1190,29 @@ export default function Bookings() {
                   {activeBooking.email ? (
                     <a
                       href={`mailto:${activeBooking.email}`}
-                      className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] hover:border-[#C9A669] text-[#2B2B2B] font-semibold flex items-center justify-center gap-1.5 transition-all truncate"
+                      className="p-2.5 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-900 font-semibold flex items-center justify-center gap-1.5 transition-all truncate"
                       title={activeBooking.email}
                     >
-                      <Mail className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                      <Mail className="w-3.5 h-3.5 text-gray-500" />
                       <span className="truncate">{activeBooking.email}</span>
                     </a>
                   ) : (
-                    <div className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] text-[#8E867B] flex items-center justify-center gap-1.5 opacity-60">
-                      <Mail className="w-3.5 h-3.5 text-[#8E867B]" />
+                    <div className="p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 flex items-center justify-center gap-1.5 opacity-60">
+                      <Mail className="w-3.5 h-3.5 text-gray-400" />
                       <span>No Email</span>
                     </div>
                   )}
                 </div>
 
                 {/* Booking Details */}
-                <div className="p-4 rounded-xl bg-[#FDFBF7] border border-[#E7E0D2] space-y-2 text-xs">
+                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#6F6A62]">Event Type:</span>
-                    <span className="font-bold text-[#2B2B2B]">{activeBooking.eventType || "Not specified"}</span>
+                    <span className="text-gray-500">Event Type:</span>
+                    <span className="font-bold text-gray-900">{activeBooking.eventType || "Not specified"}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#6F6A62]">Event Date:</span>
-                    <span className="font-semibold text-[#2B2B2B]">
+                    <span className="text-gray-500">Event Date:</span>
+                    <span className="font-semibold text-gray-900">
                       {activeBooking.eventDate
                         ? (() => {
                             const datePart = activeBooking.eventDate.includes("T")
@@ -1236,45 +1236,45 @@ export default function Bookings() {
                     if (!detailTime) return null;
                     return (
                       <div className="flex justify-between items-center">
-                        <span className="text-[#6F6A62]">Event Time:</span>
-                        <span className="font-semibold text-[#9C7B3D] flex items-center gap-1.5 bg-[#F9F5EC] px-2 py-0.5 rounded-lg border border-[#E7E0D2]">
-                          <Clock className="w-3.5 h-3.5 text-[#C9A669]" />
+                        <span className="text-gray-500">Event Time:</span>
+                        <span className="font-semibold text-gray-700 flex items-center gap-1.5 bg-gray-100 px-2 py-0.5 rounded-lg border border-gray-200">
+                          <Clock className="w-3.5 h-3.5 text-gray-400" />
                           {detailTime}
                         </span>
                       </div>
                     );
                   })()}
                   <div className="flex justify-between items-center">
-                    <span className="text-[#6F6A62]">Shoot Duration:</span>
-                    <span className="font-semibold text-[#2B2B2B]">{activeBooking.numberOfDays || "Not specified"}</span>
+                    <span className="text-gray-500">Shoot Duration:</span>
+                    <span className="font-semibold text-gray-900">{activeBooking.numberOfDays || "Not specified"}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[#6F6A62]">Estimated Budget:</span>
-                    <span className="font-bold text-[#9C7B3D]">{activeBooking.budget || "₹0"}</span>
+                    <span className="text-gray-500">Estimated Budget:</span>
+                    <span className="font-bold text-gray-900">{activeBooking.budget || "₹0"}</span>
                   </div>
                 </div>
 
                 {/* Venue & Location */}
                 <div className="space-y-1.5 text-xs">
-                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
+                  <span className="font-bold uppercase tracking-wider text-gray-500">
                     Venue &amp; Branch Assignment
                   </span>
-                  <div className="p-4 rounded-xl bg-[#FDFBF7] border border-[#E7E0D2] space-y-2 text-xs">
+                  <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2 text-xs">
                     <div className="flex justify-between items-start gap-4">
-                      <span className="text-[#6F6A62] flex items-center gap-1.5 shrink-0">
-                        <MapPin className="w-3.5 h-3.5 text-[#9C7B3D] shrink-0" />
+                      <span className="text-gray-500 flex items-center gap-1.5 shrink-0">
+                        <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                         Venue Location:
                       </span>
-                      <span className="font-semibold text-[#2B2B2B] text-right">
+                      <span className="font-semibold text-gray-900 text-right">
                         {activeBooking.location || "Not specified"}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center gap-4 pt-2 border-t border-[#F0EBE1]">
-                      <span className="text-[#6F6A62] flex items-center gap-1.5 shrink-0">
-                        <Building2 className="w-3.5 h-3.5 text-[#9C7B3D] shrink-0" />
+                    <div className="flex justify-between items-center gap-4 pt-2 border-t border-gray-200">
+                      <span className="text-gray-500 flex items-center gap-1.5 shrink-0">
+                        <Building2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                         Studio Branch:
                       </span>
-                      <span className="font-semibold text-[#2B2B2B]">
+                      <span className="font-semibold text-gray-900">
                         {activeBooking.branch || "Not specified"}
                       </span>
                     </div>
@@ -1283,28 +1283,28 @@ export default function Bookings() {
 
                 {/* Shoot Requirements */}
                 <div className="space-y-1.5 text-xs">
-                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
+                  <span className="font-bold uppercase tracking-wider text-gray-500">
                     Shoot Requirements
                   </span>
-                  <div className="p-4 rounded-xl bg-[#FDFBF7] border border-[#E7E0D2] space-y-2 text-xs">
+                  <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2 text-xs">
                     <div className="flex justify-between items-center gap-4">
-                      <span className="text-[#6F6A62]">Primary Service:</span>
-                      <span className="font-bold text-[#2B2B2B]">
+                      <span className="text-gray-500">Primary Service:</span>
+                      <span className="font-bold text-gray-900">
                         {activeBooking.requiredService || "General Photography"}
                       </span>
                     </div>
                     {activeBooking.photographyRequirement && (
-                      <div className="pt-2 border-t border-[#F0EBE1] flex justify-between items-start gap-4">
-                        <span className="text-[#6F6A62] shrink-0">Photography Details:</span>
-                        <span className="font-medium text-[#2B2B2B] text-right">
+                      <div className="pt-2 border-t border-gray-200 flex justify-between items-start gap-4">
+                        <span className="text-gray-500 shrink-0">Photography Details:</span>
+                        <span className="font-medium text-gray-900 text-right">
                           {activeBooking.photographyRequirement}
                         </span>
                       </div>
                     )}
                     {activeBooking.cinematographyRequirement && (
-                      <div className="pt-2 border-t border-[#F0EBE1] flex justify-between items-start gap-4">
-                        <span className="text-[#6F6A62] shrink-0">Cinematography Details:</span>
-                        <span className="font-medium text-[#2B2B2B] text-right">
+                      <div className="pt-2 border-t border-gray-200 flex justify-between items-start gap-4">
+                        <span className="text-gray-500 shrink-0">Cinematography Details:</span>
+                        <span className="font-medium text-gray-900 text-right">
                           {activeBooking.cinematographyRequirement}
                         </span>
                       </div>
@@ -1314,7 +1314,7 @@ export default function Bookings() {
 
                 {/* Change Shoot Status */}
                 <div className="space-y-1.5 text-xs">
-                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
+                  <span className="font-bold uppercase tracking-wider text-gray-500">
                     Change Shoot Status
                   </span>
                   <div className="flex flex-wrap gap-2">
@@ -1328,8 +1328,8 @@ export default function Bookings() {
                           onClick={() => handleStatusQuickChange(activeBooking.id, key)}
                           className={`px-3 py-1.5 rounded-xl font-semibold border transition-all ${
                             isSelected
-                              ? "bg-[#2B2B2B] text-[#E4D3A6] border-[#2B2B2B]"
-                              : "bg-white text-[#6F6A62] border-[#E7E0D2] hover:bg-[#F8F6F2]"
+                              ? "bg-black text-white border-black"
+                              : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
                           }`}
                         >
                           {label}
@@ -1341,14 +1341,14 @@ export default function Bookings() {
 
                 {/* Studio Operations Notes */}
                 <div className="space-y-1.5 text-xs">
-                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
+                  <span className="font-bold uppercase tracking-wider text-gray-500">
                     Studio Operations Notes
                   </span>
-                  <div className="p-4 rounded-xl bg-[#F8F6F2] border border-[#E7E0D2] text-[#2B2B2B] leading-relaxed text-sm whitespace-pre-wrap">
+                  <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 leading-relaxed text-sm whitespace-pre-wrap">
                     {activeBooking.adminNotes?.trim() ? (
                       `"${activeBooking.adminNotes.trim()}"`
                     ) : (
-                      <span className="text-[#8E867B] italic text-xs">
+                      <span className="text-gray-400 italic text-xs">
                         No operational notes added for this booking yet.
                       </span>
                     )}
@@ -1357,7 +1357,7 @@ export default function Bookings() {
               </div>
 
               {/* Fixed Footer */}
-              <div className="px-6 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-between shrink-0">
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between shrink-0">
                 <button
                   type="button"
                   onClick={() => handleDeletePrompt(activeBooking)}
@@ -1372,7 +1372,7 @@ export default function Bookings() {
                       setDrawerOpen(false);
                       setActiveBooking(null);
                     }}
-                    className="px-5 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold text-xs transition-colors"
+                    className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-semibold text-xs transition-colors"
                   >
                     Close
                   </button>
@@ -1381,7 +1381,7 @@ export default function Bookings() {
                     onClick={() => {
                       handleOpenEditModal(activeBooking);
                     }}
-                    className="px-5 py-2.5 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl font-semibold text-xs transition-all shadow flex items-center gap-1.5"
+                    className="px-5 py-2.5 bg-black text-white hover:bg-gray-800 rounded-xl font-semibold text-xs transition-all shadow-xs flex items-center gap-1.5"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                     <span>Edit Booking</span>
@@ -1401,7 +1401,7 @@ export default function Bookings() {
           <AnimatePresence>
             {formModalOpen && (
               <div
-                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+                className="admin-portal fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
                 role="dialog"
                 aria-modal="true"
               >
@@ -1417,23 +1417,23 @@ export default function Bookings() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
+                  className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-200 z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
               {/* Fixed Header */}
-              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
+              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100 shrink-0 bg-white">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-widest2 text-[#9C7B3D]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
                     {editingBooking ? "Update Shoot" : "New Client Booking"}
                   </span>
-                  <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
+                  <h3 className="text-xl sm:text-2xl font-display font-bold text-gray-900">
                     {editingBooking ? `Edit ${editingBooking.id}` : "Schedule Shoot Session"}
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-900 rounded-xl hover:bg-gray-100 transition-colors"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -1446,7 +1446,7 @@ export default function Bookings() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Customer Name * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-customerName" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-customerName" className="font-semibold text-gray-700">
                         Customer Name *
                       </label>
                       <input
@@ -1455,9 +1455,9 @@ export default function Bookings() {
                         placeholder="e.g. Kavitha & Arvind"
                         value={formData.customerName}
                         onChange={(e) => handleFieldChange("customerName", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.customerName ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.customerName ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {formErrors.customerName && (
                         <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.customerName}</p>
@@ -1466,7 +1466,7 @@ export default function Bookings() {
 
                     {/* Phone Number * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-phone" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-phone" className="font-semibold text-gray-700">
                         Phone Number *
                       </label>
                       <input
@@ -1479,9 +1479,9 @@ export default function Bookings() {
                         onChange={handlePhoneChange}
                         onKeyDown={handlePhoneKeyDown}
                         onPaste={handlePhonePaste}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.phone ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.phone ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {formErrors.phone && (
                         <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.phone}</p>
@@ -1492,7 +1492,7 @@ export default function Bookings() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Email Address * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-email" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-email" className="font-semibold text-gray-700">
                         Email Address *
                       </label>
                       <input
@@ -1501,9 +1501,9 @@ export default function Bookings() {
                         placeholder="client@gmail.com"
                         value={formData.email}
                         onChange={(e) => handleFieldChange("email", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.email ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.email ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {formErrors.email && (
                         <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.email}</p>
@@ -1512,7 +1512,7 @@ export default function Bookings() {
 
                     {/* Event Type * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-eventType" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-eventType" className="font-semibold text-gray-700">
                         Event Type *
                       </label>
                       <input
@@ -1521,9 +1521,9 @@ export default function Bookings() {
                         placeholder="e.g. Wedding & Reception"
                         value={formData.eventType}
                         onChange={(e) => handleFieldChange("eventType", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.eventType ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.eventType ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {formErrors.eventType && (
                         <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.eventType}</p>
@@ -1534,7 +1534,7 @@ export default function Bookings() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Event Date * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-eventDate" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-eventDate" className="font-semibold text-gray-700">
                         Event Date *
                       </label>
                       <input
@@ -1542,9 +1542,9 @@ export default function Bookings() {
                         type="date"
                         value={formData.eventDate}
                         onChange={(e) => handleFieldChange("eventDate", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.eventDate ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.eventDate ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {formErrors.eventDate && (
                         <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.eventDate}</p>
@@ -1553,7 +1553,7 @@ export default function Bookings() {
 
                     {/* Event Time */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-eventTime" className="font-semibold text-[#6F6A62] block">
+                      <label htmlFor="booking-eventTime" className="font-semibold text-gray-700 block">
                         Event Time
                       </label>
                       <Time12Picker
@@ -1567,7 +1567,7 @@ export default function Bookings() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Duration / Days * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-numberOfDays" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-numberOfDays" className="font-semibold text-gray-700">
                         Duration / Days *
                       </label>
                       <input
@@ -1576,9 +1576,9 @@ export default function Bookings() {
                         placeholder="e.g. 2 Days / Half Day"
                         value={formData.numberOfDays}
                         onChange={(e) => handleFieldChange("numberOfDays", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.numberOfDays ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.numberOfDays ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {formErrors.numberOfDays && (
                         <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.numberOfDays}</p>
@@ -1587,7 +1587,7 @@ export default function Bookings() {
 
                     {/* Package Budget * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-budget" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-budget" className="font-semibold text-gray-700">
                         Package Budget *
                       </label>
                       <input
@@ -1596,9 +1596,9 @@ export default function Bookings() {
                         placeholder="e.g. ₹1,50,000"
                         value={formData.budget}
                         onChange={(e) => handleFieldChange("budget", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.budget ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.budget ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {formErrors.budget && (
                         <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.budget}</p>
@@ -1609,16 +1609,16 @@ export default function Bookings() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {/* Primary Service * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-requiredService" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-requiredService" className="font-semibold text-gray-700">
                         Primary Service *
                       </label>
                       <select
                         id="booking-requiredService"
                         value={formData.requiredService}
                         onChange={(e) => handleFieldChange("requiredService", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.requiredService ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.requiredService ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       >
                         <option value="">Select service</option>
                         {services.map((s) => (
@@ -1634,16 +1634,16 @@ export default function Bookings() {
 
                     {/* Studio Branch * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-branch" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-branch" className="font-semibold text-gray-700">
                         Studio Branch *
                       </label>
                       <select
                         id="booking-branch"
                         value={formData.branch}
                         onChange={(e) => handleFieldChange("branch", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.branch ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.branch ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       >
                         <option value="">Select branch</option>
                         {branches.map((b) => (
@@ -1659,16 +1659,16 @@ export default function Bookings() {
 
                     {/* Status * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-status" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-status" className="font-semibold text-gray-700">
                         Status *
                       </label>
                       <select
                         id="booking-status"
                         value={normalizeBookingStatus(formData.status)}
                         onChange={(e) => handleFieldChange("status", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.status ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.status ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       >
                         {BOOKING_STATUS_FILTERS.filter((s) => s.key !== "ALL").map(({ key, label }) => (
                           <option key={key} value={key}>
@@ -1684,7 +1684,7 @@ export default function Bookings() {
 
                   {/* Venue Location * */}
                   <div className="space-y-1">
-                    <label htmlFor="booking-location" className="font-semibold text-[#6F6A62]">
+                    <label htmlFor="booking-location" className="font-semibold text-gray-700">
                       Venue Location *
                     </label>
                     <input
@@ -1693,9 +1693,9 @@ export default function Bookings() {
                       placeholder="e.g. Le Royal Méridien, Chennai"
                       value={formData.location}
                       onChange={(e) => handleFieldChange("location", e.target.value)}
-                      className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                        formErrors.location ? "border-rose-400" : "border-[#E7E0D2]"
-                      } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                      className={`w-full p-2.5 bg-gray-50 border ${
+                        formErrors.location ? "border-rose-400" : "border-gray-200"
+                      } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                     />
                     {formErrors.location && (
                       <p className="text-rose-600 text-[10px] mt-0.5">{formErrors.location}</p>
@@ -1706,7 +1706,7 @@ export default function Bookings() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Photography Details * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-photographyRequirement" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-photographyRequirement" className="font-semibold text-gray-700">
                         Photography Details *
                       </label>
                       <input
@@ -1715,9 +1715,9 @@ export default function Bookings() {
                         placeholder="e.g. Candid + Traditional + Drone"
                         value={formData.photographyRequirement}
                         onChange={(e) => handleFieldChange("photographyRequirement", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.photographyRequirement ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.photographyRequirement ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {formErrors.photographyRequirement && (
                         <p className="text-rose-600 text-[10px] mt-0.5">
@@ -1728,7 +1728,7 @@ export default function Bookings() {
 
                     {/* Cinematography Details * */}
                     <div className="space-y-1">
-                      <label htmlFor="booking-cinematographyRequirement" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="booking-cinematographyRequirement" className="font-semibold text-gray-700">
                         Cinematography Details *
                       </label>
                       <input
@@ -1737,9 +1737,9 @@ export default function Bookings() {
                         placeholder="e.g. 4K Film + 60sec Teaser"
                         value={formData.cinematographyRequirement}
                         onChange={(e) => handleFieldChange("cinematographyRequirement", e.target.value)}
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          formErrors.cinematographyRequirement ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          formErrors.cinematographyRequirement ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {formErrors.cinematographyRequirement && (
                         <p className="text-rose-600 text-[10px] mt-0.5">
@@ -1751,7 +1751,7 @@ export default function Bookings() {
 
                   {/* Notes */}
                   <div className="space-y-1">
-                    <label htmlFor="booking-adminNotes" className="font-semibold text-[#6F6A62]">
+                    <label htmlFor="booking-adminNotes" className="font-semibold text-gray-700">
                       Admin &amp; Operational Notes
                     </label>
                     <textarea
@@ -1760,25 +1760,25 @@ export default function Bookings() {
                       placeholder="Advance paid, drone permit status, special requests..."
                       value={formData.adminNotes}
                       onChange={(e) => setFormData({ ...formData, adminNotes: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none"
                     />
                   </div>
                 </div>
 
                 {/* Pinned Submit Footer */}
-                <div className="px-6 sm:px-8 py-5 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
+                <div className="px-6 sm:px-8 py-5 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-3 shrink-0">
                   <button
                     type="button"
                     onClick={handleCloseModal}
                     disabled={isSubmitting}
-                    className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] text-xs font-semibold transition-colors disabled:opacity-50"
+                    className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 text-xs font-semibold transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow-md active:scale-95 transition-all flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl bg-black text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold shadow-xs active:scale-95 transition-all flex items-center gap-2"
                   >
                     {isSubmitting && (
                       <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />

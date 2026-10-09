@@ -2,45 +2,45 @@ export default function StatusBadge({ status, size = "md" }) {
   const normalized = (status || "").toLowerCase().replace(/[_-]/g, " ");
 
   const sizeClasses = {
-    sm: "px-2 py-0.5 text-xs font-medium",
-    md: "px-2.5 py-1 text-xs font-medium",
-    lg: "px-3 py-1.5 text-sm font-medium",
-  }[size] || "px-2.5 py-1 text-xs font-medium";
+    sm: "px-2 py-0.5 text-[10px] font-semibold",
+    md: "px-2.5 py-0.5 text-xs font-semibold",
+    lg: "px-3 py-1 text-xs font-semibold",
+  }[size] || "px-2.5 py-0.5 text-xs font-semibold";
 
-  let styles = "bg-neutral-100 text-neutral-700 border-neutral-200";
+  let styles = "bg-gray-100 text-gray-700 border-gray-200";
 
   switch (normalized) {
     case "new":
-      styles = "bg-amber-50/80 text-amber-800 border-amber-200/80";
+      styles = "bg-amber-50 text-amber-700 border-amber-200/80";
       break;
     case "contacted":
-      styles = "bg-sky-50 text-sky-800 border-sky-200";
+      styles = "bg-sky-50 text-sky-700 border-sky-200";
       break;
     case "confirmed":
-      styles = "bg-[#F4EFE6] text-[#9C7B3D] border-[#E4D3A6]";
+      styles = "bg-blue-50 text-blue-700 border-blue-200";
       break;
     case "in progress":
-      styles = "bg-indigo-50 text-indigo-800 border-indigo-200";
+      styles = "bg-purple-50 text-purple-700 border-purple-200";
       break;
     case "completed":
     case "active":
     case "published":
     case "approved":
-      styles = "bg-emerald-50 text-emerald-800 border-emerald-200";
+      styles = "bg-emerald-50 text-emerald-700 border-emerald-200";
       break;
     case "cancelled":
     case "closed":
       styles = "bg-rose-50 text-rose-700 border-rose-200";
       break;
     case "inactive":
-      styles = "bg-[#F2EFE9] text-[#6E685F] border-[#DFDAD0]";
+      styles = "bg-gray-100 text-gray-500 border-gray-200";
       break;
     case "read":
     case "draft":
-      styles = "bg-stone-100 text-stone-700 border-stone-200";
+      styles = "bg-slate-100 text-slate-600 border-slate-200";
       break;
     default:
-      styles = "bg-[#F8F6F2] text-[#2B2B2B] border-[#E7E0D2]";
+      styles = "bg-gray-100 text-gray-700 border-gray-200";
   }
 
   const displayLabel =

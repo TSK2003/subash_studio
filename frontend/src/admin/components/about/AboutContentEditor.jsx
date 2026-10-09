@@ -128,9 +128,10 @@ export default function AboutContentEditor({
     camera: { ...INITIAL_ABOUT_FALLBACK.camera, ...(aboutData.camera || {}) },
     community: { ...INITIAL_ABOUT_FALLBACK.community, ...(aboutData.community || {}) },
     journey: { ...INITIAL_ABOUT_FALLBACK.journey, ...(aboutData.journey || {}) },
-    milestones: Array.isArray(aboutData.milestones) && aboutData.milestones.length > 0
-      ? aboutData.milestones
-      : INITIAL_ABOUT_FALLBACK.milestones,
+    milestones:
+      Array.isArray(aboutData.milestones) && aboutData.milestones.length > 0
+        ? aboutData.milestones
+        : INITIAL_ABOUT_FALLBACK.milestones,
     closingSummary: { ...INITIAL_ABOUT_FALLBACK.closingSummary, ...(aboutData.closingSummary || {}) },
   }));
 
@@ -143,9 +144,10 @@ export default function AboutContentEditor({
         camera: { ...INITIAL_ABOUT_FALLBACK.camera, ...(aboutData.camera || {}) },
         community: { ...INITIAL_ABOUT_FALLBACK.community, ...(aboutData.community || {}) },
         journey: { ...INITIAL_ABOUT_FALLBACK.journey, ...(aboutData.journey || {}) },
-        milestones: Array.isArray(aboutData.milestones) && aboutData.milestones.length > 0
-          ? aboutData.milestones
-          : INITIAL_ABOUT_FALLBACK.milestones,
+        milestones:
+          Array.isArray(aboutData.milestones) && aboutData.milestones.length > 0
+            ? aboutData.milestones
+            : INITIAL_ABOUT_FALLBACK.milestones,
         closingSummary: { ...INITIAL_ABOUT_FALLBACK.closingSummary, ...(aboutData.closingSummary || {}) },
       });
     }
@@ -220,18 +222,18 @@ export default function AboutContentEditor({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Top Banner & Global Save */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-[#E7E0D2] shadow-xs">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-xs">
         <div>
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#C9A669]/15 text-[#9C7B3D] border border-[#C9A669]/30">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-gray-100 text-gray-700 border border-gray-200">
             About Studio &amp; Story CMS
           </span>
-          <h2 className="font-display text-2xl text-[#1C1B19] mt-1.5 font-medium">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1.5 tracking-tight">
             Manage About Page Heritage &amp; Timeline
           </h2>
-          <p className="text-xs text-[#736B5E] mt-0.5">
-            Update all texts, founder photographs, turning point camera, community leadership and timeline milestones.
+          <p className="text-xs text-gray-500 mt-0.5">
+            Update all narrative texts, founder photographs, turning point camera, community leadership, and timeline milestones.
           </p>
         </div>
 
@@ -239,7 +241,7 @@ export default function AboutContentEditor({
           type="button"
           disabled={isSaving}
           onClick={handleSaveAll}
-          className="px-5 py-2.5 rounded-xl bg-[#C9A669] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#B38F52] transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 shrink-0"
+          className="px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 text-xs font-medium transition-colors flex items-center gap-2 shadow-xs disabled:opacity-50 shrink-0"
         >
           {isSaving && savingSection === "all" ? (
             <>
@@ -258,18 +260,18 @@ export default function AboutContentEditor({
       {/* =========================================================================
           CARD 1: PAGE INTRODUCTION & HERO BANNER
          ========================================================================= */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E7E0D2] shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7E0D2] gap-3">
+      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-3">
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#9C7B3D] tracking-widest">Section 1</span>
-            <h3 className="font-display text-xl text-ink font-medium">Page Hero &amp; Introduction</h3>
-            <p className="text-xs text-ink-soft">Upper photographic banner image, gold eyebrow, main title, and story introduction.</p>
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Section 1</span>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">Page Hero &amp; Introduction</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Upper photographic banner image, eyebrow, main title, and story introduction.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleCancelSection("intro")}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D8CFC0] text-[#6F6A62] hover:bg-[#FAF8F5] transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
             >
               <RotateCcw size={12} />
               <span>Cancel</span>
@@ -278,7 +280,7 @@ export default function AboutContentEditor({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("intro")}
-              className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#C9A669] text-white hover:bg-[#B38F52] transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+              className="px-3.5 py-1.5 text-xs font-medium rounded-xl bg-black text-white hover:bg-gray-800 transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
             >
               {isSaving && savingSection === "intro" ? (
                 <>
@@ -297,7 +299,7 @@ export default function AboutContentEditor({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Eyebrow Label
             </label>
             <input
@@ -310,12 +312,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="OUR HERITAGE"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Main Page Title
             </label>
             <input
@@ -328,12 +330,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="About"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Supporting Introduction
             </label>
             <input
@@ -346,12 +348,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="The story behind the lens."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Supporting Tagline
             </label>
             <textarea
@@ -364,12 +366,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="A chance beginning. A lifelong passion."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Established Year (Optional)
             </label>
             <input
@@ -382,12 +384,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="1993"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           {/* About Banner Background Image */}
-          <div className="sm:col-span-2 pt-2 border-t border-[#E7E0D2]">
+          <div className="sm:col-span-2 pt-3 border-t border-gray-100">
             <AboutImageControl
               label="About Banner Background Image"
               value={formData.intro.backgroundImage || formData.intro.bannerImage || ""}
@@ -411,7 +413,7 @@ export default function AboutContentEditor({
               category="about"
               getMediaLibrary={getMediaLibrary}
             />
-            <p className="text-[11px] text-[#8C8275] mt-1.5">
+            <p className="text-[11px] text-gray-400 mt-1.5">
               Leave blank to use the default cinematic studio banner. Uploading or choosing a photo customizes the About page banner independently without changing the Films banner.
             </p>
           </div>
@@ -421,18 +423,18 @@ export default function AboutContentEditor({
       {/* =========================================================================
           CARD 2: FOUNDER (P. ARUNACHALAM)
          ========================================================================= */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E7E0D2] shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7E0D2] gap-3">
+      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-3">
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#9C7B3D] tracking-widest">Section 2</span>
-            <h3 className="font-display text-xl text-ink font-medium">The Story of the Founder</h3>
-            <p className="text-xs text-ink-soft">Founder identity, dual photo composition, narrative paragraphs and handwritten caption.</p>
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Section 2</span>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">The Story of the Founder</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Founder identity, dual photo composition, narrative paragraphs, and handwritten caption.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleCancelSection("founder")}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D8CFC0] text-[#6F6A62] hover:bg-[#FAF8F5] transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
             >
               <RotateCcw size={12} />
               <span>Cancel</span>
@@ -441,7 +443,7 @@ export default function AboutContentEditor({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("founder")}
-              className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#C9A669] text-white hover:bg-[#B38F52] transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+              className="px-3.5 py-1.5 text-xs font-medium rounded-xl bg-black text-white hover:bg-gray-800 transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
             >
               {isSaving && savingSection === "founder" ? (
                 <>
@@ -460,7 +462,7 @@ export default function AboutContentEditor({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Eyebrow Label
             </label>
             <input
@@ -473,12 +475,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="THE STORY OF THE FOUNDER"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Founder Name
             </label>
             <input
@@ -491,12 +493,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="P. Arunachalam"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Role &amp; Title
             </label>
             <input
@@ -509,12 +511,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="FOUNDER, SUBASH STUDIO"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div className="sm:col-span-3">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Description Paragraph 1
             </label>
             <textarea
@@ -527,12 +529,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="His story began in a village in the Western Ghats..."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div className="sm:col-span-3">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Description Paragraph 2
             </label>
             <textarea
@@ -545,13 +547,13 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="In 1987, a camera won in a lottery revealed his artistic talent..."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
         </div>
 
         {/* Founder Photos Composition */}
-        <div className="pt-2 border-t border-[#E7E0D2] grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="pt-3 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <AboutImageControl
             label="Founder Photo 1 (Camera Profile)"
             value={formData.founder.photo1}
@@ -605,18 +607,18 @@ export default function AboutContentEditor({
       {/* =========================================================================
           CARD 3: CAMERA / 1987 THE TURNING POINT
          ========================================================================= */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E7E0D2] shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7E0D2] gap-3">
+      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-3">
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#9C7B3D] tracking-widest">Section 3</span>
-            <h3 className="font-display text-xl text-ink font-medium">1987 • The Turning Point (Camera Section)</h3>
-            <p className="text-xs text-ink-soft">Full-width dark charcoal section matching reference: gold label, ivory heading, camera &amp; story.</p>
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Section 3</span>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">1987 • The Turning Point (Camera Section)</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Section settings matching reference: label, heading, camera name &amp; story narrative.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleCancelSection("camera")}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D8CFC0] text-[#6F6A62] hover:bg-[#FAF8F5] transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
             >
               <RotateCcw size={12} />
               <span>Cancel</span>
@@ -625,7 +627,7 @@ export default function AboutContentEditor({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("camera")}
-              className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#C9A669] text-white hover:bg-[#B38F52] transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+              className="px-3.5 py-1.5 text-xs font-medium rounded-xl bg-black text-white hover:bg-gray-800 transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
             >
               {isSaving && savingSection === "camera" ? (
                 <>
@@ -644,8 +646,8 @@ export default function AboutContentEditor({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
-              Gold Eyebrow Label
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              Eyebrow Label
             </label>
             <input
               type="text"
@@ -657,12 +659,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="1987 • THE TURNING POINT"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Camera Model Name
             </label>
             <input
@@ -675,13 +677,13 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="Agfa Click III"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
-              Ivory Section Heading
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              Section Heading
             </label>
             <input
               type="text"
@@ -693,15 +695,15 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="A camera. A new beginning."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
-            <p className="text-[11px] text-[#8C8270] mt-1">
+            <p className="text-[11px] text-gray-400 mt-1">
               Tip: The final word of this heading automatically receives gold italic accent styling on the public page.
             </p>
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Camera Turning Point Story
             </label>
             <textarea
@@ -714,14 +716,14 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="An Agfa Click III camera, won in a lottery in 1987, changed his life..."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
         </div>
 
         {/* Fixed Camera Visual Notice */}
-        <div className="pt-3 border-t border-[#E7E0D2] flex items-center gap-3 bg-[#FAF8F5] p-3.5 rounded-xl border border-[#E7E0D2]/60">
-          <div className="w-12 h-12 rounded-lg bg-[#1B1A17] flex items-center justify-center shrink-0 border border-[#C9A669]/30 shadow-xs overflow-hidden">
+        <div className="pt-3 border-t border-gray-100 flex items-center gap-3 bg-gray-50/70 p-3.5 rounded-xl border border-gray-200">
+          <div className="w-12 h-12 rounded-xl bg-gray-900 flex items-center justify-center shrink-0 border border-gray-800 shadow-xs overflow-hidden">
             <img
               src="/images/about/agfa-camera-1987.png"
               alt="Agfa Camera Visual"
@@ -730,11 +732,11 @@ export default function AboutContentEditor({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-[#2B2B2B]">Fixed Camera Visual</span>
-              <span className="text-[10px] uppercase font-bold text-[#9C7B3D] bg-[#C9A669]/15 px-2 py-0.5 rounded-md border border-[#C9A669]/30">Permanent Asset</span>
+              <span className="text-xs font-semibold text-gray-900">Fixed Camera Visual</span>
+              <span className="text-[10px] uppercase font-semibold text-gray-600 bg-gray-200/70 px-2 py-0.5 rounded-md border border-gray-300">Permanent Asset</span>
             </div>
-            <p className="text-[11px] text-[#6F6A62] mt-0.5 leading-relaxed">
-              The iconic Agfa Click III camera photograph is permanently integrated into the studio heritage section. Admins edit only the text fields above.
+            <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
+              The iconic Agfa Click III camera photograph is permanently integrated into the studio heritage section. Admins edit only the narrative text fields above.
             </p>
           </div>
         </div>
@@ -743,18 +745,18 @@ export default function AboutContentEditor({
       {/* =========================================================================
           CARD 4: COMMUNITY & LEADERSHIP (2018)
          ========================================================================= */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E7E0D2] shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7E0D2] gap-3">
+      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-3">
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#9C7B3D] tracking-widest">Section 4</span>
-            <h3 className="font-display text-xl text-ink font-medium">Community &amp; Leadership (2018)</h3>
-            <p className="text-xs text-ink-soft">Honoring the founder's service as Vice President of the Photography Welfare Association.</p>
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Section 4</span>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">Community &amp; Leadership (2018)</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Honoring the founder's service as Vice President of the Photography Welfare Association.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleCancelSection("community")}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D8CFC0] text-[#6F6A62] hover:bg-[#FAF8F5] transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
             >
               <RotateCcw size={12} />
               <span>Cancel</span>
@@ -763,7 +765,7 @@ export default function AboutContentEditor({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("community")}
-              className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#C9A669] text-white hover:bg-[#B38F52] transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+              className="px-3.5 py-1.5 text-xs font-medium rounded-xl bg-black text-white hover:bg-gray-800 transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
             >
               {isSaving && savingSection === "community" ? (
                 <>
@@ -782,7 +784,7 @@ export default function AboutContentEditor({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Section Label
             </label>
             <input
@@ -795,12 +797,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="2018 • COMMUNITY & LEADERSHIP"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Official Leadership Role
             </label>
             <input
@@ -813,12 +815,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="VICE PRESIDENT"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Full Section Heading
             </label>
             <input
@@ -831,16 +833,16 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="Serving the photography community."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
-            <p className="text-[11px] text-[#8E867B] mt-1">
+            <p className="text-[11px] text-gray-400 mt-1">
               Main editorial heading text.
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
-              Gold Italic Heading Phrase (Accent Text)
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
+              Italic Heading Phrase (Accent Text)
             </label>
             <input
               type="text"
@@ -852,15 +854,15 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="community."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
-            <p className="text-[11px] text-[#8E867B] mt-1">
-              Phrase within the heading styled on line 2 in warm gold italics.
+            <p className="text-[11px] text-gray-400 mt-1">
+              Phrase within the heading styled on line 2 in warm gold italics on the public site.
             </p>
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Association Description
             </label>
             <textarea
@@ -873,12 +875,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="Became Vice President of the Tirunelveli District Photography Labour Welfare Association."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Appointment Year Tagline
             </label>
             <input
@@ -891,12 +893,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="Appointed in 2018"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Portrait Caption
             </label>
             <input
@@ -909,13 +911,13 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="P. Arunachalam"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
         </div>
 
         {/* Leadership Portrait Control */}
-        <div className="pt-2 border-t border-[#E7E0D2]">
+        <div className="pt-3 border-t border-gray-100">
           <AboutImageControl
             label="Community Leadership Portrait"
             value={formData.community.portrait}
@@ -941,18 +943,18 @@ export default function AboutContentEditor({
       {/* =========================================================================
           CARD 5: STUDIO JOURNEY INTRODUCTION
          ========================================================================= */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E7E0D2] shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7E0D2] gap-3">
+      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-3">
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#9C7B3D] tracking-widest">Section 5</span>
-            <h3 className="font-display text-xl text-ink font-medium">Studio Journey Introduction</h3>
-            <p className="text-xs text-ink-soft">Header for the two-column history timeline.</p>
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Section 5</span>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">Studio Journey Introduction</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Header for the two-column history timeline.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleCancelSection("journey")}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D8CFC0] text-[#6F6A62] hover:bg-[#FAF8F5] transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
             >
               <RotateCcw size={12} />
               <span>Cancel</span>
@@ -961,7 +963,7 @@ export default function AboutContentEditor({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("journey")}
-              className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#C9A669] text-white hover:bg-[#B38F52] transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+              className="px-3.5 py-1.5 text-xs font-medium rounded-xl bg-black text-white hover:bg-gray-800 transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
             >
               {isSaving && savingSection === "journey" ? (
                 <>
@@ -980,7 +982,7 @@ export default function AboutContentEditor({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Eyebrow Label
             </label>
             <input
@@ -993,12 +995,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="OUR STUDIO JOURNEY"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Journey Title
             </label>
             <input
@@ -1011,12 +1013,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="From one studio to a shared legacy."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Journey Subtitle
             </label>
             <input
@@ -1029,7 +1031,7 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="Four milestones. One enduring passion."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
         </div>
@@ -1038,20 +1040,20 @@ export default function AboutContentEditor({
       {/* =========================================================================
           CARD 6: INDIVIDUAL STUDIO MILESTONES
          ========================================================================= */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E7E0D2] shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7E0D2] gap-3">
+      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-3">
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#9C7B3D] tracking-widest">Section 6</span>
-            <h3 className="font-display text-xl text-ink font-medium">Individual Studio Milestones</h3>
-            <p className="text-xs text-ink-soft">
-              Ordered milestone records. Manage dates, headings, descriptions, cursive quotations, desktop layout and images.
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Section 6</span>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">Individual Studio Milestones</h3>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Ordered milestone records. Manage dates, headings, descriptions, cursive quotations, desktop layout, and images.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleAddMilestone}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#FAF8F5] border border-[#D8CFC0] text-[#3C3830] hover:bg-[#F2ECE1] transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5 shadow-xs"
             >
               <Plus size={13} />
               <span>Add Milestone</span>
@@ -1059,7 +1061,7 @@ export default function AboutContentEditor({
             <button
               type="button"
               onClick={() => handleCancelSection("milestones")}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D8CFC0] text-[#6F6A62] hover:bg-[#FAF8F5] transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
             >
               <RotateCcw size={12} />
               <span>Cancel</span>
@@ -1068,7 +1070,7 @@ export default function AboutContentEditor({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("milestones")}
-              className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#C9A669] text-white hover:bg-[#B38F52] transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+              className="px-3.5 py-1.5 text-xs font-medium rounded-xl bg-black text-white hover:bg-gray-800 transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
             >
               {isSaving && savingSection === "milestones" ? (
                 <>
@@ -1086,18 +1088,18 @@ export default function AboutContentEditor({
         </div>
 
         {/* Milestones List */}
-        <div className="space-y-6">
+        <div className="space-y-5">
           {formData.milestones.map((milestone, idx) => (
             <div
               key={milestone.id || `m-idx-${idx}`}
-              className="p-5 rounded-xl border border-[#E7E0D2] bg-[#FCFBF8] space-y-4 shadow-2xs"
+              className="p-5 rounded-xl border border-gray-200 bg-gray-50/50 space-y-4 shadow-2xs"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-[#E7E0D2]">
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#C9A669]/20 text-[#9C7B3D] text-xs font-bold flex items-center justify-center">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-black text-white text-xs font-semibold flex items-center justify-center">
                     {idx + 1}
                   </span>
-                  <span className="text-xs font-bold text-ink uppercase tracking-wider">
+                  <span className="text-xs font-bold text-gray-900 uppercase tracking-wider">
                     {milestone.date || "Milestone"}
                   </span>
                 </div>
@@ -1107,7 +1109,7 @@ export default function AboutContentEditor({
                     type="button"
                     disabled={idx === 0}
                     onClick={() => handleMoveMilestone(idx, -1)}
-                    className="p-1.5 rounded hover:bg-white text-[#6F6A62] disabled:opacity-30"
+                    className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-gray-200 text-gray-500 hover:text-gray-700 disabled:opacity-30 transition-colors"
                     title="Move Up"
                   >
                     <ArrowUp size={14} />
@@ -1116,7 +1118,7 @@ export default function AboutContentEditor({
                     type="button"
                     disabled={idx === formData.milestones.length - 1}
                     onClick={() => handleMoveMilestone(idx, 1)}
-                    className="p-1.5 rounded hover:bg-white text-[#6F6A62] disabled:opacity-30"
+                    className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-gray-200 text-gray-500 hover:text-gray-700 disabled:opacity-30 transition-colors"
                     title="Move Down"
                   >
                     <ArrowDown size={14} />
@@ -1124,7 +1126,7 @@ export default function AboutContentEditor({
                   <button
                     type="button"
                     onClick={() => handleRemoveMilestone(idx)}
-                    className="p-1.5 rounded hover:bg-white text-red-600 ml-1"
+                    className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-red-100 text-red-500 hover:text-red-700 ml-1 transition-colors"
                     title="Remove Milestone"
                   >
                     <Trash2 size={14} />
@@ -1134,7 +1136,7 @@ export default function AboutContentEditor({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Date / Year
                   </label>
                   <input
@@ -1142,12 +1144,12 @@ export default function AboutContentEditor({
                     value={milestone.date}
                     onChange={(e) => handleUpdateMilestone(idx, { date: e.target.value })}
                     placeholder="e.g. 5 February 1993"
-                    className="w-full text-xs px-3 py-2 rounded-lg border border-[#D8CFC0] bg-white focus:border-[#C9A669] focus:outline-none"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Heading
                   </label>
                   <input
@@ -1155,18 +1157,18 @@ export default function AboutContentEditor({
                     value={milestone.heading}
                     onChange={(e) => handleUpdateMilestone(idx, { heading: e.target.value })}
                     placeholder="e.g. The first Subash Studio."
-                    className="w-full text-xs px-3 py-2 rounded-lg border border-[#D8CFC0] bg-white focus:border-[#C9A669] focus:outline-none"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Desktop Layout
                   </label>
                   <select
                     value={milestone.layout || "photo-left"}
                     onChange={(e) => handleUpdateMilestone(idx, { layout: e.target.value })}
-                    className="w-full text-xs px-3 py-2 rounded-lg border border-[#D8CFC0] bg-white focus:border-[#C9A669] focus:outline-none"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 transition-colors"
                   >
                     <option value="photo-left">Photo Left, Content Right</option>
                     <option value="content-left">Content Left, Photo Right</option>
@@ -1174,7 +1176,7 @@ export default function AboutContentEditor({
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Milestone Narrative
                   </label>
                   <textarea
@@ -1182,12 +1184,12 @@ export default function AboutContentEditor({
                     value={milestone.description}
                     onChange={(e) => handleUpdateMilestone(idx, { description: e.target.value })}
                     placeholder="Story and milestone details..."
-                    className="w-full text-xs px-3 py-2 rounded-lg border border-[#D8CFC0] bg-white focus:border-[#C9A669] focus:outline-none"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Cursive Tagline Line (Optional)
                   </label>
                   <input
@@ -1195,7 +1197,7 @@ export default function AboutContentEditor({
                     value={milestone.quoteLine || ""}
                     onChange={(e) => handleUpdateMilestone(idx, { quoteLine: e.target.value })}
                     placeholder='e.g. "When soul makes love"'
-                    className="w-full text-xs px-3 py-2 rounded-lg border border-[#D8CFC0] bg-white focus:border-[#C9A669] focus:outline-none font-serif italic"
+                    className="w-full text-xs px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 font-serif italic transition-colors"
                   />
                 </div>
               </div>
@@ -1218,18 +1220,18 @@ export default function AboutContentEditor({
       {/* =========================================================================
           CARD 7: CLOSING LOCATION SUMMARY
          ========================================================================= */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E7E0D2] shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7E0D2] gap-3">
+      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-3">
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#9C7B3D] tracking-widest">Section 7</span>
-            <h3 className="font-display text-xl text-ink font-medium">Closing Location Summary</h3>
-            <p className="text-xs text-ink-soft">Display summary underneath timeline. Not calculated automatically from milestones.</p>
+            <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Section 7</span>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900">Closing Location Summary</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Display summary underneath timeline. Not calculated automatically from milestones.</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleCancelSection("closingSummary")}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D8CFC0] text-[#6F6A62] hover:bg-[#FAF8F5] transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
             >
               <RotateCcw size={12} />
               <span>Cancel</span>
@@ -1238,7 +1240,7 @@ export default function AboutContentEditor({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("closingSummary")}
-              className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#C9A669] text-white hover:bg-[#B38F52] transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
+              className="px-3.5 py-1.5 text-xs font-medium rounded-xl bg-black text-white hover:bg-gray-800 transition-colors flex items-center gap-1.5 disabled:opacity-50 shadow-xs"
             >
               {isSaving && savingSection === "closingSummary" ? (
                 <>
@@ -1257,7 +1259,7 @@ export default function AboutContentEditor({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Locations Line
             </label>
             <input
@@ -1270,12 +1272,12 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="Kallidaikurichi · Chennai · Tirunelveli"
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#6F6A62] mb-1.5">
+            <label className="block text-xs font-medium text-gray-700 mb-1.5">
               Legacy Tagline
             </label>
             <input
@@ -1288,7 +1290,7 @@ export default function AboutContentEditor({
                 }))
               }
               placeholder="THREE BRANCHES. ONE SHARED LEGACY."
-              className="w-full text-xs px-3.5 py-2.5 rounded-lg border border-[#D8CFC0] focus:border-[#C9A669] focus:outline-none"
+              className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-colors"
             />
           </div>
         </div>
@@ -1300,16 +1302,16 @@ export default function AboutContentEditor({
           type="button"
           disabled={isSaving}
           onClick={handleSaveAll}
-          className="px-6 py-3 rounded-xl bg-[#C9A669] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#B38F52] transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
+          className="px-6 py-2.5 rounded-xl bg-black text-white text-xs font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 shadow-xs disabled:opacity-50"
         >
           {isSaving && savingSection === "all" ? (
             <>
-              <Loader2 size={15} className="animate-spin" />
+              <Loader2 size={14} className="animate-spin" />
               <span>Saving Everything...</span>
             </>
           ) : (
             <>
-              <Save size={15} />
+              <Save size={14} />
               <span>Save All About Content</span>
             </>
           )}

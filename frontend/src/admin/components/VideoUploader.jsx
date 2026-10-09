@@ -162,21 +162,21 @@ export default function VideoUploader({ value, onChange, disabled }) {
 
       {/* Case 1: Video Already Attached & Idle */}
       {hasExistingVideo && (
-        <div className="p-3.5 bg-[#F8F6F2] rounded-xl border border-[#E7E0D2] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-3.5 bg-white rounded-xl border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-lg bg-[#C9A669]/20 text-[#9C7B3D] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <Film className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#2B2B2B] truncate">
+                <span className="text-xs font-bold text-gray-900 truncate">
                   {selectedFileName || value.split("/").pop()}
                 </span>
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 shrink-0">
                   Ready
                 </span>
               </div>
-              <p className="text-[11px] text-[#6F6A62] truncate mt-0.5">{value}</p>
+              <p className="text-[11px] text-gray-500 truncate mt-0.5">{value}</p>
             </div>
           </div>
 
@@ -185,7 +185,7 @@ export default function VideoUploader({ value, onChange, disabled }) {
               type="button"
               disabled={disabled}
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-[#E7E0D2] text-[#2B2B2B] hover:bg-[#F2ECE4] hover:border-[#C9A669] transition-colors"
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Replace Video
             </button>
@@ -205,15 +205,15 @@ export default function VideoUploader({ value, onChange, disabled }) {
 
       {/* Case 2: Upload in Progress (Real Progress) */}
       {uploadState === "uploading" && (
-        <div className="p-4 bg-[#F8F6F2] rounded-xl border border-[#C9A669] space-y-3">
+        <div className="p-4 bg-gray-50 rounded-xl border border-gray-900 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-[#C9A669]/20 text-[#9C7B3D] flex items-center justify-center shrink-0 animate-pulse">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 animate-pulse">
                 <Upload className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-[#2B2B2B] truncate">{selectedFileName}</p>
-                <p className="text-[11px] text-[#6F6A62]">
+                <p className="text-xs font-bold text-gray-900 truncate">{selectedFileName}</p>
+                <p className="text-[11px] text-gray-500">
                   Uploading... {formatBytes(uploadStats.loaded)} / {formatBytes(uploadStats.total)} ({uploadProgress}%)
                 </p>
               </div>
@@ -222,16 +222,16 @@ export default function VideoUploader({ value, onChange, disabled }) {
             <button
               type="button"
               onClick={handleCancelUpload}
-              className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white rounded-lg border border-[#E7E0D2] hover:border-rose-300 transition-colors"
+              className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white rounded-lg border border-gray-200 hover:border-rose-300 transition-colors"
             >
               Cancel
             </button>
           </div>
 
           {/* Actual progress bar */}
-          <div className="w-full bg-[#E7E0D2] rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-[#C9A669] h-full rounded-full transition-all duration-150 ease-out"
+              className="bg-black h-full rounded-full transition-all duration-150 ease-out"
               style={{ width: `${Math.min(100, Math.max(0, uploadProgress))}%` }}
             />
           </div>
@@ -244,16 +244,16 @@ export default function VideoUploader({ value, onChange, disabled }) {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onClick={() => fileInputRef.current?.click()}
-          className="cursor-pointer group p-6 rounded-xl border-2 border-dashed border-[#E7E0D2] hover:border-[#C9A669] bg-[#F8F6F2]/60 hover:bg-[#F8F6F2] transition-all flex flex-col items-center justify-center text-center space-y-2"
+          className="cursor-pointer group p-6 rounded-xl border-2 border-dashed border-gray-200 hover:border-gray-400 bg-gray-50/50 hover:bg-gray-50 transition-all flex flex-col items-center justify-center text-center space-y-2"
         >
-          <div className="w-12 h-12 rounded-full bg-[#C9A669]/10 text-[#9C7B3D] group-hover:scale-110 flex items-center justify-center transition-transform">
+          <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 group-hover:scale-110 flex items-center justify-center transition-transform">
             <Upload className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-[#2B2B2B]">
+            <p className="text-xs font-bold text-gray-900">
               Click to upload or drag and drop video
             </p>
-            <p className="text-[11px] text-[#6F6A62] mt-0.5">
+            <p className="text-[11px] text-gray-500 mt-0.5">
               MP4, WebM, or QuickTime (MOV) up to 100MB
             </p>
           </div>

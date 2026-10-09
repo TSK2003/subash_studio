@@ -84,7 +84,7 @@ export function AddCategoryModal({
       <AnimatePresence>
         {isOpen && (
           <div
-            className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+            className="admin-portal fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden font-body"
             role="dialog"
             aria-modal="true"
           >
@@ -103,20 +103,20 @@ export function AddCategoryModal({
               transition={{ duration: 0.2 }}
               role="dialog"
               aria-modal="true"
-              className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
+              className="relative w-full max-w-md bg-[#EEF1F5] rounded-2xl shadow-xl border border-[#C9D1DC] z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
               onClick={(e) => e.stopPropagation()}
             >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] bg-white shrink-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#C9D1DC] bg-[#E7EBF0] shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#FAF6F0] border border-[#E7D8C5] flex items-center justify-center text-[#9C7B3D] shrink-0">
-                <Tag className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-lg bg-[#E5EAF1] border border-[#CAD3DF] flex items-center justify-center text-[#334155] shrink-0">
+                <Tag className="w-4 h-4 stroke-[1.75]" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-display font-bold text-[#2B2B2B]">
+                <h3 className="text-base sm:text-lg font-bold text-[#111827]">
                   {title}
                 </h3>
-                <p className="text-xs text-[#6F6A62]">
+                <p className="text-xs text-[#475569]">
                   New category will be active and available immediately.
                 </p>
               </div>
@@ -125,7 +125,7 @@ export function AddCategoryModal({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="p-1.5 text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-lg transition-colors"
+              className="p-1.5 text-[#475569] hover:text-[#111827] hover:bg-[#DFE5EC] rounded-lg transition-colors"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -136,7 +136,7 @@ export function AddCategoryModal({
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="p-6 space-y-4 flex-1 overflow-y-auto modal-scrollbar">
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#2B2B2B]">
+                <label className="block text-xs font-semibold text-[#334155]">
                   Category Name *
                 </label>
                 <input
@@ -149,10 +149,10 @@ export function AddCategoryModal({
                     setName(e.target.value);
                     if (error) setError("");
                   }}
-                  className={`w-full p-2.5 bg-[#F8F6F2] border rounded-xl text-xs text-[#2B2B2B] focus:outline-none transition-colors ${
+                  className={`w-full p-2.5 bg-white border rounded-xl text-xs text-[#111827] placeholder:text-[#64748B] focus:outline-none transition-colors ${
                     error
                       ? "border-rose-400 focus:border-rose-500 bg-rose-50/20"
-                      : "border-[#E7E0D2] focus:border-[#C9A669]"
+                      : "border-[#C9D1DC] focus:border-[#111827]"
                   }`}
                 />
                 {error && (
@@ -160,35 +160,35 @@ export function AddCategoryModal({
                     {error}
                   </p>
                 )}
-                <p className="text-[11px] text-[#8E867B] leading-relaxed">
+                <p className="text-[11px] text-[#475569] leading-relaxed">
                   Enter a unique category name. Duplicates are rejected case-insensitively.
                 </p>
               </div>
             </div>
 
             {/* Pinned Footer */}
-            <div className="px-6 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 bg-[#E7EBF0] border-t border-[#C9D1DC] flex items-center justify-end gap-3 shrink-0">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] text-xs font-semibold transition-colors"
+                className="px-4 py-2 rounded-lg border border-[#C9D1DC] text-[#334155] hover:bg-[#DFE5EC] text-xs font-semibold transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting || !name.trim()}
-                className="inline-flex items-center gap-2 px-5 py-2 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-5 py-2 bg-black text-white hover:bg-gray-800 rounded-lg text-xs font-semibold shadow-xs transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#E4D3A6]" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                     <span>Adding...</span>
                   </>
                 ) : (
                   <>
-                    <Plus className="w-3.5 h-3.5 text-[#E4D3A6]" />
+                    <Plus className="w-3.5 h-3.5" />
                     <span>Add Category</span>
                   </>
                 )}
@@ -268,7 +268,7 @@ export function ManageCategoriesModal({
       <AnimatePresence>
         {isOpen && (
           <div
-            className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+            className="admin-portal fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden font-body"
             role="dialog"
             aria-modal="true"
           >
@@ -287,20 +287,20 @@ export function ManageCategoriesModal({
               transition={{ duration: 0.2 }}
               role="dialog"
               aria-modal="true"
-              className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
+              className="relative w-full max-w-2xl bg-[#EEF1F5] rounded-2xl shadow-xl border border-[#C9D1DC] z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
               onClick={(e) => e.stopPropagation()}
             >
           {/* Fixed Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] bg-white shrink-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#C9D1DC] bg-[#E7EBF0] shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#FAF6F0] border border-[#E7D8C5] flex items-center justify-center text-[#9C7B3D] shrink-0">
-                <SlidersHorizontal className="w-4 h-4" />
+              <div className="w-9 h-9 rounded-lg bg-[#E5EAF1] border border-[#CAD3DF] flex items-center justify-center text-[#334155] shrink-0">
+                <SlidersHorizontal className="w-4 h-4 stroke-[1.75]" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-display font-bold text-[#2B2B2B]">
+                <h3 className="text-base sm:text-lg font-bold text-[#111827]">
                   {title}
                 </h3>
-                <p className="text-xs text-[#6F6A62]">
+                <p className="text-xs text-[#475569]">
                   {categories.length} total categories ({activeCount} active, {inactiveCount} inactive)
                 </p>
               </div>
@@ -313,15 +313,15 @@ export function ManageCategoriesModal({
                   onClose();
                   onOpenAdd();
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#111827] text-white hover:bg-black rounded-lg text-xs font-semibold shadow-xs transition-all active:scale-95"
               >
-                <Plus className="w-3.5 h-3.5 text-[#E4D3A6]" />
+                <Plus className="w-3.5 h-3.5" />
                 <span>Add Category</span>
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-lg transition-colors"
+                className="p-1.5 text-[#475569] hover:text-[#111827] hover:bg-[#DFE5EC] rounded-lg transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -332,21 +332,21 @@ export function ManageCategoriesModal({
           {/* Table / List */}
           <div className="overflow-y-auto flex-1 p-6 modal-scrollbar">
             {categories.length === 0 ? (
-              <div className="text-center py-10 text-xs text-[#8E867B]">
+              <div className="text-center py-10 text-xs text-[#475569]">
                 No categories found. Click &quot;Add Category&quot; to create one.
               </div>
             ) : (
-              <div className="border border-[#E7E0D2] rounded-xl overflow-hidden bg-white shadow-sm">
+              <div className="border border-[#C9D1DC] rounded-xl overflow-hidden bg-[#EEF1F5] shadow-xs">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-[#FAF8F5] border-b border-[#E7E0D2] text-[#6F6A62] uppercase tracking-wider text-[10px] font-bold">
+                    <tr className="bg-[#E7EBF0] border-b border-[#C9D1DC] text-[#475569] uppercase tracking-wider text-[10px] font-bold">
                       <th className="py-3 px-4">Category Name</th>
                       <th className="py-3 px-4 text-center">Items</th>
                       <th className="py-3 px-4 text-center">Current Status</th>
                       <th className="py-3 px-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F0EBE1]">
+                  <tbody className="divide-y divide-[#C9D1DC]">
                     {categories.map((cat) => {
                       const count = getCategoryCount(cat.name);
                       const isToggling = togglingId === cat.id;
@@ -354,14 +354,14 @@ export function ManageCategoriesModal({
                       return (
                         <tr
                           key={cat.id || cat.name}
-                          className="hover:bg-[#FDFBF7] transition-colors"
+                          className="hover:bg-gray-50/60 transition-colors"
                         >
                           {/* Name */}
-                          <td className="py-3 px-4 font-semibold text-[#2B2B2B]">
+                          <td className="py-3 px-4 font-semibold text-gray-900">
                             <div className="flex items-center gap-2">
                               <span>{cat.name}</span>
                               {!cat.active && (
-                                <span className="text-[10px] font-normal text-[#8E867B] italic">
+                                <span className="text-[10px] font-normal text-gray-400 italic">
                                   (Hidden from filters)
                                 </span>
                               )}
@@ -370,7 +370,7 @@ export function ManageCategoriesModal({
 
                           {/* Items Count */}
                           <td className="py-3 px-4 text-center">
-                            <span className="inline-block px-2 py-0.5 rounded-full bg-[#F3EFE8] text-[#6F6A62] font-semibold text-[11px]">
+                            <span className="inline-block px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-semibold text-[11px]">
                               {count}
                             </span>
                           </td>
@@ -386,7 +386,7 @@ export function ManageCategoriesModal({
                               active={cat.active}
                               onClick={() => handleToggle(cat)}
                               disabled={isToggling}
-                              className="px-2.5 py-1 rounded-lg border border-[#E7E0D2] hover:bg-[#F8F6F2] active:scale-95 transition-all text-xs"
+                              className="px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-100 active:scale-95 transition-all text-xs"
                             />
                           </td>
                         </tr>
@@ -397,20 +397,20 @@ export function ManageCategoriesModal({
               </div>
             )}
 
-            <p className="text-[11px] text-[#8E867B] mt-4 leading-relaxed bg-[#FAF8F5] p-3 rounded-xl border border-[#F0EBE1]">
-              <strong className="text-[#6F6A62]">Note on Deletion:</strong> Categories cannot be permanently deleted to preserve historical integrity and existing portfolio/gallery stories. Inactive categories are hidden from the public and creation dropdowns, but remain safe here for reactivation at any time.
+            <p className="text-[11px] text-gray-500 mt-4 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-200">
+              <strong className="text-gray-700">Note on Deletion:</strong> Categories cannot be permanently deleted to preserve historical integrity and existing portfolio/gallery stories. Inactive categories are hidden from the public and creation dropdowns, but remain safe here for reactivation at any time.
             </p>
           </div>
 
           {/* Fixed Footer */}
-          <div className="px-6 py-3.5 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-between shrink-0">
-            <span className="text-[11px] text-[#8E867B]">
+          <div className="px-6 py-3.5 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between shrink-0">
+            <span className="text-[11px] text-gray-400">
               Changes update immediately in PostgreSQL.
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold shadow-sm transition-all"
+              className="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-800 text-xs font-semibold shadow-xs transition-all"
             >
               Done
             </button>

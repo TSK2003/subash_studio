@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 export default function StatCard({
   title,
   value,
@@ -7,62 +5,52 @@ export default function StatCard({
   trend,
   trendPositive = true,
   description,
-  accent = "gold",
+  accent = "blue",
   onClick,
 }) {
-  const accentStyles = {
-    gold: "bg-[#FDFBF7] border-[#E7E0D2] text-[#9C7B3D]",
-    dark: "bg-[#242320] text-[#F8F6F2] border-[#383632]",
-    neutral: "bg-white border-[#E7E0D2] text-[#2B2B2B]",
-  }[accent] || "bg-white border-[#E7E0D2] text-[#2B2B2B]";
-
-  const iconBg = {
-    gold: "bg-[#F4EFE6] text-[#9C7B3D]",
-    dark: "bg-[#33312D] text-[#E4D3A6]",
-    neutral: "bg-[#F8F6F2] text-[#2B2B2B]",
-  }[accent] || "bg-[#F8F6F2] text-[#2B2B2B]";
+  // Uniform neutral badge palette matching approved reference design
+  const badgeClasses =
+    "w-8 h-8 sm:w-9 sm:h-9 rounded-lg border border-[#CAD3DF] bg-[#E5EAF1] text-[#334155] flex items-center justify-center shrink-0";
 
   return (
-    <motion.div
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2 }}
+    <div
       onClick={onClick}
-      className={`p-3.5 sm:p-4 rounded-xl border ${accentStyles} shadow-sm transition-all duration-200 min-w-0 ${
-        onClick ? "cursor-pointer hover:border-[#C9A669]" : ""
+      className={`bg-[#EEF1F5] rounded-xl border border-[#C9D1DC] p-3 sm:p-3.5 shadow-xs hover:border-[#B5BFCF] hover:shadow-sm transition-all min-w-0 flex items-start gap-3 ${
+        onClick ? "cursor-pointer" : ""
       }`}
     >
-      <div className="flex items-start justify-between gap-2 min-w-0">
-        <div className="space-y-0.5 min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-[#6F6A62] truncate">
-            {title}
-          </p>
-          <h3 className="text-xl sm:text-2xl font-display font-semibold tracking-tight text-[#2B2B2B]">
-            {value}
-          </h3>
-        </div>
-        {Icon && (
-          <div className={`p-2 sm:p-2.5 rounded-lg ${iconBg} shrink-0`}>
-            <Icon className="w-4 sm:w-4.5 h-4 sm:h-4.5" />
-          </div>
-        )}
-      </div>
-
-      {(trend || description) && (
-        <div className="mt-3 pt-3 border-t border-[#E7E0D2]/60 flex items-center justify-between text-xs gap-2 min-w-0">
-          {trend && (
-            <span
-              className={`inline-flex items-center font-medium ${
-                trendPositive ? "text-emerald-700" : "text-stone-600"
-              }`}
-            >
-              {trend}
-            </span>
-          )}
-          {description && (
-            <span className="text-[#6F6A62] truncate">{description}</span>
-          )}
+      {/* Compact rounded-square icon badge on the left */}
+      {Icon && (
+        <div className={badgeClasses}>
+          <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 stroke-[1.75]" />
         </div>
       )}
-    </motion.div>
+
+      {/* Title, number, and description aligned in one text column to its right */}
+      <div className="flex-1 min-w-0 flex flex-col justify-center">
+        {/* Title */}
+        <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#475569] truncate leading-tight">
+          {title}
+        </p>
+
+        {/* Number beneath Title */}
+        <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-[#111827] leading-none mt-1">
+          {value}
+        </h3>
+
+        {/* Description or Trend beneath Number */}
+        {(trend || description) && (
+          <p className="text-[10px] sm:text-[11px] mt-1 leading-normal truncate">
+            {trend ? (
+              <span className={trendPositive ? "text-[#047857] font-semibold" : "text-[#475569] font-medium"}>
+                {trend}
+              </span>
+            ) : (
+              <span className="text-[#475569] font-medium">{description}</span>
+            )}
+          </p>
+        )}
+      </div>
+    </div>
   );
 }
