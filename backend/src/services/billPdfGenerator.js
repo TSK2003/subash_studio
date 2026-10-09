@@ -1,17 +1,14 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import PDFDocument from "pdfkit";
 
-/**
- * Format currency in Indian numbering format (e.g., Rs. 1,500)
- */
-function formatCurrency(amount) {
-  const num = Number(amount) || 0;
-  return `Rs. ${num.toLocaleString("en-IN")}`;
-}
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Format date to "DD MMMM YYYY", e.g. "09 October 2026"
+ * Format date string to "DD MMMM YYYY", e.g. "09 October 2026"
  */
-function formatDate(dateInput) {
+function formatReceiptDate(dateInput) {
   if (!dateInput) {
     return new Date().toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -33,22 +30,42 @@ function formatDate(dateInput) {
 }
 
 /**
- * Generates an official, publication-grade PDF bill for a custom frame order.
- * @param {Object} order - The persisted FrameOrder object.
- * @param {Object} studioInfo - Studio details (name, phone, email, addresses, etc.)
+ * Format frame ratio/size label cleanly (e.g. "5 × 7" or "18 × 12")
+ */
+function formatRatioLabel(ratioName) {
+  if (!ratioName) return "Standard Size";
+  let clean = String(ratioName).replace(/inches/gi, "").trim();
+  clean = clean.replace(/\s*[xX×]\s*/g, " × ");
+  return clean;
+}
+
+/**
+ * Formats a numeric currency value into Indian Rupee format, e.g. "₹2,500"
+ */
+function formatRupee(amount) {
+  const num = Number(amount) || 0;
+  return `₹${num.toLocaleString("en-IN")}`;
+}
+
+/**
+ * Generates an official, publication-grade PDF receipt for a custom frame order,
+ * matching the SUBASH STUDIO public receipt design and reference layout.
+ *
+ * @param {Object} order - The persisted FrameOrder database object.
+ * @param {Object} [studioInfo={}] - Authoritative studio contact & metadata.
  * @returns {Promise<Buffer>} - Resolves with the generated PDF Buffer.
  */
 export async function generateFrameBillPdf(order, studioInfo = {}) {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({
-        size: "A4",
-        margin: 40,
+        size: "A4", // 595.28 x 841.89 points
+        margins: { top: 30, bottom: 30, left: 30, right: 30 },
         info: {
-          Title: `SUBASH STUDIO - Frame Order Bill #${order.id}`,
+          Title: `SUBASH STUDIO - Frame Order Receipt #${order.id}`,
           Author: "SUBASH STUDIO",
-          Subject: `Custom Frame Order Bill for ${order.customerName}`,
-          Keywords: "Subash Studio, Frame Order, Bill, Invoice, Woodcraft",
+          Subject: `Custom Frame Order Receipt for ${order.customerName}`,
+          Keywords: "Subash Studio, Frame Order Receipt, Atelier Woodcraft",
           CreationDate: new Date(),
         },
       });
@@ -58,451 +75,499 @@ export async function generateFrameBillPdf(order, studioInfo = {}) {
       doc.on("end", () => resolve(Buffer.concat(buffers)));
       doc.on("error", (err) => reject(err));
 
-      const primaryColor = "#1C1B19"; // Charcoal black
-      const goldColor = "#8C6D32"; // Warm luxury bronze gold
-      const mutedColor = "#666666"; // Supporting gray
-      const borderColor = "#D6CFC7"; // Subtle separator line
-      const cardBg = "#FAF8F5"; // Light cream background
-      const pageWidth = 515; // 595 - 2*40 margins
+      // -------------------------------------------------------------
+      // Font Registration & Fallbacks
+      // -------------------------------------------------------------
+      const notoFontPath = path.resolve(__dirname, "../assets/fonts/NotoSansTamil.ttf");
+      const hasNoto = fs.existsSync(notoFontPath);
+      if (hasNoto) {
+        doc.registerFont("Noto", notoFontPath);
+      }
 
-      // ==========================================================
-      // 1. BRAND HEADER
-      // ==========================================================
-      let y = 40;
+      const fontRegular = hasNoto ? "Noto" : "Helvetica";
+      const fontBold = hasNoto ? "Noto" : "Helvetica-Bold";
+      const fontSerif = "Times-Roman";
+      const fontSerifBold = "Times-Bold";
+      const fontSerifItalic = "Times-Italic";
 
-      // Studio Sub-heading
+      // -------------------------------------------------------------
+      // Color Palette (matching reference image & FramePrintReceipt)
+      // -------------------------------------------------------------
+      const colPrimary = "#1C1B19"; // Rich charcoal black
+      const colGold = "#8C6D32"; // Atelier bronze gold
+      const colMuted = "#6B7280"; // Supporting neutral gray
+      const colLight = "#9CA3AF"; // Disclaimer light gray
+      const colBorder = "#CBD5E1"; // Card border line
+      const colDivider = "#E5E7EB"; // Inner section hairline
+      const colCardBg = "#FAF8F5"; // Item card warm background
+
+      // -------------------------------------------------------------
+      // Layout Geometry (Compact centered A4 receipt card)
+      // -------------------------------------------------------------
+      const cardWidth = 450;
+      const cardX = (595.28 - cardWidth) / 2; // ~72.64 pt
+      const cardY = 40;
+      const padX = 22;
+      const contentX = cardX + padX;
+      const contentWidth = cardWidth - padX * 2; // 406 pt
+
+      let y = cardY + 20;
+
+      // 1. Studio Logo
+      const logoPath = path.resolve(__dirname, "../assets/images/logo.png");
+      if (fs.existsSync(logoPath)) {
+        const logoWidth = 34;
+        const logoX = cardX + (cardWidth - logoWidth) / 2;
+        doc.image(logoPath, logoX, y, { width: logoWidth });
+        y += 34 + 6;
+      } else {
+        y += 4;
+      }
+
+      // 2. ATELIER WOODCRAFT & FRAMING
       doc
-        .fontSize(8.5)
-        .font("Helvetica-Bold")
-        .fillColor(goldColor)
-        .text("ATELIER WOODCRAFT & CUSTOM FRAMING", 40, y, {
-          align: "center",
-          characterSpacing: 2,
-        });
-
-      y += 14;
-
-      // Studio Title
-      doc
-        .fontSize(22)
-        .font("Helvetica-Bold")
-        .fillColor(primaryColor)
-        .text("SUBASH STUDIO", 40, y, {
-          align: "center",
-          characterSpacing: 3,
-        });
-
-      y += 26;
-
-      // Tagline
-      doc
-        .fontSize(8.5)
-        .font("Helvetica-Oblique")
-        .fillColor(mutedColor)
-        .text("Fine Photography & Cinematic Films  •  Est. 1993", 40, y, {
-          align: "center",
-        });
-
-      y += 16;
-
-      // Bill Title Badge
-      const badgeText = "OFFICIAL CUSTOM FRAME ORDER BILL";
-      const badgeWidth = 240;
-      const badgeX = (595 - badgeWidth) / 2;
-      doc
-        .rect(badgeX, y, badgeWidth, 18)
-        .lineWidth(0.75)
-        .strokeColor(goldColor)
-        .fillColor(cardBg)
-        .fillAndStroke();
-
-      doc
-        .fontSize(8)
-        .font("Helvetica-Bold")
-        .fillColor(primaryColor)
-        .text(badgeText, badgeX, y + 4.5, {
-          width: badgeWidth,
+        .font(fontBold)
+        .fontSize(7.5)
+        .fillColor(colGold)
+        .text("ATELIER WOODCRAFT & FRAMING", contentX, y, {
+          width: contentWidth,
           align: "center",
           characterSpacing: 1.5,
         });
-
-      y += 28;
-
-      // Dividing Hairline
-      doc
-        .moveTo(40, y)
-        .lineTo(40 + pageWidth, y)
-        .lineWidth(0.5)
-        .strokeColor(borderColor)
-        .stroke();
-
       y += 12;
 
-      // ==========================================================
-      // 2. METADATA: BILL TO & ORDER INFORMATION (2 COLUMNS)
-      // ==========================================================
-      const colWidth = pageWidth / 2 - 10;
-      const leftColX = 40;
-      const rightColX = 40 + colWidth + 20;
-      const metaStartY = y;
-
-      // Left Column Header: CUSTOMER INFORMATION
+      // 3. SUBASH STUDIO
       doc
+        .font(fontSerifBold)
+        .fontSize(21)
+        .fillColor(colPrimary)
+        .text("SUBASH STUDIO", contentX, y, {
+          width: contentWidth,
+          align: "center",
+          characterSpacing: 2,
+        });
+      y += 24;
+
+      // 4. Fine Photography & Cinematic Films
+      doc
+        .font(fontSerifItalic)
         .fontSize(8.5)
-        .font("Helvetica-Bold")
-        .fillColor(goldColor)
-        .text("BILL TO (CUSTOMER DETAILS)", leftColX, y);
-
-      let leftY = y + 14;
-
-      const customerRows = [
-        { label: "Customer Name:", val: order.customerName || "N/A" },
-        { label: "Phone Number:", val: order.phone || "N/A" },
-        { label: "WhatsApp:", val: order.whatsapp || order.phone || "N/A" },
-        { label: "Email Address:", val: order.email || "N/A" },
-        { label: "Fulfillment:", val: order.deliveryType || "Home Delivery" },
-      ];
-
-      if (order.address) {
-        customerRows.push({ label: "Delivery Address:", val: order.address });
-      }
-      if (order.notes) {
-        customerRows.push({ label: "Instructions:", val: order.notes });
-      }
-
-      customerRows.forEach((row) => {
-        doc
-          .fontSize(8)
-          .font("Helvetica")
-          .fillColor(mutedColor)
-          .text(row.label, leftColX, leftY, { width: 85, continued: false });
-
-        doc
-          .fontSize(8)
-          .font("Helvetica-Bold")
-          .fillColor(primaryColor)
-          .text(row.val, leftColX + 85, leftY, { width: colWidth - 85 });
-
-        const rowHeight = Math.max(12, doc.heightOfString(row.val, { width: colWidth - 85 }) + 3);
-        leftY += rowHeight;
-      });
-
-      // Right Column Header: ORDER & PAYMENT DETAILS
-      doc
-        .fontSize(8.5)
-        .font("Helvetica-Bold")
-        .fillColor(goldColor)
-        .text("ORDER & PAYMENT SUMMARY", rightColX, metaStartY);
-
-      let rightY = metaStartY + 14;
-
-      const paymentStatusText =
-        order.paymentStatus ||
-        (order.status === "DELIVERED"
-          ? "PAID"
-          : order.deliveryType === "Studio Pickup"
-          ? "PAY AT STUDIO (PENDING)"
-          : "CASH ON DELIVERY (PENDING)");
-
-      const orderRows = [
-        { label: "Order ID:", val: `#${order.id}` },
-        { label: "Order Date:", val: formatDate(order.createdAt) },
-        { label: "Order Status:", val: (order.status || "NEW").toUpperCase() },
-        { label: "Payment Status:", val: paymentStatusText },
-        { label: "Total Units:", val: String(order.quantity || 1) },
-      ];
-
-      orderRows.forEach((row) => {
-        doc
-          .fontSize(8)
-          .font("Helvetica")
-          .fillColor(mutedColor)
-          .text(row.label, rightColX, rightY, { width: 85, continued: false });
-
-        doc
-          .fontSize(8)
-          .font("Helvetica-Bold")
-          .fillColor(primaryColor)
-          .text(row.val, rightColX + 85, rightY, { width: colWidth - 85 });
-
-        rightY += 14;
-      });
-
-      y = Math.max(leftY, rightY) + 12;
-
-      // Dividing Hairline
-      doc
-        .moveTo(40, y)
-        .lineTo(40 + pageWidth, y)
-        .lineWidth(0.5)
-        .strokeColor(borderColor)
-        .stroke();
-
-      y += 12;
-
-      // ==========================================================
-      // 3. ITEMIZATION TABLE
-      // ==========================================================
-      doc
-        .fontSize(9)
-        .font("Helvetica-Bold")
-        .fillColor(primaryColor)
-        .text("ITEMIZED FRAME SPECIFICATIONS", 40, y);
-
+        .fillColor(colMuted)
+        .text("Fine Photography & Cinematic Films", contentX, y, {
+          width: contentWidth,
+          align: "center",
+        });
       y += 14;
 
-      // Table Header Row
-      const colX_item = 40;
-      const colW_item = 25;
-
-      const colX_desc = 65;
-      const colW_desc = 245;
-
-      const colX_dim = 310;
-      const colW_dim = 70;
-
-      const colX_qty = 380;
-      const colW_qty = 30;
-
-      const colX_unit = 410;
-      const colW_unit = 55;
-
-      const colX_total = 465;
-      const colW_total = 90;
-
-      // Header background
+      // 5. FRAME ORDER RECEIPT badge
+      const badgeW = 136;
+      const badgeH = 16;
+      const badgeX = cardX + (cardWidth - badgeW) / 2;
       doc
-        .rect(40, y, pageWidth, 18)
-        .fillColor(cardBg)
-        .fill();
+        .rect(badgeX, y, badgeW, badgeH)
+        .lineWidth(0.75)
+        .strokeColor("#D1D5DB")
+        .fillColor(colCardBg)
+        .fillAndStroke();
 
       doc
-        .rect(40, y, pageWidth, 18)
-        .lineWidth(0.5)
-        .strokeColor(borderColor)
+        .font(fontBold)
+        .fontSize(7.5)
+        .fillColor(colPrimary)
+        .text("FRAME ORDER RECEIPT", badgeX, y + 4.5, {
+          width: badgeW,
+          align: "center",
+          characterSpacing: 1.5,
+        });
+      y += badgeH + 12;
+
+      // Horizontal Divider
+      doc
+        .moveTo(contentX, y)
+        .lineTo(contentX + contentWidth, y)
+        .lineWidth(0.75)
+        .strokeColor(colDivider)
         .stroke();
+      y += 10;
 
-      doc.fontSize(7.5).font("Helvetica-Bold").fillColor(goldColor);
-      doc.text("#", colX_item, y + 4.5, { width: colW_item, align: "center" });
-      doc.text("FRAME CRAFT SPECIFICATION", colX_desc + 4, y + 4.5, { width: colW_desc - 4 });
-      doc.text("ORIENTATION", colX_dim, y + 4.5, { width: colW_dim, align: "center" });
-      doc.text("QTY", colX_qty, y + 4.5, { width: colW_qty, align: "center" });
-      doc.text("UNIT", colX_unit, y + 4.5, { width: colW_unit, align: "right" });
-      doc.text("TOTAL", colX_total, y + 4.5, { width: colW_total - 5, align: "right" });
+      // -------------------------------------------------------------
+      // 6. ORDER INFO (3 Columns in one row)
+      // -------------------------------------------------------------
+      const colW1 = 140;
+      const colW2 = 140;
+      const colW3 = contentWidth - colW1 - colW2;
 
-      y += 18;
+      // Col 1: ORDER ID
+      doc
+        .font(fontBold)
+        .fontSize(6.5)
+        .fillColor(colMuted)
+        .text("ORDER ID", contentX, y, { characterSpacing: 0.5 });
+      doc
+        .font(fontBold)
+        .fontSize(9)
+        .fillColor(colPrimary)
+        .text(order.id, contentX, y + 9);
 
-      // Determine items list (handles both multi-item array and single-item fields)
-      const rawItems = Array.isArray(order.items) && order.items.length > 0
+      // Col 2: ORDER DATE
+      doc
+        .font(fontBold)
+        .fontSize(6.5)
+        .fillColor(colMuted)
+        .text("ORDER DATE", contentX + colW1, y, { characterSpacing: 0.5 });
+      doc
+        .font(fontRegular)
+        .fontSize(8)
+        .fillColor(colPrimary)
+        .text(formatReceiptDate(order.createdAt), contentX + colW1, y + 9);
+
+      // Col 3: STATUS (Right aligned)
+      doc
+        .font(fontBold)
+        .fontSize(6.5)
+        .fillColor(colMuted)
+        .text("STATUS", contentX + colW1 + colW2, y, {
+          width: colW3,
+          align: "right",
+          characterSpacing: 0.5,
+        });
+      doc
+        .font(fontBold)
+        .fontSize(8.5)
+        .fillColor(colPrimary)
+        .text(order.status || "NEW", contentX + colW1 + colW2, y + 9, {
+          width: colW3,
+          align: "right",
+        });
+
+      y += 24;
+
+      // Horizontal Divider
+      doc
+        .moveTo(contentX, y)
+        .lineTo(contentX + contentWidth, y)
+        .lineWidth(0.75)
+        .strokeColor(colDivider)
+        .stroke();
+      y += 9;
+
+      // -------------------------------------------------------------
+      // 7. CUSTOMER DETAILS (2 Columns Key-Value)
+      // -------------------------------------------------------------
+      doc
+        .font(fontBold)
+        .fontSize(7.5)
+        .fillColor(colPrimary)
+        .text("CUSTOMER DETAILS", contentX, y, { characterSpacing: 0.5 });
+      y += 11;
+
+      const custColW = contentWidth / 2 - 8;
+      const custLeftX = contentX;
+      const custRightX = contentX + custColW + 16;
+
+      const drawField = (x, currY, label, val, isBold = false) => {
+        doc.font(fontRegular).fontSize(7.5).fillColor(colMuted).text(label, x, currY, { continued: true });
+        doc.font(isBold ? fontBold : fontRegular).fontSize(7.5).fillColor(colPrimary).text(val || "—");
+      };
+
+      // Row 1: Name & Phone
+      drawField(custLeftX, y, "Name: ", order.customerName, true);
+      drawField(custRightX, y, "Phone: ", order.phone);
+      y += 12;
+
+      // Row 2: WhatsApp & Email
+      drawField(custLeftX, y, "WhatsApp: ", order.whatsapp || order.phone);
+      drawField(custRightX, y, "Email: ", order.email);
+      y += 12;
+
+      // Row 3: Fulfillment
+      drawField(custLeftX, y, "Fulfillment: ", order.deliveryType || "Studio Pickup", true);
+      y += 12;
+
+      // Row 4: Delivery Address (if present)
+      if (order.address && order.address.trim()) {
+        doc.font(fontRegular).fontSize(7.5).fillColor(colMuted).text("Delivery Address: ", custLeftX, y, { continued: true });
+        doc.font(fontRegular).fontSize(7.5).fillColor(colPrimary).text(order.address.trim(), {
+          width: contentWidth - 75,
+        });
+        y += doc.heightOfString(order.address.trim(), { width: contentWidth - 75, fontSize: 7.5 }) + 4;
+      }
+
+      // Row 5: Notes / Instructions (if present)
+      if (order.notes && order.notes.trim()) {
+        doc.font(fontSerifItalic).fontSize(7).fillColor(colMuted).text("Instructions: ", custLeftX, y, { continued: true });
+        doc.font(fontSerifItalic).fontSize(7).fillColor("#4B5563").text(order.notes.trim(), {
+          width: contentWidth - 65,
+        });
+        y += doc.heightOfString(order.notes.trim(), { width: contentWidth - 65, fontSize: 7 }) + 4;
+      }
+
+      y += 4;
+
+      // Horizontal Divider
+      doc
+        .moveTo(contentX, y)
+        .lineTo(contentX + contentWidth, y)
+        .lineWidth(0.75)
+        .strokeColor(colDivider)
+        .stroke();
+      y += 9;
+
+      // -------------------------------------------------------------
+      // 8. ORDERED FRAMES & ITEM CARDS
+      // -------------------------------------------------------------
+      const items = (order.items && order.items.length > 0)
         ? order.items
-        : Array.isArray(order.orderItems) && order.orderItems.length > 0
-        ? order.orderItems
         : [
             {
-              woodType: order.woodType,
-              woodPrice: order.woodPrice,
-              frameDesign: order.frameDesign,
-              designPrice: order.designPrice,
-              frameRatio: order.frameRatio,
-              ratioPrice: order.ratioPrice,
-              orientation: order.orientation,
+              woodType: order.woodType || "Custom Wood",
+              frameDesign: order.frameDesign || "Classic Profile",
+              frameRatio: order.frameRatio || "Standard Size",
+              orientation: order.orientation || "portrait",
               quantity: order.quantity || 1,
-              unitPrice: order.unitPrice,
+              unitPrice: order.unitPrice || order.totalAmount,
               totalAmount: order.totalAmount,
             },
           ];
 
-      rawItems.forEach((item, index) => {
-        const itemY = y;
-        const woodName = item.wood?.name || item.woodType || "Premium Timber";
-        const designName = item.design?.name || item.frameDesign || "Classic Finish";
-        const ratioName = item.ratio?.name || item.frameRatio || "Standard Size";
-        const orientation = (item.orientation || "portrait").toUpperCase();
-        const qty = Number(item.quantity) || 1;
-        const unitPrice = Number(item.unitPrice) || 0;
-        const lineTotal = Number(item.totalAmount) || unitPrice * qty;
-
-        // Content
-        doc.fontSize(8).font("Helvetica-Bold").fillColor(primaryColor);
-        doc.text(String(index + 1), colX_item, itemY + 5, { width: colW_item, align: "center" });
-
-        // Title line
-        doc.text(`${woodName}  •  ${designName}`, colX_desc + 4, itemY + 5, { width: colW_desc - 4 });
-
-        // Subtitle line (breakdown)
-        doc.fontSize(7).font("Helvetica").fillColor(mutedColor);
-        doc.text(
-          `Timber Wood: ${woodName} | Profile Design: ${designName} | Size: ${ratioName}`,
-          colX_desc + 4,
-          itemY + 17,
-          { width: colW_desc - 4 }
-        );
-
-        doc.fontSize(7.5).font("Helvetica").fillColor(primaryColor);
-        doc.text(orientation, colX_dim, itemY + 7, { width: colW_dim, align: "center" });
-        doc.text(String(qty), colX_qty, itemY + 7, { width: colW_qty, align: "center" });
-        doc.text(formatCurrency(unitPrice), colX_unit, itemY + 7, { width: colW_unit, align: "right" });
-
-        doc.font("Helvetica-Bold");
-        doc.text(formatCurrency(lineTotal), colX_total, itemY + 7, { width: colW_total - 5, align: "right" });
-
-        const rowHeight = 30;
-
-        // Row bottom border
-        doc
-          .moveTo(40, itemY + rowHeight)
-          .lineTo(40 + pageWidth, itemY + rowHeight)
-          .lineWidth(0.4)
-          .strokeColor(borderColor)
-          .stroke();
-
-        y += rowHeight;
-      });
-
-      // ==========================================================
-      // 4. TOTAL SUMMARY BLOCK
-      // ==========================================================
-      y += 8;
-
-      const summaryW = 200;
-      const summaryX = 40 + pageWidth - summaryW;
-
-      // Background card for total
-      doc
-        .rect(summaryX, y, summaryW, 36)
-        .fillColor(cardBg)
-        .fill();
+      const totalUnits = items.reduce((sum, it) => sum + (it.quantity || 1), 0);
+      const itemsHeading = `ORDERED FRAMES (${items.length} ITEM${items.length > 1 ? "S" : ""})`;
 
       doc
-        .rect(summaryX, y, summaryW, 36)
-        .lineWidth(0.75)
-        .strokeColor(goldColor)
-        .stroke();
+        .font(fontBold)
+        .fontSize(7.5)
+        .fillColor(colPrimary)
+        .text(itemsHeading, contentX, y, { characterSpacing: 0.5 });
 
       doc
-        .fontSize(8)
-        .font("Helvetica")
-        .fillColor(mutedColor)
-        .text("TOTAL UNITS ORDERED:", summaryX + 10, y + 6);
-
-      doc
-        .fontSize(8)
-        .font("Helvetica-Bold")
-        .fillColor(primaryColor)
-        .text(
-          String(rawItems.reduce((acc, curr) => acc + (Number(curr.quantity) || 1), 0)),
-          summaryX + 130,
-          y + 6,
-          { width: 60, align: "right" }
-        );
-
-      doc
-        .fontSize(10)
-        .font("Helvetica-Bold")
-        .fillColor(primaryColor)
-        .text("GRAND TOTAL:", summaryX + 10, y + 19);
-
-      doc
-        .fontSize(11)
-        .font("Helvetica-Bold")
-        .fillColor(primaryColor)
-        .text(formatCurrency(order.totalAmount), summaryX + 100, y + 18, {
-          width: 90,
+        .font(fontRegular)
+        .fontSize(7)
+        .fillColor(colMuted)
+        .text(`Total Units: ${totalUnits}`, contentX, y, {
+          width: contentWidth,
           align: "right",
         });
 
-      y += 46;
+      y += 12;
 
-      // ==========================================================
-      // 5. ATELIER NOTES & POLICIES
-      // ==========================================================
-      doc
-        .rect(40, y, pageWidth, 42)
-        .fillColor("#FDFDFD")
-        .fill();
+      // Render individual frame cards
+      items.forEach((item, idx) => {
+        const itemBoxY = y;
+        const itemBoxH = 46;
+        const woodName = item.wood?.name || item.woodType || "Timber Frame";
+        const designName = item.design?.name || item.frameDesign || "Classic";
+        const ratioName = formatRatioLabel(item.ratio?.name || item.frameRatio);
+        const orientation = item.orientation || "portrait";
+        const qty = item.quantity || 1;
+        const unitPrice = item.unitPrice || (item.totalAmount / qty);
+        const itemTotal = item.totalAmount || (unitPrice * qty);
 
+        // Frame card container
+        doc
+          .roundedRect(contentX, itemBoxY, contentWidth, itemBoxH, 2)
+          .lineWidth(0.5)
+          .strokeColor("#E5E7EB")
+          .fillColor(colCardBg)
+          .fillAndStroke();
+
+        // Line 1: Frame Title & Total
+        doc
+          .font(fontBold)
+          .fontSize(8.5)
+          .fillColor(colPrimary)
+          .text(`Frame #${idx + 1}: ${woodName}`, contentX + 8, itemBoxY + 6);
+
+        doc
+          .font(fontBold)
+          .fontSize(8.5)
+          .fillColor(colPrimary)
+          .text(formatRupee(itemTotal), contentX, itemBoxY + 6, {
+            width: contentWidth - 8,
+            align: "right",
+          });
+
+        // Line 2: Profile & Size
+        const line2Y = itemBoxY + 18;
+        doc
+          .font(fontRegular)
+          .fontSize(7)
+          .fillColor(colMuted)
+          .text("Profile: ", contentX + 8, line2Y, { continued: true });
+        doc
+          .font(fontBold)
+          .fontSize(7)
+          .fillColor(colPrimary)
+          .text(designName, { continued: true });
+        doc
+          .font(fontRegular)
+          .fontSize(7)
+          .fillColor(colMuted)
+          .text("  •  Size: ", { continued: true });
+        doc
+          .font(fontBold)
+          .fontSize(7)
+          .fillColor(colPrimary)
+          .text(ratioName, { continued: true });
+        doc
+          .font(fontRegular)
+          .fontSize(7)
+          .fillColor(colMuted)
+          .text(` (${orientation})`);
+
+        // Micro internal divider
+        doc
+          .moveTo(contentX + 8, itemBoxY + 31)
+          .lineTo(contentX + contentWidth - 8, itemBoxY + 31)
+          .lineWidth(0.4)
+          .strokeColor("#E5E7EB")
+          .stroke();
+
+        // Line 3: Unit Price & Qty
+        const line3Y = itemBoxY + 33;
+        doc
+          .font(fontRegular)
+          .fontSize(6.5)
+          .fillColor(colMuted)
+          .text(`Unit: ${formatRupee(unitPrice)} × Qty ${qty}`, contentX + 8, line3Y);
+
+        doc
+          .font(fontRegular)
+          .fontSize(7)
+          .fillColor(colMuted)
+          .text(formatRupee(itemTotal), contentX, line3Y, {
+            width: contentWidth - 8,
+            align: "right",
+          });
+
+        y += itemBoxH + 6;
+      });
+
+      // Divider above GRAND TOTAL
+      y += 2;
       doc
-        .rect(40, y, pageWidth, 42)
-        .lineWidth(0.4)
-        .strokeColor(borderColor)
+        .moveTo(contentX, y)
+        .lineTo(contentX + contentWidth, y)
+        .lineWidth(0.75)
+        .strokeColor("#D1D5DB")
         .stroke();
+      y += 7;
+
+      // GRAND TOTAL ROW
+      doc
+        .font(fontBold)
+        .fontSize(8.5)
+        .fillColor(colPrimary)
+        .text("GRAND TOTAL", contentX, y + 2, { characterSpacing: 0.5 });
 
       doc
+        .font(fontBold)
+        .fontSize(11)
+        .fillColor(colPrimary)
+        .text(formatRupee(order.totalAmount), contentX, y, {
+          width: contentWidth,
+          align: "right",
+        });
+
+      y += 18;
+
+      // -------------------------------------------------------------
+      // 9. BOTTOM THANK YOU & STATUS
+      // -------------------------------------------------------------
+      y += 6;
+      {
+        const label = "Order Status: ";
+        const val = order.status || "NEW";
+        doc.font(fontRegular).fontSize(7.5);
+        const lW = doc.widthOfString(label);
+        doc.font(fontBold).fontSize(7.5);
+        const vW = doc.widthOfString(val);
+        const totalW = lW + vW;
+        const startX = contentX + (contentWidth - totalW) / 2;
+        doc.font(fontRegular).fontSize(7.5).fillColor(colMuted).text(label, startX, y, { lineBreak: false });
+        doc.font(fontBold).fontSize(7.5).fillColor(colPrimary).text(val, startX + lW, y);
+      }
+      y += 12;
+
+      {
+        const p1 = "Thank you for choosing ";
+        const p2 = "SUBASH STUDIO.";
+        doc.font(fontSerif).fontSize(8.5);
+        const p1W = doc.widthOfString(p1);
+        doc.font(fontSerifBold).fontSize(8.5);
+        const p2W = doc.widthOfString(p2);
+        const totalW = p1W + p2W;
+        const startX = contentX + (contentWidth - totalW) / 2;
+        doc.font(fontSerif).fontSize(8.5).fillColor(colPrimary).text(p1, startX, y, { lineBreak: false });
+        doc.font(fontSerifBold).fontSize(8.5).fillColor(colPrimary).text(p2, startX + p1W, y);
+      }
+      y += 12;
+
+      doc
+        .font(fontSerifItalic)
         .fontSize(7.5)
-        .font("Helvetica-Bold")
-        .fillColor(goldColor)
-        .text("CRAFTSMANSHIP & ATELIER FULFILLMENT NOTICE", 50, y + 6);
+        .fillColor(colGold)
+        .text("A fine photography and cinematography house.", contentX, y, {
+          width: contentWidth,
+          align: "center",
+        });
+      y += 14;
 
+      // -------------------------------------------------------------
+      // 10. STUDIO CONTACT & DISCLAIMER
+      // -------------------------------------------------------------
       doc
-        .fontSize(7)
-        .font("Helvetica")
-        .fillColor(mutedColor)
-        .text(
-          "Every Subash Studio frame is individually handcrafted using kiln-seasoned natural hardwoods and precision archival mounting. Orders undergo artisan joinery, fine finishing, and safe shock-proof packaging prior to dispatch.",
-          50,
-          y + 17,
-          { width: pageWidth - 20, lineGap: 1.5 }
-        );
-
-      y += 50;
-
-      // ==========================================================
-      // 6. STUDIO CONTACT & LEGAL DISCLAIMER (FOOTER)
-      // ==========================================================
-      const footerY = 750; // Pin near bottom of A4 (842)
-
-      doc
-        .moveTo(40, footerY)
-        .lineTo(40 + pageWidth, footerY)
-        .lineWidth(0.5)
-        .strokeColor(borderColor)
+        .moveTo(contentX, y)
+        .lineTo(contentX + contentWidth, y)
+        .lineWidth(0.75)
+        .strokeColor(colDivider)
         .stroke();
+      y += 8;
 
       doc
-        .fontSize(8)
-        .font("Helvetica-Bold")
-        .fillColor(primaryColor)
-        .text(
-          studioInfo.studioName || "SUBASH STUDIO — Fine Photography & Atelier Framing",
-          40,
-          footerY + 8,
-          { align: "center" }
-        );
-
-      doc
+        .font(fontRegular)
         .fontSize(7)
-        .font("Helvetica")
-        .fillColor(mutedColor)
+        .fillColor(colMuted)
         .text(
-          "Tirunelveli Atelier  •  Kalladaikurichi Heritage Studio  •  Tenkasi Branch",
-          40,
-          footerY + 19,
-          { align: "center" }
+          "Tirunelveli Atelier • Kalladaikurichi Heritage Studio",
+          contentX,
+          y,
+          { width: contentWidth, align: "center" }
         );
+      y += 10;
 
+      const studioPhone = studioInfo.phone || "+91 93457 06609";
+      const studioEmail = studioInfo.email || "subashstudio002@gmail.com";
       doc
+        .font(fontRegular)
         .fontSize(7)
-        .font("Helvetica")
-        .fillColor(mutedColor)
+        .fillColor(colMuted)
         .text(
-          `Phone: ${studioInfo.phone || "+91 93457 06609"}  •  WhatsApp: ${
-            studioInfo.whatsapp || "+91 93457 06609"
-          }  •  Email: ${studioInfo.email || "subashstudio009@gmail.com"}`,
-          40,
-          footerY + 29,
-          { align: "center" }
+          `Direct Inquiries: ${studioPhone} • ${studioEmail}`,
+          contentX,
+          y,
+          { width: contentWidth, align: "center" }
         );
+      y += 10;
 
       doc
-        .fontSize(6.5)
-        .font("Helvetica-Oblique")
-        .fillColor("#999999")
+        .font(fontBold)
+        .fontSize(6)
+        .fillColor(colLight)
         .text(
-          "THIS IS AN OFFICIAL COMPUTER-GENERATED BILL FOR CUSTOM FRAMING SERVICES. NO PHYSICAL SIGNATURE IS REQUIRED.",
-          40,
-          footerY + 41,
-          { align: "center", characterSpacing: 0.5 }
+          "THIS IS AN OFFICIAL COMPUTER-GENERATED RECEIPT FOR CUSTOM FRAMING ORDER.",
+          contentX,
+          y,
+          { width: contentWidth, align: "center", characterSpacing: 0.5 }
         );
+      y += 16;
+
+      // Outer receipt block card border
+      const cardHeight = y - cardY;
+      doc
+        .rect(cardX, cardY, cardWidth, cardHeight)
+        .lineWidth(0.75)
+        .strokeColor(colBorder)
+        .stroke();
 
       doc.end();
     } catch (err) {
@@ -511,4 +576,6 @@ export async function generateFrameBillPdf(order, studioInfo = {}) {
   });
 }
 
-export default generateFrameBillPdf;
+export default {
+  generateFrameBillPdf,
+};
