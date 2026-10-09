@@ -139,19 +139,19 @@ export default function AdminSidebar({
     const collapsed = forceExpanded ? false : isCollapsed;
 
     return (
-      <div className="flex flex-col h-full bg-white text-gray-900 select-none border-r border-gray-200">
+      <div className="flex flex-col h-full bg-[#E7EBF0] text-[#111827] select-none border-r border-[#C9D1DC]">
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-3.5 border-b border-gray-200 shrink-0">
+        <div className="h-16 flex items-center justify-between px-3.5 border-b border-[#C9D1DC] shrink-0">
           <div className="flex items-center gap-2.5 overflow-hidden">
             <button
               type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="hidden lg:flex p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer shrink-0"
+              className="hidden lg:flex p-1.5 rounded-lg text-[#475569] hover:text-[#111827] hover:bg-[#DFE5EC] transition-colors cursor-pointer shrink-0"
               title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
               <Menu className="w-4 h-4" />
             </button>
-            <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center shadow-sm shrink-0 border border-gray-200 overflow-hidden p-1">
+            <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center shadow-xs shrink-0 border border-[#C9D1DC] overflow-hidden p-1">
               <img
                 src="/images/admin/logo.png"
                 alt="SUBASH STUDIO"
@@ -166,12 +166,12 @@ export default function AdminSidebar({
             </div>
             {!collapsed && (
               <div className="flex flex-col min-w-0">
-                <span className="font-bold text-xs tracking-wider text-gray-900 uppercase truncate">
+                <span className="font-bold text-xs tracking-wider text-[#111827] uppercase truncate">
                   SUBASH STUDIO
                 </span>
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                  <span className="text-[9px] tracking-wider uppercase text-gray-400 font-semibold">
+                  <span className="text-[9px] tracking-wider uppercase text-[#475569] font-bold">
                     Admin Portal
                   </span>
                 </div>
@@ -183,7 +183,7 @@ export default function AdminSidebar({
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100"
+            className="lg:hidden p-1.5 rounded-lg text-[#475569] hover:text-[#111827] hover:bg-[#DFE5EC]"
             aria-label="Close sidebar"
           >
             <X className="w-5 h-5" />
@@ -195,7 +195,7 @@ export default function AdminSidebar({
           {navSections.map((section) => (
             <div key={section.group} className="space-y-1">
               {!collapsed && (
-                <div className="px-3 pt-1 pb-1 text-[10px] uppercase font-bold tracking-wider text-gray-400">
+                <div className="px-3 pt-1 pb-1 text-[10px] uppercase font-bold tracking-wider text-[#475569]">
                   {section.group}
                 </div>
               )}
@@ -211,8 +211,8 @@ export default function AdminSidebar({
                     className={({ isActive }) =>
                       `group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
                         isActive
-                          ? "bg-gray-100 text-gray-900 font-semibold"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                          ? "bg-[#DFE5EC] text-[#111827] font-semibold border border-[#C9D1DC]/80 shadow-2xs"
+                          : "text-[#334155] hover:text-[#111827] hover:bg-[#DFE5EC]/60"
                       }`
                     }
                     title={collapsed ? item.label : undefined}
@@ -221,7 +221,7 @@ export default function AdminSidebar({
                       <>
                         <Icon
                           className={`w-4 h-4 shrink-0 transition-colors ${
-                            isActive ? "text-gray-900" : "text-gray-500 group-hover:text-gray-800"
+                            isActive ? "text-[#111827]" : "text-[#475569] group-hover:text-[#111827]"
                           }`}
                         />
                         {!collapsed && (
@@ -244,13 +244,13 @@ export default function AdminSidebar({
         </div>
 
         {/* Footer Profile & Logout */}
-        <div className="p-3 border-t border-gray-200 bg-white shrink-0 space-y-2">
-          <div className="flex items-center justify-between gap-2 p-1 rounded-lg hover:bg-gray-50 transition-colors">
+        <div className="p-3 border-t border-[#C9D1DC] bg-[#E7EBF0] shrink-0 space-y-2">
+          <div className="flex items-center justify-between gap-2 p-1 rounded-lg hover:bg-[#DFE5EC]/60 transition-colors">
             <div
               onClick={() => navigate(ADMIN_ROUTES.SETTINGS)}
               className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
             >
-              <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center font-bold text-gray-700 text-xs">
+              <div className="w-8 h-8 rounded-full bg-[#DFE5EC] border border-[#C9D1DC] overflow-hidden shrink-0 flex items-center justify-center font-bold text-[#334155] text-xs">
                 {adminUser?.avatar ? (
                   <img
                     src={adminUser.avatar}
@@ -263,10 +263,10 @@ export default function AdminSidebar({
               </div>
               {!collapsed && (
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-gray-900 truncate">
+                  <p className="text-xs font-semibold text-[#111827] truncate">
                     {adminUser?.name || "Subash"}
                   </p>
-                  <p className="text-[10px] text-gray-400 truncate">
+                  <p className="text-[10px] text-[#475569] font-medium truncate">
                     {adminUser?.role || "Studio Director & Lead P..."}
                   </p>
                 </div>
@@ -277,7 +277,7 @@ export default function AdminSidebar({
               <button
                 type="button"
                 onClick={() => navigate(ADMIN_ROUTES.SETTINGS)}
-                className="p-1 text-gray-400 hover:text-gray-700 rounded transition-colors"
+                className="p-1 text-[#475569] hover:text-[#111827] rounded transition-colors"
                 title="Profile Settings"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -286,15 +286,15 @@ export default function AdminSidebar({
           </div>
 
           {/* Action Row */}
-          <div className="pt-1 border-t border-gray-100 space-y-1">
+          <div className="pt-1 border-t border-[#C9D1DC]/60 space-y-1">
             <button
               type="button"
               onClick={handleLogout}
-              className="w-full px-2 py-1.5 text-xs text-gray-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-2 cursor-pointer font-medium"
+              className="w-full px-2 py-1.5 text-xs text-[#475569] hover:text-rose-600 hover:bg-rose-50/60 rounded-lg transition-colors flex items-center gap-2 cursor-pointer font-medium"
               title="Sign Out"
               aria-label="Sign Out"
             >
-              <LogOut className="w-4 h-4 text-gray-400 group-hover:text-rose-600 shrink-0" />
+              <LogOut className="w-4 h-4 text-[#475569] group-hover:text-rose-600 shrink-0" />
               {!collapsed && <span>Logout</span>}
             </button>
 
@@ -303,7 +303,7 @@ export default function AdminSidebar({
               <button
                 type="button"
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="w-full px-2 py-1 text-xs text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer font-medium"
+                className="w-full px-2 py-1 text-xs text-[#475569] hover:text-[#111827] hover:bg-[#DFE5EC] rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer font-medium"
                 title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
               >
                 {isCollapsed ? (

@@ -169,12 +169,119 @@ body::before {
 }
 
 /* ==========================================================
-   ADMIN PORTAL LIGHT THEME
-   Strictly scoped to .admin-portal so public website styles remain unchanged.
+   AUTHENTICATED ADMIN PORTAL LIGHT THEME
+   Strictly scoped to .admin-portal and .admin-modal-overlay so public website and AdminLogin styles remain untouched.
+   Matches the approved design reference: softer, dimmer grey backgrounds,
+   matte surfaces, clear text contrast, and compact stat cards.
 ========================================================== */
 .admin-portal {
   font-family: var(--font-family-body);
   color: #111827;
+}
+
+/* Page Background for the admin portal shell */
+.admin-portal.min-h-screen,
+.admin-portal.min-h-screen > .flex-1,
+.admin-portal.min-h-screen main {
+  background-color: #DFE5EC !important;
+}
+
+/* Header & Sidebar Backgrounds */
+.admin-portal header,
+.admin-portal aside,
+.admin-portal aside > div,
+.admin-portal header .bg-white {
+  background-color: #E7EBF0 !important;
+  border-color: #C9D1DC !important;
+}
+
+/* Cards, Panels, Modals, Popovers & Tables */
+.admin-portal .bg-white:not(input):not(textarea):not(select):not(img):not(.keep-white) {
+  background-color: #EEF1F5 !important;
+  border-color: #C9D1DC !important;
+}
+
+/* Soft surfaces, Table headers, and secondary backgrounds */
+.admin-portal .bg-gray-50,
+.admin-portal .bg-gray-100 {
+  background-color: #E7EBF0 !important;
+  border-color: #C9D1DC !important;
+}
+
+.admin-portal .bg-gray-50\/80,
+.admin-portal .bg-gray-50\/70 {
+  background-color: #E7EBF0 !important;
+}
+
+/* Borders across admin tables, cards, toolbars, and dividers */
+.admin-portal .border-gray-100,
+.admin-portal .border-gray-200,
+.admin-portal .border-gray-200\/60,
+.admin-portal .border-gray-200\/70,
+.admin-portal .border-gray-200\/80,
+.admin-portal .border-gray-200\/90,
+.admin-portal .border-gray-300,
+.admin-portal .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.admin-portal .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #C9D1DC !important;
+}
+
+/* Primary text and numbers */
+.admin-portal .text-gray-900,
+.admin-portal .text-gray-800,
+.admin-portal .text-black {
+  color: #111827 !important;
+}
+
+/* Card titles and normal body text */
+.admin-portal .text-gray-700,
+.admin-portal .text-gray-600 {
+  color: #334155 !important;
+}
+
+/* Secondary text, subtitles, captions, table headings, and muted labels */
+.admin-portal .text-gray-500,
+.admin-portal .text-gray-400 {
+  color: #475569 !important;
+}
+
+/* Positive status text */
+.admin-portal .text-emerald-600,
+.admin-portal .text-emerald-700,
+.admin-portal .text-green-600,
+.admin-portal .text-green-700 {
+  color: #047857 !important;
+}
+
+/* Hover states on table rows & list items */
+.admin-portal tr:hover,
+.admin-portal .hover\:bg-gray-50:hover,
+.admin-portal .hover\:bg-gray-50\/80:hover,
+.admin-portal .hover\:bg-gray-100:hover {
+  background-color: #DFE5EC !important;
+}
+
+/* Inputs, textareas, and selects: clean readable white background with #C9D1DC border */
+.admin-portal input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]),
+.admin-portal textarea,
+.admin-portal select {
+  background-color: #FFFFFF !important;
+  border-color: #C9D1DC !important;
+  color: #111827 !important;
+}
+
+.admin-portal input::placeholder,
+.admin-portal textarea::placeholder {
+  color: #64748B !important;
+}
+
+/* Primary dark buttons */
+.admin-portal .bg-\[\#111827\],
+.admin-portal button.bg-black,
+.admin-portal a.bg-\[\#111827\],
+.admin-portal a.bg-black {
+  background-color: #111827 !important;
+  color: #FFFFFF !important;
 }
 
 /* Ensure any admin modal backdrop overlays remain translucent dark with gentle blur,

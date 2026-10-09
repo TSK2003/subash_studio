@@ -8,14 +8,14 @@ export default function EmptyState({
   onAction,
 }) {
   return (
-    <div className="flex flex-col items-center justify-center p-8 sm:p-10 text-center rounded-xl bg-white border border-gray-200 my-4 shadow-xs">
-      <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 mb-3.5">
+    <div className="flex flex-col items-center justify-center p-8 sm:p-10 text-center rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] my-4 shadow-xs">
+      <div className="w-12 h-12 rounded-xl bg-[#E7EBF0] border border-[#C9D1DC] flex items-center justify-center text-[#475569] mb-3.5">
         <Icon className="w-6 h-6 stroke-[1.5]" />
       </div>
-      <h4 className="text-base font-bold text-gray-900 mb-1">
+      <h4 className="text-base font-bold text-[#111827] mb-1">
         {title}
       </h4>
-      <p className="text-xs text-gray-500 max-w-sm mb-4 leading-relaxed">
+      <p className="text-xs text-[#475569] max-w-sm mb-4 leading-relaxed">
         {description}
       </p>
       {actionLabel && onAction && (

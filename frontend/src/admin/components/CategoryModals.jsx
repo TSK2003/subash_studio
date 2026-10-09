@@ -103,20 +103,20 @@ export function AddCategoryModal({
               transition={{ duration: 0.2 }}
               role="dialog"
               aria-modal="true"
-              className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
+              className="relative w-full max-w-md bg-[#EEF1F5] rounded-2xl shadow-xl border border-[#C9D1DC] z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
               onClick={(e) => e.stopPropagation()}
             >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white shrink-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#C9D1DC] bg-[#E7EBF0] shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-200/70 flex items-center justify-center text-blue-600 shrink-0">
                 <Tag className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                <h3 className="text-base sm:text-lg font-bold text-[#111827]">
                   {title}
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[#475569]">
                   New category will be active and available immediately.
                 </p>
               </div>
@@ -125,7 +125,7 @@ export function AddCategoryModal({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 text-[#475569] hover:text-[#111827] hover:bg-[#DFE5EC] rounded-lg transition-colors"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -136,7 +136,7 @@ export function AddCategoryModal({
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="p-6 space-y-4 flex-1 overflow-y-auto modal-scrollbar">
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-gray-700">
+                <label className="block text-xs font-semibold text-[#334155]">
                   Category Name *
                 </label>
                 <input
@@ -149,10 +149,10 @@ export function AddCategoryModal({
                     setName(e.target.value);
                     if (error) setError("");
                   }}
-                  className={`w-full p-2.5 bg-white border rounded-xl text-xs text-gray-900 focus:outline-none transition-colors ${
+                  className={`w-full p-2.5 bg-white border rounded-xl text-xs text-[#111827] placeholder:text-[#64748B] focus:outline-none transition-colors ${
                     error
                       ? "border-rose-400 focus:border-rose-500 bg-rose-50/20"
-                      : "border-gray-200 focus:border-gray-900"
+                      : "border-[#C9D1DC] focus:border-[#111827]"
                   }`}
                 />
                 {error && (
@@ -160,19 +160,19 @@ export function AddCategoryModal({
                     {error}
                   </p>
                 )}
-                <p className="text-[11px] text-gray-500 leading-relaxed">
+                <p className="text-[11px] text-[#475569] leading-relaxed">
                   Enter a unique category name. Duplicates are rejected case-insensitively.
                 </p>
               </div>
             </div>
 
             {/* Pinned Footer */}
-            <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 bg-[#E7EBF0] border-t border-[#C9D1DC] flex items-center justify-end gap-3 shrink-0">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-100 text-xs font-semibold transition-colors"
+                className="px-4 py-2 rounded-lg border border-[#C9D1DC] text-[#334155] hover:bg-[#DFE5EC] text-xs font-semibold transition-colors"
               >
                 Cancel
               </button>
@@ -287,20 +287,20 @@ export function ManageCategoriesModal({
               transition={{ duration: 0.2 }}
               role="dialog"
               aria-modal="true"
-              className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
+              className="relative w-full max-w-2xl bg-[#EEF1F5] rounded-2xl shadow-xl border border-[#C9D1DC] z-10 overflow-hidden flex flex-col max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto"
               onClick={(e) => e.stopPropagation()}
             >
           {/* Fixed Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white shrink-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#C9D1DC] bg-[#E7EBF0] shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-blue-50/90 border border-blue-200/70 flex items-center justify-center text-blue-600 shrink-0">
                 <SlidersHorizontal className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                <h3 className="text-base sm:text-lg font-bold text-[#111827]">
                   {title}
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-[#475569]">
                   {categories.length} total categories ({activeCount} active, {inactiveCount} inactive)
                 </p>
               </div>
@@ -313,7 +313,7 @@ export function ManageCategoriesModal({
                   onClose();
                   onOpenAdd();
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white hover:bg-gray-800 rounded-lg text-xs font-semibold shadow-xs transition-all active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#111827] text-white hover:bg-black rounded-lg text-xs font-semibold shadow-xs transition-all active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Category</span>
@@ -321,7 +321,7 @@ export function ManageCategoriesModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 text-[#475569] hover:text-[#111827] hover:bg-[#DFE5EC] rounded-lg transition-colors"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -332,21 +332,21 @@ export function ManageCategoriesModal({
           {/* Table / List */}
           <div className="overflow-y-auto flex-1 p-6 modal-scrollbar">
             {categories.length === 0 ? (
-              <div className="text-center py-10 text-xs text-gray-400">
+              <div className="text-center py-10 text-xs text-[#475569]">
                 No categories found. Click &quot;Add Category&quot; to create one.
               </div>
             ) : (
-              <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-xs">
+              <div className="border border-[#C9D1DC] rounded-xl overflow-hidden bg-[#EEF1F5] shadow-xs">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-gray-50/75 border-b border-gray-200 text-gray-500 uppercase tracking-wider text-[10px] font-bold">
+                    <tr className="bg-[#E7EBF0] border-b border-[#C9D1DC] text-[#475569] uppercase tracking-wider text-[10px] font-bold">
                       <th className="py-3 px-4">Category Name</th>
                       <th className="py-3 px-4 text-center">Items</th>
                       <th className="py-3 px-4 text-center">Current Status</th>
                       <th className="py-3 px-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-[#C9D1DC]">
                     {categories.map((cat) => {
                       const count = getCategoryCount(cat.name);
                       const isToggling = togglingId === cat.id;

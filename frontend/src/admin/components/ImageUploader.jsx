@@ -293,7 +293,7 @@ export default function ImageUploader({
           <AnimatePresence>
             {isPreviewOpen && value && (
               <div
-                className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6"
+                className="admin-portal fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6"
                 role="dialog"
                 aria-modal="true"
                 aria-label={label || "Image Preview"}

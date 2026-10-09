@@ -116,25 +116,25 @@ export default function AdminHeader({ onMobileMenuClick }) {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 sticky top-0 z-20 px-3 sm:px-6 lg:px-8 flex items-center justify-between transition-all min-w-0">
+    <header className="h-16 bg-[#E7EBF0] border-b border-[#C9D1DC] sticky top-0 z-20 px-3 sm:px-6 lg:px-8 flex items-center justify-between transition-all min-w-0">
       {/* Left Title & Mobile Trigger */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 mr-2">
         <button
           type="button"
           onClick={onMobileMenuClick}
-          className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 border border-gray-200 shrink-0"
+          className="lg:hidden p-2 rounded-lg text-[#334155] hover:bg-[#DFE5EC] border border-[#C9D1DC] bg-[#EEF1F5] shrink-0"
           aria-label="Open Sidebar Menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-200/60 shrink-0">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-50/80 text-rose-600 border border-rose-200/70 shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
             ADMIN PORTAL
           </span>
-          <span className="text-gray-300 font-normal select-none">/</span>
-          <h1 className="text-xs sm:text-sm md:text-base font-bold text-gray-900 tracking-tight truncate">
+          <span className="text-[#C9D1DC] font-normal select-none">/</span>
+          <h1 className="text-xs sm:text-sm md:text-base font-bold text-[#111827] tracking-tight truncate">
             {pageMeta.title}
           </h1>
         </div>
@@ -145,7 +145,7 @@ export default function AdminHeader({ onMobileMenuClick }) {
         {/* Quick Add Booking */}
         <Link
           to={`${ADMIN_ROUTES.BOOKINGS}?new=true`}
-          className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg bg-[#111827] text-white hover:bg-black text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0"
+          className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-lg bg-[#111827] text-white hover:bg-black text-xs font-semibold shadow-xs transition-all active:scale-95 shrink-0"
         >
           <Plus className="w-4 h-4 text-white" />
           <span>New Booking</span>
@@ -155,10 +155,10 @@ export default function AdminHeader({ onMobileMenuClick }) {
           href="/"
           target="_blank"
           rel="noreferrer"
-          className="px-2.5 sm:px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center gap-1.5 text-xs font-medium shrink-0 shadow-sm"
+          className="px-2.5 sm:px-3 py-1.5 rounded-lg border border-[#C9D1DC] bg-[#EEF1F5] text-[#334155] hover:text-[#111827] hover:bg-[#DFE5EC] transition-colors flex items-center gap-1.5 text-xs font-medium shrink-0 shadow-xs"
           title="Open Public Website"
         >
-          <ExternalLink className="w-3.5 h-3.5 text-gray-500" />
+          <ExternalLink className="w-3.5 h-3.5 text-[#475569]" />
           <span className="hidden sm:inline">Live Site</span>
         </a>
 
@@ -167,10 +167,10 @@ export default function AdminHeader({ onMobileMenuClick }) {
           <button
             type="button"
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative p-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer shadow-sm"
+            className="relative p-2 rounded-lg border border-[#C9D1DC] bg-[#EEF1F5] text-[#334155] hover:bg-[#DFE5EC] transition-colors cursor-pointer shadow-xs"
             aria-label="View notifications"
           >
-            <Bell className="w-4 h-4 text-gray-600" />
+            <Bell className="w-4 h-4 text-[#475569]" />
             {unreadNotificationCount > 0 && (
               <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">
                 {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
@@ -179,10 +179,10 @@ export default function AdminHeader({ onMobileMenuClick }) {
           </button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 mt-3 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-xl border border-gray-200 p-4 z-50 animate-fadeIn">
-              <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+            <div className="absolute right-0 mt-3 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-[#EEF1F5] rounded-xl shadow-xl border border-[#C9D1DC] p-4 z-50 animate-fadeIn">
+              <div className="flex items-center justify-between pb-3 border-b border-[#C9D1DC]">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-semibold text-sm text-gray-900">
+                  <h4 className="font-semibold text-sm text-[#111827]">
                     Studio Activity
                   </h4>
                   {unreadNotificationCount > 0 && (
@@ -195,12 +195,12 @@ export default function AdminHeader({ onMobileMenuClick }) {
                   <button
                     type="button"
                     onClick={() => markAllNotificationsAsRead()}
-                    className="text-xs text-gray-600 hover:text-gray-900 hover:underline font-medium cursor-pointer"
+                    className="text-xs text-[#475569] hover:text-[#111827] hover:underline font-medium cursor-pointer"
                   >
                     Mark all read
                   </button>
                 ) : (
-                  <span className="text-[11px] text-gray-400">All caught up</span>
+                  <span className="text-[11px] text-[#475569]">All caught up</span>
                 )}
               </div>
 

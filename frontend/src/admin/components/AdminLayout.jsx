@@ -30,7 +30,7 @@ export default function AdminLayout() {
   }, [isCollapsed]);
 
   return (
-    <div className="admin-portal min-h-screen bg-[#F7F7F8] flex flex-row font-body text-gray-900 antialiased selection:bg-gray-900 selection:text-white relative">
+    <div className="admin-portal min-h-screen bg-[#DFE5EC] flex flex-row font-body text-gray-900 antialiased selection:bg-gray-900 selection:text-white relative">
       {/* Sidebar */}
       <AdminSidebar
         isCollapsed={isCollapsed}
