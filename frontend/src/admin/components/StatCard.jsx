@@ -8,19 +8,9 @@ export default function StatCard({
   accent = "blue",
   onClick,
 }) {
-  const pastelStyles = {
-    blue: "bg-blue-50/90 text-blue-600 border-blue-200/70",
-    lavender: "bg-purple-50/90 text-purple-600 border-purple-200/70",
-    purple: "bg-purple-50/90 text-purple-600 border-purple-200/70",
-    violet: "bg-violet-50/90 text-violet-600 border-violet-200/70",
-    amber: "bg-amber-50/90 text-amber-600 border-amber-200/70",
-    gold: "bg-amber-50/90 text-amber-600 border-amber-200/70",
-    coral: "bg-rose-50/90 text-rose-600 border-rose-200/70",
-    rose: "bg-rose-50/90 text-rose-600 border-rose-200/70",
-    mint: "bg-emerald-50/90 text-emerald-600 border-emerald-200/70",
-    green: "bg-emerald-50/90 text-emerald-600 border-emerald-200/70",
-    neutral: "bg-slate-100 text-slate-600 border-slate-200",
-  }[accent] || "bg-blue-50/90 text-blue-600 border-blue-200/70";
+  // Uniform neutral badge palette matching approved reference design
+  const badgeClasses =
+    "w-8 h-8 sm:w-9 sm:h-9 rounded-lg border border-[#CAD3DF] bg-[#E5EAF1] text-[#334155] flex items-center justify-center shrink-0";
 
   return (
     <div
@@ -29,12 +19,10 @@ export default function StatCard({
         onClick ? "cursor-pointer" : ""
       }`}
     >
-      {/* Compact pastel icon badge on the left */}
+      {/* Compact rounded-square icon badge on the left */}
       {Icon && (
-        <div
-          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg border flex items-center justify-center shrink-0 ${pastelStyles}`}
-        >
-          <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0" />
+        <div className={badgeClasses}>
+          <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 stroke-[1.75]" />
         </div>
       )}
 

@@ -11,7 +11,6 @@ import {
   MapPin,
   Plus,
   ArrowRight,
-  Briefcase,
   Clapperboard,
   Eye,
   Frame,
@@ -38,7 +37,6 @@ export default function Dashboard() {
     gallery,
     services,
     branches,
-    portfolio,
     films,
     frameOrders,
     testimonials,
@@ -62,7 +60,6 @@ export default function Dashboard() {
     totalEnquiries,
     newEnquiries,
     totalGallery,
-    totalPortfolio,
     totalServices,
     totalFilms,
     totalBranches,
@@ -102,7 +99,6 @@ export default function Dashboard() {
       totalEnquiries: totalEnq,
       newEnquiries: newEnq,
       totalGallery: gallery.length,
-      totalPortfolio: (portfolio || []).length,
       totalServices: services.length,
       totalFilms: (films || []).length,
       totalBranches: branches.length,
@@ -110,7 +106,7 @@ export default function Dashboard() {
       totalFrameOrders: (frameOrders || []).length,
       newFrameOrders: newOrders,
     };
-  }, [bookings, enquiries, gallery, portfolio, services, films, branches, testimonials, frameOrders]);
+  }, [bookings, enquiries, gallery, services, films, branches, testimonials, frameOrders]);
 
   // Upcoming shoots: actual future or today bookings, sorted nearest-date first, excluding COMPLETED and CANCELLED
   const upcomingShoots = useMemo(() => {
@@ -226,7 +222,7 @@ export default function Dashboard() {
             {getGreeting()}, {adminUser?.name || "Subash"}
           </h2>
           <p className="text-xs text-[#475569] max-w-2xl">
-            Real-time synchronization across bookings, client enquiries, portfolio, framing orders, and studio operations.
+            Real-time synchronization across bookings, client enquiries, gallery, framing orders, and studio operations.
           </p>
         </div>
 
@@ -237,7 +233,7 @@ export default function Dashboard() {
               to={ADMIN_ROUTES.FRAMES}
               className="px-3.5 py-2 bg-[#EEF1F5] hover:bg-[#DFE5EC] text-[#111827] border border-[#C9D1DC] rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shadow-xs group"
             >
-              <Frame className="w-3.5 h-3.5 text-rose-500 group-hover:scale-105 transition-transform" />
+              <Frame className="w-3.5 h-3.5 text-[#334155] group-hover:scale-105 transition-transform" />
               <span>Frame Orders</span>
               <span className="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
                 {newFrameOrders}
@@ -248,7 +244,7 @@ export default function Dashboard() {
               to={ADMIN_ROUTES.BOOKINGS}
               className="px-3.5 py-2 bg-[#EEF1F5] hover:bg-[#DFE5EC] text-[#111827] border border-[#C9D1DC] rounded-lg text-xs font-semibold transition-all flex items-center gap-2 shadow-xs group"
             >
-              <CalendarDays className="w-3.5 h-3.5 text-blue-500 group-hover:scale-105 transition-transform" />
+              <CalendarDays className="w-3.5 h-3.5 text-[#334155] group-hover:scale-105 transition-transform" />
               <span>Shoot Schedule</span>
             </Link>
           )}
@@ -309,16 +305,8 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Dynamic Statistics Cards Grid - Row 2 (7 Cards) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-3.5">
-        <StatCard
-          title="Portfolio Items"
-          value={totalPortfolio}
-          icon={Briefcase}
-          description="Curated stories"
-          accent="purple"
-          onClick={() => navigate(ADMIN_ROUTES.PORTFOLIO)}
-        />
+      {/* Dynamic Statistics Cards Grid - Row 2 (6 Cards) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
         <StatCard
           title="Services"
           value={totalServices}
@@ -374,13 +362,13 @@ export default function Dashboard() {
         <h3 className="font-bold text-xs sm:text-sm text-[#111827]">
           Quick Management Actions
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <Link
             to={`${ADMIN_ROUTES.BOOKINGS}?new=true`}
             className="p-3.5 sm:p-4 rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] hover:border-[#B5BFCF] hover:shadow-xs transition-all flex flex-col items-center text-center gap-2 group min-w-0"
           >
-            <div className="p-2 rounded-lg bg-blue-50/90 text-blue-600 border border-blue-200/70 group-hover:scale-105 transition-transform">
-              <Plus className="w-4 h-4" />
+            <div className="p-2 rounded-lg bg-[#E5EAF1] text-[#334155] border border-[#CAD3DF] group-hover:scale-105 transition-transform">
+              <Plus className="w-4 h-4 stroke-[1.75]" />
             </div>
             <span className="text-xs font-semibold text-[#111827] group-hover:text-black truncate w-full">+ New Booking</span>
           </Link>
@@ -389,28 +377,18 @@ export default function Dashboard() {
             to={`${ADMIN_ROUTES.GALLERY}?new=true`}
             className="p-3.5 sm:p-4 rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] hover:border-[#B5BFCF] hover:shadow-xs transition-all flex flex-col items-center text-center gap-2 group min-w-0"
           >
-            <div className="p-2 rounded-lg bg-purple-50/90 text-purple-600 border border-purple-200/70 group-hover:scale-105 transition-transform">
-              <Images className="w-4 h-4" />
+            <div className="p-2 rounded-lg bg-[#E5EAF1] text-[#334155] border border-[#CAD3DF] group-hover:scale-105 transition-transform">
+              <Images className="w-4 h-4 stroke-[1.75]" />
             </div>
             <span className="text-xs font-semibold text-[#111827] group-hover:text-black truncate w-full">+ Upload Image</span>
-          </Link>
-
-          <Link
-            to={`${ADMIN_ROUTES.PORTFOLIO}?new=true`}
-            className="p-3.5 sm:p-4 rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] hover:border-[#B5BFCF] hover:shadow-xs transition-all flex flex-col items-center text-center gap-2 group min-w-0"
-          >
-            <div className="p-2 rounded-lg bg-amber-50/90 text-amber-600 border border-amber-200/70 group-hover:scale-105 transition-transform">
-              <Briefcase className="w-4 h-4" />
-            </div>
-            <span className="text-xs font-semibold text-[#111827] group-hover:text-black truncate w-full">+ Add Project</span>
           </Link>
 
           <Link
             to={`${ADMIN_ROUTES.SERVICES}?new=true`}
             className="p-3.5 sm:p-4 rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] hover:border-[#B5BFCF] hover:shadow-xs transition-all flex flex-col items-center text-center gap-2 group min-w-0"
           >
-            <div className="p-2 rounded-lg bg-rose-50/90 text-rose-600 border border-rose-200/70 group-hover:scale-105 transition-transform">
-              <Camera className="w-4 h-4" />
+            <div className="p-2 rounded-lg bg-[#E5EAF1] text-[#334155] border border-[#CAD3DF] group-hover:scale-105 transition-transform">
+              <Camera className="w-4 h-4 stroke-[1.75]" />
             </div>
             <span className="text-xs font-semibold text-[#111827] group-hover:text-black truncate w-full">+ Add Service</span>
           </Link>
@@ -419,8 +397,8 @@ export default function Dashboard() {
             to={`${ADMIN_ROUTES.FILMS}?new=true`}
             className="p-3.5 sm:p-4 rounded-xl bg-[#EEF1F5] border border-[#C9D1DC] hover:border-[#B5BFCF] hover:shadow-xs transition-all flex flex-col items-center text-center gap-2 group min-w-0"
           >
-            <div className="p-2 rounded-lg bg-emerald-50/90 text-emerald-600 border border-emerald-200/70 group-hover:scale-105 transition-transform">
-              <Clapperboard className="w-4 h-4" />
+            <div className="p-2 rounded-lg bg-[#E5EAF1] text-[#334155] border border-[#CAD3DF] group-hover:scale-105 transition-transform">
+              <Clapperboard className="w-4 h-4 stroke-[1.75]" />
             </div>
             <span className="text-xs font-semibold text-[#111827] group-hover:text-black truncate w-full">+ Add Film</span>
           </Link>

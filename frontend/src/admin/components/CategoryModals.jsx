@@ -109,8 +109,8 @@ export function AddCategoryModal({
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#C9D1DC] bg-[#E7EBF0] shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-200/70 flex items-center justify-center text-blue-600 shrink-0">
-                <Tag className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-lg bg-[#E5EAF1] border border-[#CAD3DF] flex items-center justify-center text-[#334155] shrink-0">
+                <Tag className="w-4 h-4 stroke-[1.75]" />
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-[#111827]">
@@ -293,8 +293,8 @@ export function ManageCategoriesModal({
           {/* Fixed Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#C9D1DC] bg-[#E7EBF0] shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-blue-50/90 border border-blue-200/70 flex items-center justify-center text-blue-600 shrink-0">
-                <SlidersHorizontal className="w-4 h-4" />
+              <div className="w-9 h-9 rounded-lg bg-[#E5EAF1] border border-[#CAD3DF] flex items-center justify-center text-[#334155] shrink-0">
+                <SlidersHorizontal className="w-4 h-4 stroke-[1.75]" />
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-[#111827]">

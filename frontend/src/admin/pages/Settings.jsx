@@ -282,8 +282,8 @@ export default function Settings() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-700 shadow-xs shrink-0">
-          <SettingsIcon className="w-5 h-5 text-gray-700" />
+        <div className="w-10 h-10 rounded-xl bg-[#E5EAF1] border border-[#CAD3DF] flex items-center justify-center text-[#334155] shadow-xs shrink-0">
+          <SettingsIcon className="w-5 h-5 text-[#334155] stroke-[1.75]" />
         </div>
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">

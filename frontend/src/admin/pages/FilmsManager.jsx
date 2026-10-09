@@ -183,8 +183,8 @@ export default function FilmsManager() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 shadow-xs">
-            <Film className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-[#E5EAF1] text-[#334155] flex items-center justify-center border border-[#CAD3DF] shadow-xs">
+            <Film className="w-5 h-5 stroke-[1.75]" />
           </div>
           <div>
             <h1 className="text-xl font-semibold text-gray-900 tracking-tight">

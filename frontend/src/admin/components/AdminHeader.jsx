@@ -84,7 +84,6 @@ export default function AdminHeader({ onMobileMenuClick }) {
       case ADMIN_ROUTES.ENQUIRIES:
         return { title: "Lead Inquiries", subtitle: "Track and follow up on client contact messages" };
       case ADMIN_ROUTES.GALLERY:
-      case ADMIN_ROUTES.PORTFOLIO:
         return { title: "Gallery Albums", subtitle: "Curate event and client photo albums with category filters" };
       case ADMIN_ROUTES.SERVICES:
         return { title: "Studio Offerings", subtitle: "Configure photography packages, pricing & descriptions" };

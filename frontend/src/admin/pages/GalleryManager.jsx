@@ -1668,8 +1668,8 @@ export default function GalleryManager() {
                 {/* Viewport-pinned Header */}
                 <div className="shrink-0 px-5 py-4 sm:px-7 sm:py-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
-                      <FolderPlus size={20} />
+                    <div className="w-10 h-10 rounded-xl bg-[#E5EAF1] border border-[#CAD3DF] flex items-center justify-center text-[#334155] shrink-0">
+                      <FolderPlus size={20} strokeWidth={1.75} />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">

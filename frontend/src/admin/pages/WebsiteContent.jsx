@@ -224,8 +224,8 @@ export default function WebsiteContent() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-xs">
-          <PanelsTopLeft className="w-5 h-5" />
+        <div className="w-10 h-10 rounded-xl bg-[#E5EAF1] text-[#334155] flex items-center justify-center border border-[#CAD3DF] shadow-xs">
+          <PanelsTopLeft className="w-5 h-5 stroke-[1.75]" />
         </div>
         <div>
           <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
