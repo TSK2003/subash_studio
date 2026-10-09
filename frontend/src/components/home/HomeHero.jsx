@@ -1,271 +1,193 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowDown } from "lucide-react";
-import { useAdminData } from "../../admin/context/AdminDataContext";
+import { ArrowRight, Heart, Video, Camera, Calendar } from "lucide-react";
 
 /**
  * HomeHero
  *
- * Recreates the exact visual composition of the uploaded Subash Studio reference:
- * - 1600x800 style desktop editorial hero composition
- * - Warm ivory canvas (#FAF7F2) with subtle organic texture
- * - Authentic outer-edge heritage artwork layers from /images/backgrounds/subash-bg-wide.webp
- *   (film strips, vintage photographer, DSLR camera, polaroids, botanical leaves)
- * - Large, dominant Subash Studio storefront photograph on the right, seamlessly blended
- *   into the scene (NO card frame, NO rigid box borders, natural atmospheric edge fade)
- * - True editorial typography hierarchy:
- *   "Subash" (Fraunces bold charcoal) + "Photography" (Fraunces italic champagne gold)
- *   with "Photography" extending generously across into the center space
- * - Minimal gold diamond ornament (── ◆ ──)
- * - Pill buttons: BOOK A SHOOT (~210px x 52px) & EXPLORE OUR WORK (~235px x 52px)
- * - SCROLL DOWN indicator with circular downward arrow
- * - Fully responsive from 375px mobile up to 1920px widescreen desktop
+ * Clean, isolated first viewport for SUBASH STUDIO.
+ * - Left side: Luxury editorial content with serif "Subash" + gold script "Studio"
+ * - Buttons: "EXPLORE OUR STORY →" (to /about) and "BOOK A SESSION →" (to /contact)
+ * - Service Row: Wedding Photography, Cinematic Films, Portraits, Events
+ * - Right side: Real SUBASH STUDIO storefront building with full visibility
+ * - Clean document flow: No overlapping layers, no duplicate navbars, no ghosted CTA/footer
  */
 export default function HomeHero() {
-  const { websiteContent } = useAdminData();
-  const homeData = websiteContent?.home || {};
-
-  const rawHeading = (homeData.heroHeading || "Subash Photography").trim();
-  let line1 = rawHeading;
-  let line2 = "";
-
-  if (rawHeading.includes("\n")) {
-    const parts = rawHeading.split("\n");
-    line1 = parts[0].trim();
-    line2 = parts.slice(1).join(" ").trim();
-  } else if (rawHeading.includes("&")) {
-    const parts = rawHeading.split("&");
-    line1 = parts[0].trim() + " &";
-    line2 = parts.slice(1).join("&").trim();
-  } else {
-    const words = rawHeading.split(/\s+/);
-    if (words.length > 1) {
-      const splitIndex = Math.ceil(words.length / 2);
-      line1 = words.slice(0, splitIndex).join(" ");
-      line2 = words.slice(splitIndex).join(" ");
-    }
-  }
-
-  const handleScrollDown = () => {
-    const nextSection = document.getElementById("home-stats-section");
-    if (nextSection) {
-      nextSection.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <section
-      className="relative w-full min-h-[auto] lg:min-h-[600px] lg:h-[clamp(620px,46vw,840px)] flex flex-col justify-start overflow-hidden bg-[#FAF7F2] border-b border-[#E7E0D2]/70"
+      className="home-hero relative z-[1] w-full min-h-[calc(100svh-84px)] lg:min-h-[640px] lg:h-[clamp(650px,50vw,880px)] flex flex-col justify-between overflow-hidden bg-[#FAF7F2] border-b border-[#E7E0D2]/80"
+      style={{ isolation: "isolate" }}
       aria-label="Subash Studio Welcome"
     >
       {/* =========================================================
-          LAYER 1: OUTER-EDGE HERITAGE COLLAGE ARTWORK (z-[1])
-          Anchors film strips, vintage photographer & leaves on the left flank,
-          and polaroid photo wall, DSLR camera & leaves on the right flank,
-          positioned BEHIND the storefront image (z-[1]).
+          BACKGROUND / RIGHT STOREFRONT IMAGE LAYER (Desktop >= 1024px)
+          Seamless feather blend on left edge, building 100% sharp
       ========================================================= */}
       <div
-        className="absolute inset-0 pointer-events-none select-none z-[1] overflow-hidden"
+        className="hidden lg:flex absolute right-0 bottom-0 top-0 w-[58%] max-w-[920px] items-end justify-end pointer-events-none z-0 overflow-hidden"
         aria-hidden="true"
       >
-        {/* Left Flank Collage: Top leaves, film strip arch, photographer profile, circular photo, bottom leaves - Fully visible on outer edge only */}
         <div
-          className="hidden lg:block absolute top-0 bottom-0 left-0 w-[260px] lg:w-[280px] xl:w-[320px] 2xl:w-[360px] bg-no-repeat bg-left-top opacity-100 transition-opacity duration-700"
+          className="relative h-full w-full flex items-end justify-end"
           style={{
-            backgroundImage: "url('/images/backgrounds/subash-bg-wide.webp')",
-            backgroundSize: "auto 100%",
             WebkitMaskImage:
-              "linear-gradient(to right, black 0%, black clamp(42px, 4vw, 56px), rgba(0,0,0,0.65) clamp(65px, 6.2vw, 86px), rgba(0,0,0,0.15) clamp(82px, 7.8vw, 108px), transparent clamp(96px, 9.2vw, 126px))",
+              "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.12) 10%, rgba(0,0,0,0.75) 24%, rgba(0,0,0,1) 38%)",
             maskImage:
-              "linear-gradient(to right, black 0%, black clamp(42px, 4vw, 56px), rgba(0,0,0,0.65) clamp(65px, 6.2vw, 86px), rgba(0,0,0,0.15) clamp(82px, 7.8vw, 108px), transparent clamp(96px, 9.2vw, 126px))",
+              "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.12) 10%, rgba(0,0,0,0.75) 24%, rgba(0,0,0,1) 38%)",
           }}
-        />
-
-        {/* Mobile / Tablet Portrait Artwork Layer */}
-        <div
-          className="lg:hidden absolute inset-0 bg-cover bg-top bg-no-repeat opacity-40"
-          style={{
-            backgroundImage: "url('/images/backgrounds/subash-bg-tall.webp')",
-            WebkitMaskImage:
-              "linear-gradient(to bottom, black 0%, black 15%, transparent 35%, transparent 70%, black 90%, black 100%)",
-            maskImage:
-              "linear-gradient(to bottom, black 0%, black 15%, transparent 35%, transparent 70%, black 90%, black 100%)",
-          }}
-        />
-      </div>
-
-      {/* =========================================================
-          LAYER 2: DESKTOP RIGHT-SIDE STOREFRONT PHOTO (z-10)
-          Dominant architectural visual spanning the right side of the hero canvas.
-          Calibrated with responsive widths (w-[50%] xl:w-[46%] 2xl:w-[42%] max-w-[840px])
-          so that on both Laptop and PC screens:
-          - Words never collide with the photo (comfortable breathing room)
-          - No excessive empty gap on laptops
-          - Storefront building, signage, couple photo, and right trees remain fully visible
-      ========================================================= */}
-      <div
-        className="hidden lg:flex absolute top-0 bottom-0 right-0 w-[50%] xl:w-[46%] 2xl:w-[42%] max-w-[840px] items-end justify-end z-10 pointer-events-none select-none overflow-hidden"
-        aria-hidden="true"
-      >
-        <div className="relative h-full w-full flex items-end justify-end">
-          {/* Main Storefront Photograph anchored flush to the right edge */}
+        >
           <img
             src="/images/storefront.jpg"
-            alt="Subash Studio storefront"
+            alt="Real SUBASH STUDIO building"
+            className="h-[98%] max-h-[770px] w-auto object-contain object-right-bottom block"
             loading="eager"
-            fetchPriority="high"
-            className="h-full w-full object-cover object-[right_top]"
-            style={{
-              WebkitMaskImage:
-                "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 3%, black 9%, black 100%)",
-              maskImage:
-                "linear-gradient(to right, transparent 0%, rgba(0,0,0,0.4) 3%, black 9%, black 100%)",
-            }}
           />
         </div>
       </div>
 
       {/* =========================================================
-          LAYER 3: HERO EDITORIAL CONTENT (Left Column on Desktop) (z-20)
+          HERO CONTENT LAYER (z-index: 2)
       ========================================================= */}
-      <div className="relative z-20 w-full max-w-[1600px] mx-auto px-6 sm:px-10 lg:pl-[10%] lg:pr-8 xl:pl-[10.5%] 2xl:pl-[11%] pt-6 sm:pt-8 lg:pt-16 xl:pt-20 2xl:pt-24 pb-6 sm:pb-8 lg:pb-8 xl:pb-10 flex-1 flex flex-col justify-start">
-        <div className="w-full lg:w-[48%] xl:w-[46%] 2xl:w-[44%] flex flex-col justify-start text-left">
-          
-          {/* Main Editorial Content Group */}
-          <div className="flex flex-col justify-start">
-            {/* Eyebrow */}
-            <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-              className="text-[12px] sm:text-[13px] xl:text-[14px] tracking-[0.28em] font-medium text-[#B38F4D] uppercase mb-2.5 sm:mb-3 xl:mb-3.5"
-            >
-              FINE PHOTOGRAPHY &amp; CINEMATIC FILMS
-            </motion.p>
-
-            {/* Main Headline with clamp typography */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.08, ease: [0.25, 1, 0.5, 1] }}
-              className="font-display tracking-tight leading-[0.92]"
-            >
-              <span
-                className="block text-[#1C1B19] font-bold"
-                style={{ fontSize: "clamp(2.4rem, 5.2vw, 5.6rem)" }}
-              >
-                {line1}
-              </span>
-              {line2 && (
-                <span
-                  className="block text-[#B38F4D] font-normal italic mt-1 sm:mt-1.5 lg:whitespace-nowrap"
-                  style={{ fontSize: "clamp(2.4rem, 5.2vw, 5.6rem)" }}
-                >
-                  {line2}
-                </span>
-              )}
-            </motion.h1>
-
-            {/* Editorial Gold Ornament: ── ◆ ── */}
-            <motion.div
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={{ duration: 0.6, delay: 0.16, ease: [0.25, 1, 0.5, 1] }}
-              className="flex items-center gap-3 my-4 sm:my-5 xl:my-5 origin-left"
-              aria-hidden="true"
-            >
-              <span className="h-[1px] w-12 sm:w-14 bg-[#B38F4D]/50" />
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 10 10"
-                className="text-[#B38F4D] shrink-0 fill-current"
-              >
-                <path d="M5 0 L10 5 L5 10 L0 5 Z" />
-              </svg>
-              <span className="h-[1px] w-12 sm:w-14 bg-[#B38F4D]/50" />
-            </motion.div>
-
-            {/* Supporting Copy */}
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, delay: 0.22, ease: [0.25, 1, 0.5, 1] }}
-              className="text-[#6F6A62] text-[15px] sm:text-[16px] xl:text-[17px] leading-[1.65] max-w-[490px] xl:max-w-[530px] font-normal"
-            >
-              {homeData.heroTagline || "Preserving timeless heritage, profound emotions, and authentic human celebrations across generations."}
-            </motion.p>
-
-            {/* Action Buttons: BOOK A SHOOT & EXPLORE OUR WORK */}
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.28, ease: [0.25, 1, 0.5, 1] }}
-              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 lg:gap-5 mt-6 sm:mt-7 xl:mt-8 w-full sm:w-fit sm:mx-auto lg:mx-0"
-            >
-              {/* Primary: BOOK A SHOOT / CMS CTA (~210px-225px x 52px-58px) */}
-              <Link
-                to="/portfolio"
-                className="group w-full sm:w-[210px] xl:w-[220px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#B38F4D] hover:bg-[#9C7B3D] text-white rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-[0_8px_20px_-4px_rgba(179,143,77,0.38)] hover:shadow-lg hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0 px-4 text-center"
-              >
-                <span className="truncate">{homeData.heroCtaText || "BOOK A SHOOT"}</span>
-                <ArrowRight
-                  size={14}
-                  className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
-                />
-              </Link>
-
-              {/* Secondary: EXPLORE OUR WORK (~230px-245px x 52px-58px) */}
-              <Link
-                to="/gallery"
-                className="group w-full sm:w-[230px] xl:w-[240px] h-[50px] sm:h-[52px] xl:h-[56px] bg-[#FAF7F2]/80 hover:bg-[#1C1B19] border border-[#B38F4D]/70 hover:border-[#1C1B19] text-[#1C1B19] hover:text-[#F8F6F2] rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm hover:scale-[1.02] active:scale-95 inline-flex items-center justify-center gap-2.5 shrink-0"
-              >
-                <span>EXPLORE OUR WORK</span>
-                <ArrowRight
-                  size={14}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                />
-              </Link>
-            </motion.div>
-          </div>
-
-          {/* =========================================================
-              MOBILE / TABLET STOREFRONT PHOTO
-              Clean architectural presentation embedded below buttons on small devices.
-          ========================================================= */}
-          <div className="lg:hidden mt-6 sm:mt-8 relative w-full max-w-md sm:max-w-lg mx-auto overflow-hidden rounded-2xl shadow-xl bg-[#FAF8F5]">
-            <img
-              src="/images/storefront.jpg"
-              alt="Subash Studio storefront"
-              className="w-full aspect-square object-cover object-center"
-            />
-          </div>
-
-          {/* Scroll Down Indicator - Horizontally centered across mobile/tablet and aligned under buttons on desktop */}
+      <div className="hero-content relative z-[2] w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:pl-16 xl:pl-20 lg:pr-10 pt-8 sm:pt-12 lg:pt-14 pb-8 lg:pb-12 flex-1 flex flex-col justify-center">
+        <div className="w-full lg:w-[46%] xl:w-[45%] flex flex-col justify-center text-left">
+          {/* Eyebrow */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.36 }}
-            className="w-full lg:w-[456px] xl:w-[480px] flex flex-col items-center mx-auto lg:mx-0 gap-2 mt-8 sm:mt-9 xl:mt-10 select-none"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: [0.25, 1, 0.5, 1] }}
+            className="flex items-center gap-2.5 mb-3"
           >
-            <span className="text-[10px] xl:text-[11px] tracking-[0.28em] uppercase font-semibold text-[#8C8275]">
-              SCROLL DOWN
-            </span>
-            <button
-              type="button"
-              onClick={handleScrollDown}
-              aria-label="Scroll down to statistics and overview"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-[#B38F4D]/60 flex items-center justify-center text-[#B38F4D] hover:bg-[#B38F4D] hover:text-white transition-all duration-300 group cursor-pointer"
-            >
-              <motion.div
-                animate={{ y: [0, 4, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <ArrowDown size={13} className="sm:w-3.5 sm:h-3.5" />
-              </motion.div>
-            </button>
+            <span className="h-[1px] w-6 bg-[#B78A3D]/60" />
+            <p className="text-[11px] sm:text-[12px] xl:text-[13px] tracking-[0.28em] font-semibold text-[#B78A3D] uppercase">
+              FINE PHOTOGRAPHY &amp; CINEMATIC FILMS
+            </p>
+            <span className="h-[1px] w-6 bg-[#B78A3D]/60" />
           </motion.div>
 
+          {/* Heading Display */}
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.08, ease: [0.25, 1, 0.5, 1] }}
+            className="font-display tracking-tight leading-[0.92] mb-4 sm:mb-5"
+          >
+            <span
+              className="block text-[#181715] font-serif font-bold text-5xl sm:text-6xl lg:text-[68px] xl:text-[76px]"
+            >
+              Subash
+            </span>
+            <span
+              className="block text-[#B78A3D] italic font-normal text-5xl sm:text-6xl lg:text-[72px] xl:text-[80px] -mt-1 sm:-mt-2 pl-2 sm:pl-3 font-serif"
+            >
+              Studio
+            </span>
+          </motion.h1>
+
+          {/* Elegant Ornament Divider */}
+          <motion.div
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.55, delay: 0.15, ease: [0.25, 1, 0.5, 1] }}
+            className="flex items-center gap-3 mb-5 origin-left"
+            aria-hidden="true"
+          >
+            <span className="h-[1px] w-12 bg-[#B78A3D]/40" />
+            <span className="text-[#B78A3D] text-[11px]">✦</span>
+            <span className="h-[1px] w-12 bg-[#B78A3D]/40" />
+          </motion.div>
+
+          {/* Description */}
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
+            className="text-[#4A463F] text-[15px] sm:text-[16px] xl:text-[17px] leading-[1.65] max-w-[480px] font-normal mb-8"
+          >
+            Preserving your most precious moments with timeless photography, cinematic films and heartfelt storytelling.
+          </motion.p>
+
+          {/* Buttons: EXPLORE OUR STORY & BOOK A SESSION */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.26, ease: [0.25, 1, 0.5, 1] }}
+            className="flex flex-wrap items-center gap-3.5 sm:gap-4 mb-8 sm:mb-10"
+          >
+            {/* Primary Button -> /about */}
+            <Link
+              to="/about"
+              className="group h-[50px] sm:h-[52px] px-7 sm:px-8 bg-[#B78A3D] hover:bg-[#A0762E] text-white rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-[0_6px_20px_-4px_rgba(183,138,61,0.4)] hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center justify-center gap-2.5 shrink-0"
+            >
+              <span>EXPLORE OUR STORY</span>
+              <ArrowRight
+                size={14}
+                className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
+              />
+            </Link>
+
+            {/* Secondary Button -> /contact */}
+            <Link
+              to="/contact"
+              className="group h-[50px] sm:h-[52px] px-7 sm:px-8 bg-[#FAF7F2]/90 hover:bg-[#181715] border border-[#181715] text-[#181715] hover:text-white rounded-full text-[12px] font-bold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center justify-center gap-2.5 shrink-0"
+            >
+              <span>BOOK A SESSION</span>
+              <ArrowRight
+                size={14}
+                className="transition-transform duration-300 group-hover:translate-x-1 shrink-0"
+              />
+            </Link>
+          </motion.div>
+
+          {/* Services Row */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, delay: 0.32, ease: [0.25, 1, 0.5, 1] }}
+            className="pt-5 border-t border-[#B78A3D]/25 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-2 max-w-[500px]"
+          >
+            <div className="flex flex-col items-start pr-2 sm:border-r border-[#B78A3D]/25">
+              <Heart size={16} className="text-[#B78A3D] mb-1.5" />
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider text-[#181715] uppercase leading-tight">
+                WEDDING<br />PHOTOGRAPHY
+              </span>
+            </div>
+
+            <div className="flex flex-col items-start px-2 sm:border-r border-[#B78A3D]/25">
+              <Video size={16} className="text-[#B78A3D] mb-1.5" />
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider text-[#181715] uppercase leading-tight">
+                CINEMATIC<br />FILMS
+              </span>
+            </div>
+
+            <div className="flex flex-col items-start px-2 sm:border-r border-[#B78A3D]/25">
+              <Camera size={16} className="text-[#B78A3D] mb-1.5" />
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider text-[#181715] uppercase leading-tight">
+                PORTRAITS
+              </span>
+            </div>
+
+            <div className="flex flex-col items-start pl-2">
+              <Calendar size={16} className="text-[#B78A3D] mb-1.5" />
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider text-[#181715] uppercase leading-tight">
+                EVENTS
+              </span>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* =========================================================
+          MOBILE / TABLET STOREFRONT BUILDING IMAGE (< 1024px)
+          Clean stacked presentation sitting below content
+      ========================================================= */}
+      <div className="lg:hidden w-full px-6 pb-8 pt-2">
+        <div className="relative max-w-[540px] mx-auto rounded-2xl overflow-hidden shadow-xl border border-[#E7E0D2]/90 bg-white">
+          <img
+            src="/images/storefront.jpg"
+            alt="Real Subash Studio Storefront Building"
+            className="w-full h-auto object-contain max-h-[460px] mx-auto block"
+            loading="eager"
+          />
         </div>
       </div>
     </section>

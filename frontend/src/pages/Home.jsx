@@ -303,13 +303,13 @@ export default function Home() {
       {/* =========================================================
           SECTION 8: LARGE CTA BANNER SECTION
       ========================================================= */}
-      <section className="relative py-24 sm:py-28 overflow-hidden">
+      <section className="relative min-h-[440px] sm:min-h-[500px] lg:min-h-[560px] xl:min-h-[600px] flex items-center justify-center py-20 sm:py-24 lg:py-28 overflow-hidden">
         <img
-          src="/images/wedding photos.jpg"
+          src="/images/home-cta-wedding.jpg"
           alt="SUBASH STUDIO authentic wedding moments"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="home-cta-bg-image pointer-events-none select-none"
         />
-        <div className="absolute inset-0 bg-[#141210]/65 backdrop-blur-[0.5px]" />
+        <div className="absolute inset-0 bg-black/35 backdrop-blur-[0.5px]" />
 
         <div className="relative max-w-3xl mx-auto px-6 text-center z-10">
           <Reveal>
