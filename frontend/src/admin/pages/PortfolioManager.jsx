@@ -205,45 +205,50 @@ export default function PortfolioManager() {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
-            Portfolio Stories
-          </h2>
-          <p className="text-xs text-[#6F6A62] mt-0.5">
-            Manage comprehensive wedding and couple story case studies featured on the website.
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-xs">
+            <Briefcase className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+              Portfolio Stories
+            </h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Manage comprehensive wedding and couple story showcases featured on the website.
+            </p>
+          </div>
         </div>
 
         <button
           type="button"
           onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-black hover:bg-gray-800 text-white rounded-xl text-xs font-medium shadow-xs transition-colors shrink-0"
         >
-          <Plus className="w-4 h-4 text-[#E4D3A6]" />
+          <Plus className="w-4 h-4" />
           <span>New Project</span>
         </button>
       </div>
 
       {/* Search & Category Bar */}
-      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-[#E7E0D2] shadow-sm space-y-3">
+      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-gray-200 shadow-xs space-y-3">
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8E867B]" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search portfolio by couple name, location, ceremony..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-[#F8F6F2] border border-[#E7E0D2] rounded-lg text-xs text-[#2B2B2B] placeholder:text-[#8E867B] focus:outline-none focus:border-[#C9A669]"
+            className="w-full pl-10 pr-4 py-2 bg-gray-50/50 border border-gray-200 rounded-lg text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
           />
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-[#F8F6F2]">
+        <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 no-scrollbar pt-2 border-t border-gray-100">
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            <span className="text-[11px] text-[#6F6A62] font-semibold mr-1 shrink-0">
+            <span className="text-[11px] text-gray-500 font-medium mr-1 shrink-0">
               Category:
             </span>
             {["All", ...activeCategoryNames].map((cat) => {
@@ -262,16 +267,16 @@ export default function PortfolioManager() {
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
                     isSelected
-                      ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm font-semibold"
-                      : "bg-[#F8F6F2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8]"
+                      ? "bg-black text-white shadow-xs font-medium"
+                      : "bg-gray-50 text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-gray-200/60"
                   }`}
                 >
                   <span>{cat}</span>
                   <span
                     className={`text-[10px] px-1.5 py-0.2 rounded-full ${
                       isSelected
-                        ? "bg-[#3D3A34] text-[#E4D3A6]"
-                        : "bg-[#E7E0D2] text-[#6F6A62]"
+                        ? "bg-gray-800 text-gray-200"
+                        : "bg-gray-200/70 text-gray-600"
                     }`}
                   >
                     {count}
@@ -284,7 +289,7 @@ export default function PortfolioManager() {
             <button
               type="button"
               onClick={() => setAddCategoryModalOpen(true)}
-              className="px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 bg-[#FAF6F0] text-[#9C7B3D] border border-[#E7D8C5] hover:bg-[#F4ECE0] hover:border-[#C9A669] shrink-0 active:scale-95"
+              className="px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 shrink-0"
               title="Add New Category"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -296,10 +301,10 @@ export default function PortfolioManager() {
           <button
             type="button"
             onClick={() => setManageCategoriesModalOpen(true)}
-            className="px-2.5 py-1 text-[11px] font-semibold text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8] rounded-lg transition-colors flex items-center gap-1 shrink-0 ml-auto"
+            className="px-2.5 py-1 text-[11px] font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1 shrink-0 ml-auto border border-gray-200"
             title="Manage Category Status"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-[#9C7B3D]" />
+            <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500" />
             <span>Manage</span>
           </button>
         </div>
@@ -319,10 +324,10 @@ export default function PortfolioManager() {
           {filteredPortfolio.map((item) => (
             <div
               key={item.id}
-              className="group bg-white rounded-xl border border-[#E7E0D2] overflow-hidden shadow-sm hover:shadow-md hover:border-[#C9A669]/60 transition-all flex flex-col"
+              className="group bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs hover:shadow-sm hover:border-gray-300 transition-all flex flex-col"
             >
               {/* Cover Image Container */}
-              <div className="relative aspect-[16/10] bg-[#F8F6F2] overflow-hidden">
+              <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">
                 <img
                   src={item.coverImage}
                   alt={item.title}
@@ -332,11 +337,11 @@ export default function PortfolioManager() {
                   }}
                 />
                 <div className="absolute top-3 left-3 flex gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#1C1B19]/80 backdrop-blur-md text-[#E4D3A6]">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-black/75 backdrop-blur-md text-white">
                     {item.category}
                   </span>
                   {item.featured && (
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#9C7B3D] text-[#1C1B19]">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-500 text-white shadow-xs">
                       Featured
                     </span>
                   )}
@@ -346,7 +351,7 @@ export default function PortfolioManager() {
                   <button
                     type="button"
                     onClick={() => handleOpenEdit(item)}
-                    className="p-1.5 rounded-lg bg-white text-[#2B2B2B] hover:bg-[#F8F6F2] shadow"
+                    className="p-1.5 rounded-lg bg-white text-gray-700 hover:text-gray-900 hover:bg-gray-50 shadow-sm border border-gray-200"
                     title="Edit Story"
                   >
                     <Edit3 className="w-4 h-4" />
@@ -354,7 +359,7 @@ export default function PortfolioManager() {
                   <button
                     type="button"
                     onClick={() => handleDeletePrompt(item)}
-                    className="p-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 shadow"
+                    className="p-1.5 rounded-lg bg-white text-rose-600 hover:bg-rose-50 shadow-sm border border-rose-100"
                     title="Delete Story"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -363,28 +368,28 @@ export default function PortfolioManager() {
               </div>
 
               {/* Story Content */}
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                <div className="space-y-1.5">
-                  <h3 className="font-display font-bold text-base text-[#2B2B2B]">
+              <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-sm sm:text-base text-gray-900">
                     {item.title}
                   </h3>
                   {item.subtitle && (
-                    <p className="text-xs text-[#9C7B3D] font-medium">
+                    <p className="text-xs text-gray-500 font-medium">
                       {item.subtitle}
                     </p>
                   )}
-                  <p className="text-xs text-[#6F6A62] line-clamp-2 leading-relaxed pt-1">
+                  <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed pt-1">
                     {item.description}
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-[#F8F6F2] flex items-center justify-between text-xs text-[#8E867B]">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
+                  <div className="flex items-center gap-1 text-gray-500">
+                    <MapPin className="w-3.5 h-3.5 text-gray-400" />
                     <span className="truncate max-w-[130px]">{item.location}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-1 text-gray-500">
+                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
                     <span>{item.eventDate}</span>
                   </div>
                 </div>
@@ -397,34 +402,34 @@ export default function PortfolioManager() {
       {/* Add / Edit Project Modal */}
       <AnimatePresence>
         {modalOpen && (
-          <div className="admin-modal-overlay">
+          <div className="admin-modal-overlay admin-portal bg-black/60 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={handleCloseModal}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.98, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[85vh] flex flex-col overflow-hidden"
+              exit={{ opacity: 0, scale: 0.98, y: 8 }}
+              className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 z-10 max-h-[88vh] flex flex-col overflow-hidden"
             >
               {/* Fixed Header */}
-              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0 bg-white">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-widest2 text-[#9C7B3D]">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
                     {editingItem ? "Edit Portfolio Story" : "New Portfolio Story"}
                   </span>
-                  <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
+                  <h3 className="text-lg font-semibold text-gray-900">
                     {editingItem ? `Edit ${editingItem.title}` : "Create Showcase Project"}
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
+                  className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -433,7 +438,7 @@ export default function PortfolioManager() {
 
               {/* Form with scrollable body & pinned footer */}
               <form onSubmit={handleSave} autoComplete="off" className="flex flex-col flex-1 min-h-0">
-                <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-4 text-xs modal-scrollbar">
+                <div className="overflow-y-auto flex-1 p-6 space-y-4 text-xs modal-scrollbar">
                   {/* Cover Image */}
                   <ImageUploader
                     value={formData.coverImage}
@@ -444,26 +449,26 @@ export default function PortfolioManager() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Title */}
                     <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Story Title *</label>
+                      <label className="text-xs font-medium text-gray-700">Story Title *</label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. Ananya & Siddharth"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                        className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
                       />
                     </div>
 
                     {/* Subtitle */}
                     <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Subtitle / Tagline</label>
+                      <label className="text-xs font-medium text-gray-700">Subtitle / Tagline</label>
                       <input
                         type="text"
                         placeholder="e.g. A Grand Chettinad Palace Celebration"
                         value={formData.subtitle}
                         onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                        className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
                       />
                     </div>
                   </div>
@@ -471,11 +476,11 @@ export default function PortfolioManager() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {/* Category */}
                     <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Category</label>
+                      <label className="text-xs font-medium text-gray-700">Category</label>
                       <select
                         value={formData.category}
                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                        className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
                       >
                         <option value="">Select category</option>
                         {activeCategoryNames.map((cat) => (
@@ -497,7 +502,7 @@ export default function PortfolioManager() {
 
                     {/* Event Date */}
                     <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Shoot Date / Month</label>
+                      <label className="text-xs font-medium text-gray-700">Shoot Date / Month</label>
                       <input
                         type="date"
                         name="eventDate"
@@ -516,53 +521,53 @@ export default function PortfolioManager() {
                             } catch (err) {}
                           }
                         }}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                        className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white cursor-pointer transition-all"
                       />
                     </div>
 
                     {/* Location */}
                     <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Location / Venue</label>
+                      <label className="text-xs font-medium text-gray-700">Location / Venue</label>
                       <input
                         type="text"
                         placeholder="e.g. Karaikudi, Tamil Nadu"
                         value={formData.location}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                        className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
                       />
                     </div>
                   </div>
 
                   {/* Description */}
                   <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Story Overview</label>
+                    <label className="text-xs font-medium text-gray-700">Story Overview</label>
                     <textarea
                       rows={3}
                       placeholder="Describe the aesthetic, emotions, rituals and vibe of the session..."
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                      className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
                     />
                   </div>
 
                   {/* Checkboxes */}
                   <div className="flex items-center gap-6 pt-2">
-                    <label className="flex items-center gap-2 cursor-pointer font-medium text-[#2B2B2B]">
+                    <label className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
                       <input
                         type="checkbox"
                         checked={formData.featured}
                         onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                        className="w-4 h-4 rounded border-[#E7E0D2] text-[#9C7B3D] focus:ring-[#C9A669]"
+                        className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black/20 accent-black"
                       />
                       <span>Feature on Homepage</span>
                     </label>
 
-                    <label className="flex items-center gap-2 cursor-pointer font-medium text-[#2B2B2B]">
+                    <label className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
                       <input
                         type="checkbox"
                         checked={formData.published}
                         onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
-                        className="w-4 h-4 rounded border-[#E7E0D2] text-[#9C7B3D] focus:ring-[#C9A669]"
+                        className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black/20 accent-black"
                       />
                       <span>Publish Story Live</span>
                     </label>
@@ -570,19 +575,19 @@ export default function PortfolioManager() {
                 </div>
 
                 {/* Pinned Action Footer */}
-                <div className="px-6 sm:px-8 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
+                <div className="px-6 py-3.5 bg-gray-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold transition-colors"
+                    className="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-white text-xs font-medium transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] font-semibold shadow-md active:scale-95 transition-all"
+                    className="px-5 py-2 rounded-xl bg-black text-white hover:bg-gray-800 text-xs font-medium shadow-xs active:scale-95 transition-all"
                   >
-                    {editingItem ? "Save Story" : "Publish Project"}
+                    {editingItem ? "Save Changes" : "Publish Project"}
                   </button>
                 </div>
               </form>

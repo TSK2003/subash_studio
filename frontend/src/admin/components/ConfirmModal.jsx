@@ -92,7 +92,7 @@ export default function ConfirmModal({
     createPortal(
       <AnimatePresence>
         <div
-          className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+          className="admin-portal fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden font-body"
           role="dialog"
           aria-modal="true"
         >
@@ -114,14 +114,14 @@ export default function ConfirmModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-modal-title"
-            className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto overflow-y-auto modal-scrollbar"
+            className="relative w-full max-w-md bg-white rounded-2xl p-6 shadow-xl border border-gray-200 z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto overflow-y-auto modal-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
           <button
             type="button"
             onClick={handleClose}
             disabled={busy}
-            className="absolute top-4 right-4 p-1.5 text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-lg transition-colors disabled:opacity-50"
+            className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
             aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
@@ -133,7 +133,7 @@ export default function ConfirmModal({
                 className={`p-3 rounded-xl shrink-0 ${
                   isDestructive
                     ? "bg-rose-50 text-rose-600 border border-rose-100"
-                    : "bg-[#F4EFE6] text-[#9C7B3D] border border-[#E4D3A6]"
+                    : "bg-amber-50 text-amber-600 border border-amber-200"
                 }`}
               >
                 {isDestructive ? (
@@ -146,17 +146,17 @@ export default function ConfirmModal({
               <div className="space-y-1.5 flex-1 pr-4">
                 <h3
                   id="confirm-modal-title"
-                  className="text-lg font-display font-semibold text-[#2B2B2B]"
+                  className="text-base sm:text-lg font-bold text-gray-900"
                 >
                   {title}
                 </h3>
-                <p className="text-sm text-[#6F6A62] leading-relaxed">
+                <p className="text-sm text-gray-500 leading-relaxed">
                   {message}
                 </p>
 
                 {itemDetails && (
-                  <div className="mt-2.5 px-3 py-1.5 bg-[#F8F6F2] rounded-lg border border-[#E7E0D2] text-[11px] text-[#6F6A62]">
-                    <span className="font-semibold text-[#2B2B2B]">Target: </span>
+                  <div className="mt-2.5 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 text-[11px] text-gray-600">
+                    <span className="font-semibold text-gray-900">Target: </span>
                     <span className="font-mono text-rose-600">{itemDetails}</span>
                   </div>
                 )}
@@ -168,7 +168,7 @@ export default function ConfirmModal({
               <div className="mt-5 space-y-1.5">
                 <label
                   htmlFor="admin-modal-password"
-                  className="block text-xs font-semibold text-[#6F6A62]"
+                  className="block text-xs font-semibold text-gray-700"
                 >
                   Admin Password <span className="text-rose-500">*</span>
                 </label>
@@ -185,18 +185,18 @@ export default function ConfirmModal({
                     placeholder="Enter your admin password"
                     autoComplete="current-password"
                     disabled={busy}
-                    className={`w-full pl-3 pr-10 py-2.5 bg-[#F8F6F2] border ${
+                    className={`w-full pl-3 pr-10 py-2.5 bg-white border ${
                       error
                         ? "border-rose-400 focus:border-rose-500"
-                        : "border-[#E7E0D2] focus:border-[#C9A669]"
-                    } rounded-xl text-xs text-[#2B2B2B] placeholder:text-[#8E867B] focus:outline-none transition-colors`}
+                        : "border-gray-200 focus:border-gray-900"
+                    } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none transition-colors`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                     disabled={busy}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B] transition-colors p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors p-1"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
@@ -215,22 +215,22 @@ export default function ConfirmModal({
               </div>
             )}
 
-            <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-[#E7E0D2]">
+            <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
               <button
                 type="button"
                 onClick={handleClose}
                 disabled={busy}
-                className="px-4 py-2 text-sm font-medium text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-xl transition-colors disabled:opacity-50"
+                className="px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
               >
                 {cancelText}
               </button>
               <button
                 type="submit"
                 disabled={busy || (requirePassword && !password.trim())}
-                className={`px-5 py-2 text-sm font-medium text-white rounded-xl transition-all shadow-sm flex items-center gap-2 ${
+                className={`px-5 py-2 text-xs sm:text-sm font-medium text-white rounded-lg transition-all shadow-xs flex items-center gap-2 ${
                   isDestructive
                     ? "bg-rose-600 hover:bg-rose-700 active:bg-rose-800"
-                    : "bg-[#2B2B2B] hover:bg-[#1C1B19] active:bg-black"
+                    : "bg-black hover:bg-gray-800 active:bg-gray-900"
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {busy && (

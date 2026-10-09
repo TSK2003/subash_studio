@@ -45,5 +45,6 @@ router.get("/orders/:id", authenticateAdmin, framesController.getOrderById);
 router.put("/orders/:id", authenticateAdmin, framesController.updateOrder);
 router.patch("/orders/:id/status", authenticateAdmin, framesController.updateOrderStatus);
 router.delete("/orders/:id", authenticateAdmin, framesController.deleteOrder);
+router.post("/orders/:id/resend-bill", authenticateAdmin, framesController.resendOrderBill);
 
 export default router;

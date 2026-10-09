@@ -80,31 +80,31 @@ export function ToastProvider({ children }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-card border backdrop-blur-md transition-all ${
+              className={`pointer-events-auto flex items-start gap-3 p-3.5 rounded-xl shadow-lg border backdrop-blur-md transition-all ${
                 toast.type === "success"
-                  ? "bg-[#FCFAF7] border-[#C9A669]/40 text-[#2B2B2B]"
+                  ? "bg-white border-emerald-200 text-gray-900"
                   : toast.type === "error"
-                  ? "bg-[#FFF8F7] border-rose-200 text-rose-950"
+                  ? "bg-white border-red-200 text-gray-900"
                   : toast.type === "warning"
-                  ? "bg-[#FFFBF2] border-amber-200 text-amber-950"
-                  : "bg-[#F8F6F2] border-[#E7E0D2] text-[#2B2B2B]"
+                  ? "bg-white border-amber-200 text-gray-900"
+                  : "bg-white border-gray-200 text-gray-900"
               }`}
             >
               <div className="mt-0.5 shrink-0">
-                {toast.type === "success" && <CheckCircle2 className="w-5 h-5 text-[#9C7B3D]" />}
-                {toast.type === "error" && <AlertCircle className="w-5 h-5 text-rose-600" />}
-                {toast.type === "warning" && <AlertTriangle className="w-5 h-5 text-amber-600" />}
-                {toast.type === "info" && <Info className="w-5 h-5 text-[#6B7280]" />}
+                {toast.type === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                {toast.type === "error" && <AlertCircle className="w-4 h-4 text-red-600" />}
+                {toast.type === "warning" && <AlertTriangle className="w-4 h-4 text-amber-600" />}
+                {toast.type === "info" && <Info className="w-4 h-4 text-blue-600" />}
               </div>
-              <div className="flex-1 text-sm font-medium leading-relaxed">
+              <div className="flex-1 text-xs font-medium leading-relaxed">
                 {typeof toast.message === "string" ? toast.message : String(toast.message || "")}
               </div>
               <button
                 onClick={() => removeToast(toast.id)}
-                className="shrink-0 p-1 text-[#6B7280] hover:text-[#2B2B2B] rounded-lg transition-colors"
+                className="shrink-0 p-1 text-gray-400 hover:text-gray-700 rounded-lg transition-colors"
                 aria-label="Dismiss toast"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </motion.div>
           ))}

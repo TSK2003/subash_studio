@@ -145,8 +145,8 @@ export function ProtectedAdminRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
-        <div className="w-8 h-8 border-3 border-[#C9A669] border-t-transparent rounded-full animate-spin" />
+      <div className="admin-portal min-h-screen flex items-center justify-center bg-[#F7F7F8]">
+        <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

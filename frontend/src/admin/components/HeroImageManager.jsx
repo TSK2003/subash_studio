@@ -252,7 +252,7 @@ export default function HeroImageManager({
   };
 
   return (
-    <div className="space-y-4 pt-4 border-t border-[#E7E0D2]">
+    <div className="space-y-4 pt-4 border-t border-gray-200">
       {/* Hidden Multi-file Picker */}
       <input
         ref={fileInputRef}
@@ -264,35 +264,35 @@ export default function HeroImageManager({
         onChange={(e) => handleFilesChosen(e.target.files)}
       />
 
-      {/* Header and Controls (Screenshot 2 matched for Hero Images) */}
+      {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-[#9C7B3D]" />
-            <h4 className="text-sm font-display font-bold text-[#2B2B2B] uppercase tracking-wider">
+            <ImageIcon className="w-4 h-4 text-blue-600" />
+            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
               HERO IMAGES
             </h4>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#F2ECE4] text-[#8C7A58] border border-[#E7E0D2]">
+            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700 border border-gray-200">
               {images.length} {images.length === 1 ? "image" : "images"}
             </span>
           </div>
-          <p className="text-xs text-[#6F6A62] mt-0.5">
+          <p className="text-xs text-gray-500 mt-0.5">
             Upload and manage the images displayed in the homepage hero section slideshow.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Loop Slideshow Control */}
-          <label className="flex items-center gap-2 cursor-pointer select-none bg-[#F8F6F2] hover:bg-[#F2ECE4] border border-[#E7E0D2] px-3 py-1.5 rounded-xl transition-colors">
+          <label className="flex items-center gap-2 cursor-pointer select-none bg-white hover:bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors">
             <input
               type="checkbox"
               checked={Boolean(loopEnabled)}
               onChange={(e) => onLoopChange(e.target.checked)}
               disabled={disabled}
-              className="w-4 h-4 rounded text-[#9C7B3D] focus:ring-[#C9A669] border-[#D5CEBF] accent-[#9C7B3D] cursor-pointer"
+              className="w-4 h-4 rounded text-black focus:ring-black border-gray-300 accent-black cursor-pointer"
             />
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#2B2B2B]">
-              <Repeat className="w-3.5 h-3.5 text-[#9C7B3D]" />
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+              <Repeat className="w-3.5 h-3.5 text-gray-500" />
               <span>Loop Slideshow</span>
             </div>
           </label>
@@ -302,7 +302,7 @@ export default function HeroImageManager({
             type="button"
             disabled={disabled}
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 bg-[#2B2B2B] hover:bg-[#1C1B19] text-[#E4D3A6] hover:text-white rounded-xl text-xs font-bold tracking-wide flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg text-xs font-semibold tracking-wide flex items-center gap-2 shadow-xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Images</span>
@@ -311,13 +311,13 @@ export default function HeroImageManager({
       </div>
 
       {/* Helper explanation for slideshow mode */}
-      <div className="text-[11px] text-[#8C8275] bg-[#FAF8F5] border border-[#E7E0D2]/70 rounded-lg p-2.5 flex items-center justify-between flex-wrap gap-2">
+      <div className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-2.5 flex items-center justify-between flex-wrap gap-2">
         <span>
           {loopEnabled
             ? "Loop ON: Slideshow transitions through images (1 → 2 → 3 → 1...) continuously without stopping."
             : "Loop OFF: Slideshow transitions through images once (1 → 2 → 3), then remains on the final image."}
         </span>
-        <span className="text-[10px] text-[#A69C8D]">Drag or use arrows to reorder</span>
+        <span className="text-[10px] text-gray-400">Drag or use arrows to reorder</span>
       </div>
 
       {/* Error Alert */}
@@ -344,18 +344,18 @@ export default function HeroImageManager({
           {activeUploads.map((upl) => (
             <div
               key={upl.id}
-              className="p-3 bg-[#FAF8F5] rounded-xl border border-[#C9A669] flex flex-col gap-2 transition-all"
+              className="p-3 bg-gray-50 rounded-xl border border-gray-900 flex flex-col gap-2 transition-all"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-[#C9A669]/20 text-[#9C7B3D] flex items-center justify-center shrink-0 animate-pulse">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 animate-pulse">
                     <Upload className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-[#2B2B2B] truncate">
+                    <p className="text-xs font-bold text-gray-900 truncate">
                       {upl.fileName}
                     </p>
-                    <p className="text-[11px] text-[#6F6A62]">
+                    <p className="text-[11px] text-gray-500">
                       Uploading... {formatBytes(upl.loaded)} /{" "}
                       {formatBytes(upl.total)} ({upl.progress}%)
                     </p>
@@ -365,16 +365,16 @@ export default function HeroImageManager({
                 <button
                   type="button"
                   onClick={() => handleCancelUpload(upl.id)}
-                  className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white rounded-lg border border-[#E7E0D2] hover:border-rose-300 transition-colors"
+                  className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-white rounded-lg border border-gray-200 hover:border-rose-300 transition-colors"
                 >
                   Cancel
                 </button>
               </div>
 
               {/* Progress bar */}
-              <div className="w-full bg-[#E7E0D2] rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className="bg-[#C9A669] h-full rounded-full transition-all duration-150 ease-out"
+                  className="bg-black h-full rounded-full transition-all duration-150 ease-out"
                   style={{
                     width: `${Math.min(100, Math.max(0, upl.progress))}%`,
                   }}
@@ -385,23 +385,23 @@ export default function HeroImageManager({
         </div>
       )}
 
-      {/* Empty State (Matching Screenshot 2 styled for images) */}
+      {/* Empty State */}
       {images.length === 0 && activeUploads.length === 0 && (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="cursor-pointer group p-8 rounded-2xl border-2 border-dashed border-[#E7E0D2] hover:border-[#C9A669] bg-[#FAF8F5]/60 hover:bg-[#FAF8F5] transition-all flex flex-col items-center justify-center text-center space-y-2 select-none"
+          className="cursor-pointer group p-8 rounded-2xl border-2 border-dashed border-gray-200 hover:border-gray-400 bg-gray-50/50 hover:bg-gray-50 transition-all flex flex-col items-center justify-center text-center space-y-2 select-none"
         >
-          <div className="w-12 h-12 rounded-full bg-[#C9A669]/10 text-[#9C7B3D] group-hover:scale-110 flex items-center justify-center transition-transform">
+          <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 group-hover:scale-110 flex items-center justify-center transition-transform">
             <ImageIcon className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-[#2B2B2B]">
+            <p className="text-xs font-bold text-gray-900">
               No hero images uploaded yet
             </p>
-            <p className="text-[11px] text-[#6F6A62] mt-0.5">
+            <p className="text-[11px] text-gray-500 mt-0.5">
               Click &quot;+ Add Images&quot; to upload JPG, PNG, or WebP images (up to 25MB each).
             </p>
-            <p className="text-[10px] text-[#A69C8D] mt-1">
+            <p className="text-[10px] text-gray-400 mt-1">
               When no images are uploaded, the landing page safely falls back to the default wedding background image.
             </p>
           </div>
@@ -418,31 +418,31 @@ export default function HeroImageManager({
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, index)}
-              className={`p-3 bg-[#FAF8F5] rounded-xl border ${
+              className={`p-3 bg-white rounded-xl border ${
                 draggedIndex === index
-                  ? "border-[#C9A669] opacity-50 bg-[#F2ECE4]"
-                  : "border-[#E7E0D2] hover:border-[#C9A669]/60"
-              } flex items-center justify-between gap-3 transition-all ${
+                  ? "border-gray-900 opacity-50 bg-gray-100"
+                  : "border-gray-200 hover:border-gray-300"
+              } shadow-xs flex items-center justify-between gap-3 transition-all ${
                 image.active === false ? "opacity-60" : ""
               }`}
             >
               {/* Left drag handle & image preview */}
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className="cursor-grab active:cursor-grabbing text-[#A69C8D] hover:text-[#2B2B2B] p-1"
+                  className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-900 p-1"
                   title="Drag to reorder"
                 >
                   <GripVertical className="w-4 h-4" />
                 </div>
 
-                <span className="w-6 text-center text-xs font-bold text-[#8C7A58] bg-[#F2ECE4] rounded-md py-0.5 border border-[#E7E0D2] shrink-0">
+                <span className="w-6 text-center text-xs font-bold text-gray-700 bg-gray-100 rounded-md py-0.5 border border-gray-200 shrink-0">
                   #{index + 1}
                 </span>
 
                 {/* Thumbnail */}
                 <div
                   onClick={() => setPreviewImage(image)}
-                  className="relative w-16 h-12 rounded-lg overflow-hidden bg-black/10 border border-[#E7E0D2] shrink-0 cursor-pointer group/thumb"
+                  className="relative w-16 h-12 rounded-lg overflow-hidden bg-black/5 border border-gray-200 shrink-0 cursor-pointer group/thumb"
                   title="Click to preview"
                 >
                   <img
@@ -485,7 +485,7 @@ export default function HeroImageManager({
                   className={`p-1.5 rounded-lg border transition-colors ${
                     image.active === false
                       ? "bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
-                      : "bg-white text-[#6F6A62] border-[#E7E0D2] hover:text-[#2B2B2B] hover:border-[#C9A669]"
+                      : "bg-white text-gray-500 border-gray-200 hover:text-gray-900 hover:border-gray-400"
                   }`}
                 >
                   {image.active === false ? (
@@ -501,7 +501,7 @@ export default function HeroImageManager({
                   onClick={() => handleMoveUp(index)}
                   disabled={disabled || index === 0}
                   title="Move up"
-                  className="p-1.5 bg-white text-[#6F6A62] hover:text-[#2B2B2B] rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  className="p-1.5 bg-white text-gray-500 hover:text-gray-900 rounded-lg border border-gray-200 hover:border-gray-400 disabled:opacity-30 disabled:pointer-events-none transition-colors"
                 >
                   <ChevronUp className="w-3.5 h-3.5" />
                 </button>
@@ -512,7 +512,7 @@ export default function HeroImageManager({
                   onClick={() => handleMoveDown(index)}
                   disabled={disabled || index === images.length - 1}
                   title="Move down"
-                  className="p-1.5 bg-white text-[#6F6A62] hover:text-[#2B2B2B] rounded-lg border border-[#E7E0D2] hover:border-[#C9A669] disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  className="p-1.5 bg-white text-gray-500 hover:text-gray-900 rounded-lg border border-gray-200 hover:border-gray-400 disabled:opacity-30 disabled:pointer-events-none transition-colors"
                 >
                   <ChevronDown className="w-3.5 h-3.5" />
                 </button>
@@ -523,7 +523,7 @@ export default function HeroImageManager({
                   onClick={() => handleDeleteImage(index)}
                   disabled={disabled}
                   title="Delete image"
-                  className="p-1.5 bg-white text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg border border-[#E7E0D2] hover:border-rose-300 transition-colors ml-1"
+                  className="p-1.5 bg-white text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg border border-gray-200 hover:border-rose-300 transition-colors ml-1"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

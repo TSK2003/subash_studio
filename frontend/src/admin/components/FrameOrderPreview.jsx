@@ -636,14 +636,14 @@ export default function FrameOrderPreview({
     <div className={`space-y-3.5 ${className}`}>
       {/* Top Label */}
       <div className="flex items-center justify-center gap-1.5 text-center">
-        <Sparkles className="w-3.5 h-3.5 text-[#C9A669]" />
-        <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#8C6D32]">
+        <Sparkles className="w-3.5 h-3.5 text-gray-400" />
+        <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-gray-500">
           Ordered Frame Preview
         </span>
       </div>
 
       {/* Frame Wall Stage Container */}
-      <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-b from-[#FAF8F5] to-[#ECE7DC] border border-[#E7E0D2] flex items-center justify-center shadow-inner">
+      <div className="p-4 sm:p-5 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center shadow-inner">
         {/* Realistic Outer Timber Frame */}
         <div
           className="relative max-w-[240px] sm:max-w-[280px] lg:max-w-[300px] w-full rounded-sm p-3.5 sm:p-4 transition-all duration-300"

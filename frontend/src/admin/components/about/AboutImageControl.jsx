@@ -94,16 +94,16 @@ export default function AboutImageControl({
   };
 
   return (
-    <div className="space-y-3 bg-[#FAF8F5] p-3.5 sm:p-4 rounded-xl border border-[#E7E0D2]">
+    <div className="space-y-3 bg-gray-50/50 p-3.5 sm:p-4 rounded-xl border border-gray-200">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-bold uppercase tracking-wider text-[#6F6A62]">
+        <label className="text-xs font-medium text-gray-700">
           {label}
         </label>
         {value && (
           <button
             type="button"
             onClick={handleRemove}
-            className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1 font-medium transition-colors"
+            className="text-xs text-rose-600 hover:text-rose-700 flex items-center gap-1 font-medium transition-colors"
           >
             <Trash2 size={12} />
             <span>Remove</span>
@@ -123,7 +123,7 @@ export default function AboutImageControl({
       {/* Preview or Empty State */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
         {value ? (
-          <div className="relative w-28 h-24 sm:w-32 sm:h-28 rounded-lg overflow-hidden border border-[#D8CFC0] bg-white shadow-sm shrink-0 group">
+          <div className="relative w-28 h-24 sm:w-32 sm:h-28 rounded-lg overflow-hidden border border-gray-200 bg-white shadow-xs shrink-0 group">
             <img
               src={value}
               alt={altValue || label}
@@ -131,7 +131,7 @@ export default function AboutImageControl({
             />
           </div>
         ) : (
-          <div className="w-28 h-24 sm:w-32 sm:h-28 rounded-lg border-2 border-dashed border-[#D8CFC0] bg-white/70 flex flex-col items-center justify-center text-[#A39987] shrink-0">
+          <div className="w-28 h-24 sm:w-32 sm:h-28 rounded-lg border-2 border-dashed border-gray-200 bg-white flex flex-col items-center justify-center text-gray-400 shrink-0">
             <ImageIcon size={22} className="mb-1 opacity-70" />
             <span className="text-[10px] uppercase font-semibold">No Image</span>
           </div>
@@ -144,11 +144,11 @@ export default function AboutImageControl({
               type="button"
               disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 rounded-lg bg-white border border-[#D8CFC0] text-xs font-semibold text-[#3C3830] hover:bg-[#F2ECE1] transition-colors flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+              className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5 shadow-xs disabled:opacity-50"
             >
               {uploading ? (
                 <>
-                  <Loader2 size={13} className="animate-spin text-[#9C7B3D]" />
+                  <Loader2 size={13} className="animate-spin text-black" />
                   <span>Uploading {uploadProgress}%...</span>
                 </>
               ) : value ? (
@@ -168,7 +168,7 @@ export default function AboutImageControl({
               <button
                 type="button"
                 onClick={handleOpenMediaLibrary}
-                className="px-3 py-1.5 rounded-lg bg-white border border-[#D8CFC0] text-xs font-semibold text-[#6F6A62] hover:bg-[#F2ECE1] transition-colors flex items-center gap-1.5 shadow-xs"
+                className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5 shadow-xs"
               >
                 <FolderOpen size={13} />
                 <span>Media Library</span>
@@ -178,9 +178,9 @@ export default function AboutImageControl({
 
           {/* Progress Bar when uploading */}
           {uploading && (
-            <div className="w-full bg-[#E7E0D2] h-1.5 rounded-full overflow-hidden mt-1">
+            <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden mt-1">
               <div
-                className="bg-[#C9A669] h-full transition-all duration-300"
+                className="bg-black h-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -188,10 +188,10 @@ export default function AboutImageControl({
 
           {/* Validation/Error Message */}
           {uploadError && (
-            <p className="text-xs text-red-600 font-medium">{uploadError}</p>
+            <p className="text-xs text-rose-600 font-medium">{uploadError}</p>
           )}
 
-          <p className="text-[11px] text-[#8C8270]">
+          <p className="text-[11px] text-gray-400">
             Supports JPG, PNG, WEBP. Stored permanently on server.
           </p>
         </div>
@@ -200,7 +200,7 @@ export default function AboutImageControl({
       {/* Editable Alternative Text */}
       {onAltChange && (
         <div className="pt-1">
-          <label className="block text-[11px] font-semibold text-[#6F6A62] mb-1">
+          <label className="block text-[11px] font-medium text-gray-600 mb-1">
             Image Alt Text (Accessibility &amp; SEO)
           </label>
           <input
@@ -208,7 +208,7 @@ export default function AboutImageControl({
             value={altValue || ""}
             onChange={(e) => onAltChange(e.target.value)}
             placeholder="e.g. Founder P. Arunachalam with camera"
-            className="w-full text-xs px-3 py-2 rounded-lg bg-white border border-[#D8CFC0] focus:outline-none focus:border-[#C9A669] text-[#2B2B2B]"
+            className="w-full text-xs px-3 py-2 rounded-lg bg-white border border-gray-200 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 text-gray-900 placeholder:text-gray-400 transition-all"
           />
         </div>
       )}
@@ -216,7 +216,7 @@ export default function AboutImageControl({
       {/* Editable Caption if provided */}
       {onCaptionChange && (
         <div className="pt-1">
-          <label className="block text-[11px] font-semibold text-[#6F6A62] mb-1">
+          <label className="block text-[11px] font-medium text-gray-600 mb-1">
             {captionLabel}
           </label>
           <input
@@ -224,24 +224,24 @@ export default function AboutImageControl({
             value={captionValue || ""}
             onChange={(e) => onCaptionChange(e.target.value)}
             placeholder="e.g. Where the journey began."
-            className="w-full text-xs px-3 py-2 rounded-lg bg-white border border-[#D8CFC0] focus:outline-none focus:border-[#C9A669] text-[#2B2B2B]"
+            className="w-full text-xs px-3 py-2 rounded-lg bg-white border border-gray-200 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 text-gray-900 placeholder:text-gray-400 transition-all"
           />
         </div>
       )}
 
       {/* Media Library Selection Modal */}
       {mediaModalOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 border border-[#E7E0D2] shadow-2xl flex flex-col max-h-[85vh]">
-            <div className="flex items-center justify-between pb-3 border-b border-line mb-4">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm admin-portal">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 border border-gray-200 shadow-xl flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-200 mb-4">
               <div>
-                <h3 className="font-display text-lg text-ink">Choose from Media Library</h3>
-                <p className="text-xs text-ink-soft">Select any existing photograph from your studio gallery.</p>
+                <h3 className="font-semibold text-base text-gray-900">Choose from Media Library</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Select any existing photograph from your studio gallery.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setMediaModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-[#FAF8F5] text-ink-soft"
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
               >
                 <X size={18} />
               </button>
@@ -249,9 +249,9 @@ export default function AboutImageControl({
 
             <div className="flex-1 overflow-y-auto min-h-48 py-2">
               {loadingMedia ? (
-                <div className="flex flex-col items-center justify-center py-12 text-[#9C7B3D]">
+                <div className="flex flex-col items-center justify-center py-12 text-gray-500">
                   <Loader2 size={24} className="animate-spin mb-2" />
-                  <p className="text-xs text-ink-soft">Loading library photos...</p>
+                  <p className="text-xs text-gray-500">Loading library photos...</p>
                 </div>
               ) : mediaItems.length > 0 ? (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -260,7 +260,7 @@ export default function AboutImageControl({
                       key={item.id || item.url}
                       type="button"
                       onClick={() => handleSelectMedia(item.url)}
-                      className="relative aspect-square rounded-lg overflow-hidden border border-[#E7E0D2] hover:border-[#C9A669] hover:ring-2 hover:ring-[#C9A669]/40 group transition-all"
+                      className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-black hover:ring-1 hover:ring-black/20 group transition-all"
                     >
                       <img
                         src={item.url}
@@ -271,17 +271,17 @@ export default function AboutImageControl({
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 text-ink-soft text-xs">
+                <div className="text-center py-12 text-gray-400 text-xs">
                   No images found in the Media Library.
                 </div>
               )}
             </div>
 
-            <div className="pt-3 border-t border-line flex justify-end">
+            <div className="pt-3 border-t border-gray-200 flex justify-end">
               <button
                 type="button"
                 onClick={() => setMediaModalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-[#FAF8F5] text-ink hover:bg-[#EDE8DE]"
+                className="px-4 py-2 text-xs font-medium rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 transition-colors"
               >
                 Close
               </button>

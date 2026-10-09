@@ -182,12 +182,12 @@ export default function FrameImageUploader({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-bold uppercase tracking-wider text-[#1C1B19]">
+        <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
           {label}
         </label>
         {value && (
-          <span className="text-[11px] text-[#8C6D32] flex items-center gap-1 font-medium">
-            <CheckCircle className="w-3 h-3 text-[#25D366]" />
+          <span className="text-[11px] text-emerald-600 flex items-center gap-1 font-medium">
+            <CheckCircle className="w-3 h-3 text-emerald-500" />
             Image Ready
           </span>
         )}
@@ -195,10 +195,10 @@ export default function FrameImageUploader({
 
       {/* Upload Dropzone / Preview */}
       {value ? (
-        <div className="rounded-xl border border-[#E7E0D2] bg-[#FAF8F5] p-3.5 space-y-3">
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-3.5 space-y-3">
           <div className="flex items-center gap-3">
             {/* Thumbnail Preview */}
-            <div className="w-20 h-20 rounded-xl overflow-hidden bg-[#ECE7DC] border border-[#E7E0D2] shrink-0 relative group">
+            <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0 relative group">
               <img
                 src={value}
                 alt="Frame Asset Preview"
@@ -208,10 +208,10 @@ export default function FrameImageUploader({
 
             {/* Info & Filename */}
             <div className="flex-1 min-w-0 space-y-1">
-              <div className="text-xs font-mono font-bold text-[#1C1B19] truncate">
+              <div className="text-xs font-mono font-bold text-gray-900 truncate">
                 {displayFileName}
               </div>
-              <div className="text-[11px] text-[#6F6A62]">
+              <div className="text-[11px] text-gray-500">
                 Optimized for fast rendering &amp; client storage
               </div>
 
@@ -221,15 +221,15 @@ export default function FrameImageUploader({
                   type="button"
                   onClick={handleTriggerUpload}
                   disabled={isProcessing}
-                  className="px-3 py-1.5 bg-white hover:bg-[#F4EFE6] border border-[#DCD3C0] text-[#1C1B19] rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 active:scale-95"
+                  className="px-3 py-1.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-lg text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 active:scale-95"
                 >
-                  <RefreshCw className="w-3 h-3 text-[#8C6D32]" />
+                  <RefreshCw className="w-3 h-3 text-gray-500" />
                   <span>Replace</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleRemove}
-                  className="px-3 py-1.5 bg-white hover:bg-rose-50 border border-rose-200 text-rose-600 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 active:scale-95"
+                  className="px-3 py-1.5 bg-white hover:bg-rose-50 border border-rose-200 text-rose-600 rounded-lg text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5 active:scale-95"
                 >
                   <X className="w-3 h-3" />
                   <span>Remove</span>
@@ -247,20 +247,20 @@ export default function FrameImageUploader({
           onClick={handleTriggerUpload}
           className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center ${
             dragActive
-              ? "border-[#C9A669] bg-[#FDFBF7]"
-              : "border-[#E7E0D2] hover:border-[#C9A669] bg-[#FAF8F5]/80 hover:bg-[#FDFBF7]"
+              ? "border-gray-900 bg-gray-50"
+              : "border-gray-300 hover:border-gray-400 bg-gray-50/50 hover:bg-gray-50"
           }`}
         >
-          <div className="p-3 bg-[#F4EFE6] text-[#8C6D32] rounded-full mb-2.5 shadow-sm">
-            <Upload className="w-5 h-5 text-[#9C7B3D]" />
+          <div className="p-3 bg-blue-50 text-blue-600 rounded-full mb-2.5 shadow-xs">
+            <Upload className="w-5 h-5 text-blue-600" />
           </div>
-          <p className="text-xs sm:text-sm font-bold text-[#1C1B19]">
+          <p className="text-xs sm:text-sm font-bold text-gray-900">
             {isProcessing ? (processStatus || "Optimizing image...") : "Upload Image"}
           </p>
-          <p className="text-[11px] text-[#6F6A62] mt-0.5">
+          <p className="text-[11px] text-gray-500 mt-0.5">
             Click to select or drag &amp; drop file
           </p>
-          <p className="text-[10px] uppercase tracking-wider text-[#A8A196] font-semibold mt-2">
+          <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mt-2">
             {helpText}
           </p>
         </div>

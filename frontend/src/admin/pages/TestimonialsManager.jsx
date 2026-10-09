@@ -278,28 +278,33 @@ export default function TestimonialsManager() {
   }, [testimonials, activeFilter, searchQuery]);
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
-            Client Reviews &amp; Testimonials
-          </h2>
-          <p className="text-xs text-[#6F6A62] mt-0.5">
-            Manage feedback from manual studio clients and Google Business Profile reviews.
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 shadow-xs">
+            <Star className="w-5 h-5 fill-amber-500" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+              Client Reviews &amp; Testimonials
+            </h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Manage feedback from manual studio clients and Google Business Profile reviews.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {/* Quick Sync Button */}
           <button
             type="button"
             onClick={handleSyncReviews}
             disabled={syncing || !googleStatus.connected}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0 ${
+            className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-medium shadow-xs transition-colors shrink-0 ${
               googleStatus.connected
-                ? "bg-[#C9A669] text-white hover:bg-[#9C7B3D]"
-                : "bg-[#E7E0D2] text-[#8E867B] cursor-not-allowed opacity-70"
+                ? "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                : "bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed opacity-75"
             }`}
             title={
               !googleStatus.configured
@@ -317,16 +322,16 @@ export default function TestimonialsManager() {
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2B2B2B] text-white hover:bg-[#1C1B19] rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-black hover:bg-gray-800 text-white rounded-xl text-xs font-medium shadow-xs transition-colors shrink-0"
           >
-            <Plus className="w-4 h-4 text-[#E4D3A6]" />
+            <Plus className="w-4 h-4" />
             <span>Add Testimonial</span>
           </button>
         </div>
       </div>
 
       {/* Filter Tabs & Search Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-[#E7E0D2] pb-4">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-gray-200 pb-4">
         {/* Filter Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {[
@@ -343,16 +348,16 @@ export default function TestimonialsManager() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveFilter(tab.id)}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   isActive
-                    ? "bg-[#2B2B2B] text-[#F8F6F2] shadow-sm"
-                    : "bg-[#F8F6F2] text-[#6F6A62] hover:bg-[#EFECE6] hover:text-[#2B2B2B]"
+                    ? "bg-black text-white shadow-xs"
+                    : "bg-gray-50 text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-gray-200/60"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    isActive ? "bg-white/20 text-white" : "bg-[#E7E0D2] text-[#6F6A62]"
+                    isActive ? "bg-gray-800 text-gray-200" : "bg-gray-200/70 text-gray-600"
                   }`}
                 >
                   {tab.count}
@@ -364,13 +369,13 @@ export default function TestimonialsManager() {
 
         {/* Search */}
         <div className="relative min-w-[220px]">
-          <Search className="w-3.5 h-3.5 text-[#8E867B] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search by client or review..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+            className="w-full pl-8 pr-3 py-1.5 bg-gray-50/50 border border-gray-200 rounded-lg text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
           />
         </div>
       </div>
@@ -398,24 +403,20 @@ export default function TestimonialsManager() {
             return (
               <div
                 key={tst.id}
-                className={`bg-white rounded-xl border p-4 sm:p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3.5 relative ${
-                  isGoogle
-                    ? "border-[#E7E0D2] hover:border-[#4285F4]/50"
-                    : "border-[#E7E0D2] hover:border-[#C9A669]/60"
-                }`}
+                className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-xs hover:shadow-sm hover:border-gray-300 transition-all flex flex-col justify-between space-y-3.5 relative"
               >
                 <div className="space-y-3">
                   {/* Card Header: Rating, Source Badge & Moderation Badges */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     {/* Stars */}
-                    <div className="flex items-center gap-1 text-[#9C7B3D]">
+                    <div className="flex items-center gap-0.5 text-amber-400">
                       {Array.from({ length: 5 }).map((_, idx) => (
                         <Star
                           key={idx}
                           className={`w-3.5 h-3.5 ${
                             idx < (tst.rating || 5)
-                              ? "fill-[#9C7B3D] text-[#9C7B3D]"
-                              : "text-[#E7E0D2]"
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-gray-200"
                           }`}
                         />
                       ))}
@@ -424,31 +425,31 @@ export default function TestimonialsManager() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {/* Source Badge */}
                       {isGoogle ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#4285F4]/10 text-[#1A73E8] border border-[#4285F4]/20">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
                           <GoogleGIcon className="w-2.5 h-2.5" />
                           GOOGLE REVIEW
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F4EFE6] text-[#6F6A62] border border-[#E7E0D2]">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
                           MANUAL
                         </span>
                       )}
 
                       {/* Featured Badge */}
                       {tst.featured && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F4EFE6] text-[#9C7B3D] border border-[#E4D3A6]">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
                           Featured
                         </span>
                       )}
 
                       {/* Approval Status Badge */}
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${
                           tst.approved
-                            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : tst.hidden
-                            ? "bg-stone-100 text-stone-600 border-stone-200"
-                            : "bg-amber-50 text-amber-800 border-amber-200"
+                            ? "bg-gray-100 text-gray-600 border-gray-200"
+                            : "bg-amber-50 text-amber-700 border-amber-200"
                         }`}
                       >
                         {tst.approved ? "Approved" : tst.hidden ? "Hidden" : "Pending"}
@@ -457,14 +458,14 @@ export default function TestimonialsManager() {
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-xs text-[#2B2B2B] leading-relaxed italic line-clamp-4">
+                  <p className="text-xs text-gray-700 leading-relaxed italic line-clamp-4">
                     &ldquo;{tst.review}&rdquo;
                   </p>
 
                   {/* Optional Google Studio Reply */}
                   {tst.googleReply && (
-                    <div className="p-2.5 rounded-xl bg-[#F8F6F2] border border-[#E7E0D2] text-[11px] text-[#6F6A62]">
-                      <span className="font-semibold text-[#2B2B2B] block mb-0.5">
+                    <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-600">
+                      <span className="font-semibold text-gray-900 block mb-0.5">
                         Studio Reply:
                       </span>
                       &ldquo;{tst.googleReply}&rdquo;
@@ -473,9 +474,9 @@ export default function TestimonialsManager() {
                 </div>
 
                 {/* Client Info & Card Actions */}
-                <div className="pt-3 border-t border-[#F8F6F2] flex items-center justify-between gap-2">
+                <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-full bg-[#F4EFE6] border border-[#E7E0D2] overflow-hidden flex items-center justify-center font-bold text-[#9C7B3D] text-xs shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center font-semibold text-gray-600 text-xs shrink-0">
                       {tst.customerImage || tst.googleReviewerPhoto ? (
                         <img
                           src={tst.customerImage || tst.googleReviewerPhoto}
@@ -488,10 +489,10 @@ export default function TestimonialsManager() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-bold text-xs text-[#2B2B2B] truncate">
+                      <h4 className="font-semibold text-xs text-gray-900 truncate">
                         {tst.customerName || tst.googleReviewerName}
                       </h4>
-                      <p className="text-[10px] text-[#8E867B] truncate">
+                      <p className="text-[10px] text-gray-400 truncate">
                         {tst.eventType || tst.category || "Client"} • {tst.date}
                       </p>
                     </div>
@@ -505,7 +506,7 @@ export default function TestimonialsManager() {
                         href={tst.googleReviewUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-1.5 text-[#6F6A62] hover:text-[#1A73E8] rounded-lg hover:bg-[#F8F6F2] transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
                         title="View review on Google"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -524,14 +525,14 @@ export default function TestimonialsManager() {
                       }}
                       className={`p-1.5 rounded-lg transition-colors ${
                         tst.featured
-                          ? "text-[#9C7B3D] bg-[#F4EFE6] hover:bg-[#E4D3A6]"
-                          : "text-[#6F6A62] hover:text-[#9C7B3D] hover:bg-[#F8F6F2]"
+                          ? "text-amber-500 bg-amber-50 hover:bg-amber-100"
+                          : "text-gray-400 hover:text-amber-500 hover:bg-gray-50"
                       }`}
                       title={tst.featured ? "Remove from Homepage Featured" : "Feature on Homepage"}
                     >
                       <Star
                         className={`w-3.5 h-3.5 ${
-                          tst.featured ? "fill-[#9C7B3D] text-[#9C7B3D]" : ""
+                          tst.featured ? "fill-amber-400 text-amber-400" : ""
                         }`}
                       />
                     </button>
@@ -548,8 +549,8 @@ export default function TestimonialsManager() {
                       }}
                       className={`p-1.5 rounded-lg transition-colors ${
                         tst.approved
-                          ? "text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50"
-                          : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2]"
+                          ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                          : "text-gray-400 hover:text-gray-700 hover:bg-gray-50"
                       }`}
                       title={tst.approved ? "Hide from website" : "Approve for website"}
                     >
@@ -561,7 +562,7 @@ export default function TestimonialsManager() {
                       <button
                         type="button"
                         onClick={() => handleOpenEdit(tst)}
-                        className="p-1.5 text-[#6F6A62] hover:text-[#2B2B2B] rounded-lg hover:bg-[#F8F6F2] transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                         title="Edit Review"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -572,7 +573,7 @@ export default function TestimonialsManager() {
                     <button
                       type="button"
                       onClick={() => handleDeletePrompt(tst)}
-                      className="p-1.5 text-[#6F6A62] hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
                       title="Delete Review"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -591,7 +592,7 @@ export default function TestimonialsManager() {
           <AnimatePresence>
             {modalOpen && (
               <div
-                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden admin-portal"
                 role="dialog"
                 aria-modal="true"
               >
@@ -603,162 +604,162 @@ export default function TestimonialsManager() {
                   className="fixed inset-0"
                 />
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.96, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.98, y: 8 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: 8 }}
                   transition={{ duration: 0.2 }}
-                  className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
+                  className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl border border-gray-200 z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
-              {/* Fixed Header */}
-              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
-                <div>
-                  <span className="text-[11px] font-bold uppercase tracking-widest2 text-[#9C7B3D]">
-                    {editingTestimonial ? "Edit Review" : "New Client Testimonial"}
-                  </span>
-                  <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
-                    {editingTestimonial
-                      ? `Update ${editingTestimonial.customerName}'s Review`
-                      : "Add Client Feedback"}
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
-                  aria-label="Close modal"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Form with scrollable body & pinned footer */}
-              <form onSubmit={handleSave} autoComplete="off" className="flex flex-col flex-1 min-h-0">
-                <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-4 text-xs modal-scrollbar">
-                  <ImageUploader
-                    value={formData.customerImage}
-                    onChange={(url) => setFormData({ ...formData, customerImage: url })}
-                    label="Customer Photo / Portrait (Optional)"
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Customer Name *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Dr. Arvind & Kavitha"
-                        value={formData.customerName}
-                        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                      />
+                  {/* Fixed Header */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0 bg-white">
+                    <div>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                        {editingTestimonial ? "Edit Review" : "New Client Testimonial"}
+                      </span>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {editingTestimonial
+                          ? `Update ${editingTestimonial.customerName}'s Review`
+                          : "Add Client Feedback"}
+                      </h3>
                     </div>
-
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Shoot / Event Type</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Wedding & Reception"
-                        value={formData.eventType}
-                        onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                      />
-                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCloseModal}
+                      className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                      aria-label="Close modal"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Star Rating (1 to 5)</label>
-                      <div className="flex items-center gap-2 pt-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            type="button"
-                            onClick={() => setFormData({ ...formData, rating: star })}
-                            className="p-1 text-[#9C7B3D] hover:scale-125 transition-transform"
-                          >
-                            <Star
-                              className={`w-5 h-5 ${
-                                star <= formData.rating
-                                  ? "fill-[#9C7B3D] text-[#9C7B3D]"
-                                  : "text-[#E7E0D2]"
-                              }`}
-                            />
-                          </button>
-                        ))}
+                  {/* Form with scrollable body & pinned footer */}
+                  <form onSubmit={handleSave} autoComplete="off" className="flex flex-col flex-1 min-h-0">
+                    <div className="overflow-y-auto flex-1 p-6 space-y-4 text-xs modal-scrollbar">
+                      <ImageUploader
+                        value={formData.customerImage}
+                        onChange={(url) => setFormData({ ...formData, customerImage: url })}
+                        label="Customer Photo / Portrait (Optional)"
+                      />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-700">Customer Name *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Dr. Arvind & Kavitha"
+                            value={formData.customerName}
+                            onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                            className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-700">Shoot / Event Type</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Wedding & Reception"
+                            value={formData.eventType}
+                            onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
+                            className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-700">Star Rating (1 to 5)</label>
+                          <div className="flex items-center gap-1.5 pt-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setFormData({ ...formData, rating: star })}
+                                className="p-1 hover:scale-110 transition-transform"
+                              >
+                                <Star
+                                  className={`w-5 h-5 ${
+                                    star <= formData.rating
+                                      ? "fill-amber-400 text-amber-400"
+                                      : "text-gray-200"
+                                  }`}
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-700">Date / Period</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. August 2026"
+                            value={formData.date}
+                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                            className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-700">Client Review Text *</label>
+                        <textarea
+                          rows={4}
+                          required
+                          placeholder="Write the full feedback or quote from the couple/family..."
+                          value={formData.review}
+                          onChange={(e) => setFormData({ ...formData, review: e.target.value })}
+                          className="w-full p-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-6 pt-2">
+                        <label className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={formData.approved}
+                            onChange={(e) => setFormData({ ...formData, approved: e.target.checked })}
+                            className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black/20 accent-black"
+                          />
+                          <span>Approved for Website</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={formData.featured}
+                            onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                            className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black/20 accent-black"
+                          />
+                          <span>Feature on Homepage</span>
+                        </label>
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="font-semibold text-[#6F6A62]">Date / Period</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. August 2026"
-                        value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                      />
+                    {/* Pinned Action Footer */}
+                    <div className="px-6 py-3.5 bg-gray-50/80 border-t border-gray-200 flex items-center justify-end gap-2.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={handleCloseModal}
+                        className="px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-white text-xs font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl bg-black text-white hover:bg-gray-800 text-xs font-medium shadow-xs active:scale-95 transition-all"
+                      >
+                        {editingTestimonial ? "Save Changes" : "Add Review"}
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Client Review Text *</label>
-                    <textarea
-                      rows={4}
-                      required
-                      placeholder="Write the full feedback or quote from the couple/family..."
-                      value={formData.review}
-                      onChange={(e) => setFormData({ ...formData, review: e.target.value })}
-                      className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-6 pt-2">
-                    <label className="flex items-center gap-2 cursor-pointer font-medium text-[#2B2B2B]">
-                      <input
-                        type="checkbox"
-                        checked={formData.approved}
-                        onChange={(e) => setFormData({ ...formData, approved: e.target.checked })}
-                        className="w-4 h-4 rounded border-[#E7E0D2] text-[#9C7B3D] focus:ring-[#C9A669]"
-                      />
-                      <span>Approved for Website</span>
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer font-medium text-[#2B2B2B]">
-                      <input
-                        type="checkbox"
-                        checked={formData.featured}
-                        onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                        className="w-4 h-4 rounded border-[#E7E0D2] text-[#9C7B3D] focus:ring-[#C9A669]"
-                      />
-                      <span>Feature on Homepage</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Pinned Action Footer */}
-                <div className="px-6 sm:px-8 py-5 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-3 shrink-0">
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="px-4 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] font-semibold shadow-md active:scale-95 transition-all"
-                  >
-                    {editingTestimonial ? "Save Review" : "Add Review"}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
+                  </form>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>,
-      document.body
-    )}
 
       {/* Delete Confirm */}
       <ConfirmModal

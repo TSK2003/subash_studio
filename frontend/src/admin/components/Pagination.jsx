@@ -14,11 +14,11 @@ export default function Pagination({
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2 text-xs text-[#6F6A62]">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2 text-xs text-gray-500">
       <div>
-        Showing <span className="font-semibold text-[#2B2B2B]">{startItem}</span> to{" "}
-        <span className="font-semibold text-[#2B2B2B]">{endItem}</span> of{" "}
-        <span className="font-semibold text-[#2B2B2B]">{totalItems}</span> results
+        Showing <span className="font-semibold text-gray-900">{startItem}</span> to{" "}
+        <span className="font-semibold text-gray-900">{endItem}</span> of{" "}
+        <span className="font-semibold text-gray-900">{totalItems}</span> results
       </div>
 
       <div className="flex items-center gap-1.5">
@@ -26,7 +26,7 @@ export default function Pagination({
           type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-lg border border-[#E7E0D2] bg-white text-[#2B2B2B] hover:bg-[#F8F6F2] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           aria-label="Previous Page"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -42,8 +42,8 @@ export default function Pagination({
               onClick={() => onPageChange(pageNum)}
               className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
                 isActive
-                  ? "bg-[#2B2B2B] text-white shadow-sm font-semibold"
-                  : "border border-[#E7E0D2] bg-white text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2]"
+                  ? "bg-black text-white shadow-xs font-semibold"
+                  : "border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }`}
             >
               {pageNum}
@@ -55,7 +55,7 @@ export default function Pagination({
           type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-lg border border-[#E7E0D2] bg-white text-[#2B2B2B] hover:bg-[#F8F6F2] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           aria-label="Next Page"
         >
           <ChevronRight className="w-4 h-4" />

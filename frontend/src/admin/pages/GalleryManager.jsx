@@ -1381,17 +1381,17 @@ export default function GalleryManager() {
       {/* =========================================================================
           PAGE HEADER
       ========================================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-6 rounded-2xl border border-[#E7E0D2] shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-xs">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="p-2 rounded-xl bg-[#C9A669]/10 text-[#9C7B3D]">
-              <FolderHeart size={20} />
+            <span className="p-2.5 rounded-xl bg-purple-50 border border-purple-100 text-purple-600">
+              <FolderHeart size={18} />
             </span>
-            <h1 className="font-display text-2xl text-[#1C1B19] font-medium">
+            <h1 className="font-display text-2xl text-gray-900 font-semibold tracking-tight">
               Gallery Albums Management
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-[#736B5E]">
+          <p className="text-xs sm:text-sm text-gray-500">
             Curate client event albums, upload mixed-size photos with reordering, and manage showcase categories.
           </p>
         </div>
@@ -1399,15 +1399,15 @@ export default function GalleryManager() {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setManageCategoriesModalOpen(true)}
-            className="px-4 py-2.5 rounded-full border border-[#E7E0D2] hover:border-[#C9A669] text-xs font-semibold text-[#1C1B19] hover:text-[#9C7B3D] transition-colors flex items-center gap-2 bg-white"
+            className="px-4 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-xs font-medium text-gray-700 transition-colors flex items-center gap-2 bg-white shadow-xs"
           >
-            <SlidersHorizontal size={14} />
+            <SlidersHorizontal size={14} className="text-gray-500" />
             <span>Categories</span>
           </button>
 
           <button
             onClick={handleOpenCreate}
-            className="px-5 py-2.5 rounded-full bg-[#1C1B19] hover:bg-[#C9A669] text-white text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-sm flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-xs font-medium transition-colors shadow-xs flex items-center gap-2"
           >
             <Plus size={16} />
             <span>Add Album</span>
@@ -1418,13 +1418,13 @@ export default function GalleryManager() {
       {/* =========================================================================
           TOOLBAR: SEARCH, CATEGORIES, STATUS FILTER
       ========================================================================= */}
-      <div className="bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-[#E7E0D2] shadow-sm space-y-4">
+      <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search Input */}
           <div className="relative flex-1 max-w-md">
             <Search
               size={16}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8C8270]"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
             />
             <input
               type="text"
@@ -1434,12 +1434,12 @@ export default function GalleryManager() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 text-xs rounded-full border border-[#E7E0D2] bg-[#FAF8F5] focus:outline-none focus:border-[#C9A669] focus:bg-white transition-all text-[#1C1B19]"
+              className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-gray-200 bg-gray-50/50 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white transition-all text-gray-900 placeholder:text-gray-400"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C8270] hover:text-[#1C1B19]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
               >
                 <X size={14} />
               </button>
@@ -1448,14 +1448,14 @@ export default function GalleryManager() {
 
           {/* Status Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#8C8270] font-medium hidden sm:inline">Status:</span>
+            <span className="text-xs text-gray-500 font-medium hidden sm:inline">Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-3 py-2 text-xs rounded-full border border-[#E7E0D2] bg-[#FAF8F5] text-[#1C1B19] focus:outline-none focus:border-[#C9A669] font-medium"
+              className="px-3 py-2 text-xs rounded-xl border border-gray-200 bg-gray-50/50 text-gray-900 focus:outline-none focus:border-black font-medium"
             >
               <option value="all">All Albums ({albums.length})</option>
               <option value="published">Published Only ({albums.filter((a) => a.published).length})</option>
@@ -1465,16 +1465,16 @@ export default function GalleryManager() {
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1 border-t border-[#E7E0D2]/60">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1 border-t border-gray-100">
           <button
             onClick={() => {
               setSelectedCategory("All");
               setCurrentPage(1);
             }}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border ${
               selectedCategory === "All"
-                ? "bg-[#1C1B19] text-white border-[#1C1B19]"
-                : "bg-white text-[#736B5E] border-[#E7E0D2] hover:border-[#C9A669]"
+                ? "bg-black text-white border-black shadow-xs"
+                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
             }`}
           >
             All Categories ({albums.length})
@@ -1493,15 +1493,15 @@ export default function GalleryManager() {
                   setSelectedCategory(cat);
                   setCurrentPage(1);
                 }}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border flex items-center gap-1.5 ${
                   isSelected
-                    ? "bg-[#1C1B19] text-white border-[#1C1B19]"
-                    : "bg-white text-[#736B5E] border-[#E7E0D2] hover:border-[#C9A669]"
+                    ? "bg-black text-white border-black shadow-xs"
+                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
                 }`}
               >
                 <span>{cat}</span>
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                  isSelected ? "bg-white/20 text-white" : "bg-[#E7E0D2]/60 text-[#736B5E]"
+                  isSelected ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600"
                 }`}>
                   {count}
                 </span>
@@ -1526,10 +1526,10 @@ export default function GalleryManager() {
             return (
               <div
                 key={album.id}
-                className="bg-white rounded-2xl overflow-hidden border border-[#E7E0D2] shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group"
+                className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col group"
               >
                 {/* Cover Image Header */}
-                <div className="relative aspect-[16/10] bg-[#FAF8F5] overflow-hidden">
+                <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">
                   <img
                     src={album.coverImage || "/images/placeholder.jpg"}
                     alt={album.title}
@@ -1542,7 +1542,7 @@ export default function GalleryManager() {
 
                   {/* Category Pill Top Left */}
                   <div className="absolute top-3 left-3">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider bg-white/95 text-[#9C7B3D] border border-[#C9A669]/40 shadow-sm backdrop-blur-md">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-semibold tracking-wider bg-white/95 text-gray-800 border border-gray-200 shadow-xs backdrop-blur-md">
                       {album.category}
                     </span>
                   </div>
@@ -1565,7 +1565,7 @@ export default function GalleryManager() {
 
                   {/* Photo Count Bottom Left */}
                   <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-black/60 text-white backdrop-blur-md">
-                    <Camera size={12} className="text-[#C9A669]" />
+                    <Camera size={12} className="text-gray-300" />
                     <span>{photoCount} {photoCount === 1 ? "Photo" : "Photos"}</span>
                   </div>
                 </div>
@@ -1573,33 +1573,33 @@ export default function GalleryManager() {
                 {/* Card Content */}
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div>
-                    <h3 className="font-display text-xl text-[#1C1B19] font-medium leading-snug line-clamp-1">
+                    <h3 className="font-display text-lg text-gray-900 font-semibold leading-snug line-clamp-1">
                       {album.title}
                     </h3>
-                    <p className="text-xs text-[#8C8270] mt-1 font-mono">
+                    <p className="text-xs text-gray-400 mt-0.5 font-mono">
                       /{album.slug || album.id}
                     </p>
                     {album.description && (
-                      <p className="text-xs text-[#736B5E] mt-2 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-gray-500 mt-2 line-clamp-2 leading-relaxed">
                         {album.description}
                       </p>
                     )}
                   </div>
 
                   {/* Actions Bar */}
-                  <div className="pt-4 border-t border-[#E7E0D2] flex items-center justify-between gap-2">
+                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
                     <button
                       onClick={() => handleOpenManagePhotos(album)}
-                      className="px-3.5 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-[#C9A669]/15 border border-[#E7E0D2] hover:border-[#C9A669] text-xs font-semibold text-[#1C1B19] hover:text-[#9C7B3D] transition-colors flex items-center gap-1.5"
+                      className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-gray-50 border border-gray-200 text-xs font-medium text-gray-700 transition-colors flex items-center gap-1.5 shadow-xs"
                     >
-                      <Images size={13} className="text-[#C9A669]" />
+                      <Images size={13} className="text-gray-500" />
                       <span>Manage Photos</span>
                     </button>
 
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleOpenEdit(album)}
-                        className="p-2 rounded-full hover:bg-[#FAF8F5] text-[#736B5E] hover:text-[#1C1B19] transition-colors"
+                        className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
                         title="Edit Album Details"
                       >
                         <Edit3 size={15} />
@@ -1610,7 +1610,7 @@ export default function GalleryManager() {
                           setAlbumToDelete(album);
                           setDeleteConfirmOpen(true);
                         }}
-                        className="p-2 rounded-full hover:bg-rose-50 text-[#8C8270] hover:text-rose-600 transition-colors"
+                        className="p-2 rounded-xl hover:bg-rose-50 text-gray-400 hover:text-rose-600 transition-colors"
                         title="Delete Album"
                       >
                         <Trash2 size={15} />
@@ -1653,7 +1653,7 @@ export default function GalleryManager() {
         <AnimatePresence>
           {albumModalOpen && (
             <div
-              className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+              className="admin-portal fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
               role="dialog"
               aria-modal="true"
               aria-labelledby="album-dialog-title"
@@ -1663,24 +1663,24 @@ export default function GalleryManager() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: 8 }}
                 transition={{ duration: 0.2 }}
-                className="bg-white rounded-2xl sm:rounded-3xl max-w-[800px] w-full max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col border border-[#E7E0D2] shadow-2xl relative overflow-hidden"
+                className="bg-white rounded-2xl max-w-[800px] w-full max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col border border-gray-200 shadow-xl relative overflow-hidden"
               >
                 {/* Viewport-pinned Header */}
-                <div className="shrink-0 px-5 py-4 sm:px-7 sm:py-5 border-b border-[#E7E0D2] flex items-center justify-between bg-white z-10">
+                <div className="shrink-0 px-5 py-4 sm:px-7 sm:py-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-[#C9A669]/15 border border-[#C9A669]/30 flex items-center justify-center text-[#9C7B3D] shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
                       <FolderPlus size={20} />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h2 id="album-dialog-title" className="font-display text-xl sm:text-2xl text-[#1C1B19] truncate">
+                        <h2 id="album-dialog-title" className="font-display text-xl sm:text-2xl text-gray-900 font-semibold truncate">
                           {editingAlbum ? "Edit Album" : "Add Album"}
                         </h2>
-                        <span className="shrink-0 px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#C9A669]/15 text-[#9C7B3D] border border-[#C9A669]/30">
+                        <span className="shrink-0 px-2.5 py-0.5 rounded-full text-[10px] uppercase font-semibold tracking-wider bg-gray-100 text-gray-700 border border-gray-200">
                           {editingAlbum ? "Edit" : "New"}
                         </span>
                       </div>
-                      <p className="text-xs text-[#736B5E] mt-0.5 truncate">
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">
                         {editingAlbum
                           ? `Update event details and photographs for "${editingAlbum.title}"`
                           : "Configure display title, category, cover image, and publishing status"}
@@ -1691,7 +1691,7 @@ export default function GalleryManager() {
                     type="button"
                     onClick={handleCloseAlbumModal}
                     aria-label="Close dialog"
-                    className="p-2 rounded-full hover:bg-[#FAF8F5] text-[#8C8270] hover:text-[#1C1B19] transition-colors shrink-0 ml-2"
+                    className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors shrink-0 ml-2"
                   >
                     <X size={20} />
                   </button>
@@ -1707,7 +1707,7 @@ export default function GalleryManager() {
                   <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6 space-y-5">
                     {/* Lead / Event Name */}
                     <div>
-                      <label className="block text-xs font-semibold text-[#1C1B19] uppercase tracking-wider mb-1.5">
+                      <label className="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-1.5">
                         Lead / Event Name <span className="text-rose-500">*</span>
                       </label>
                       <input
@@ -1719,8 +1719,8 @@ export default function GalleryManager() {
                           if (formErrors.title) setFormErrors({ ...formErrors, title: null });
                         }}
                         className={`w-full px-4 py-2.5 text-xs rounded-xl border ${
-                          formErrors.title ? "border-rose-400 bg-rose-50/30" : "border-[#E7E0D2] bg-[#FAF8F5]"
-                        } focus:outline-none focus:border-[#C9A669] focus:bg-white text-[#1C1B19] font-medium`}
+                          formErrors.title ? "border-rose-400 bg-rose-50/30" : "border-gray-200 bg-gray-50/50"
+                        } focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white text-gray-900 font-medium placeholder:text-gray-400`}
                       />
                       {formErrors.title && (
                         <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1 font-medium">
@@ -1733,13 +1733,13 @@ export default function GalleryManager() {
                     {/* Category Select + Add Category Button */}
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-semibold text-[#1C1B19] uppercase tracking-wider">
+                        <label className="block text-xs font-semibold text-gray-900 uppercase tracking-wider">
                           Category <span className="text-rose-500">*</span>
                         </label>
                         <button
                           type="button"
                           onClick={() => setAddCategoryModalOpen(true)}
-                          className="text-[11px] text-[#9C7B3D] hover:underline font-semibold flex items-center gap-1"
+                          className="text-[11px] text-gray-900 hover:underline font-semibold flex items-center gap-1"
                         >
                           <Plus size={12} />
                           <span>New Category</span>
@@ -1751,7 +1751,7 @@ export default function GalleryManager() {
                           setFormData({ ...formData, category: e.target.value });
                           if (formErrors.category) setFormErrors({ ...formErrors, category: null });
                         }}
-                        className="w-full px-4 py-2.5 text-xs rounded-xl border border-[#E7E0D2] bg-[#FAF8F5] focus:outline-none focus:border-[#C9A669] focus:bg-white text-[#1C1B19] font-medium"
+                        className="w-full px-4 py-2.5 text-xs rounded-xl border border-gray-200 bg-gray-50/50 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white text-gray-900 font-medium"
                       >
                         <option value="">Select a Category...</option>
                         {activeCategoryNames.map((cat) => (
@@ -1770,7 +1770,7 @@ export default function GalleryManager() {
 
                     {/* Cover Image Upload (Direct Device Upload) */}
                     <div>
-                      <label className="block text-xs font-semibold text-[#1C1B19] uppercase tracking-wider mb-1.5">
+                      <label className="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-1.5">
                         Cover Image {formData.published && <span className="text-rose-500">*</span>}
                       </label>
 
@@ -1785,32 +1785,32 @@ export default function GalleryManager() {
 
                       {/* State 1: Uploading in progress */}
                       {coverUploading ? (
-                        <div className="border border-[#E7E0D2] rounded-2xl p-5 bg-[#FAF8F5] space-y-3">
+                        <div className="border border-gray-200 rounded-2xl p-5 bg-gray-50 space-y-3">
                           <div className="flex items-center gap-3">
                             {coverTempPreview ? (
                               <img
                                 src={coverTempPreview}
                                 alt="Uploading preview"
-                                className="w-14 h-14 rounded-xl object-cover border border-[#E7E0D2] shrink-0"
+                                className="w-14 h-14 rounded-xl object-cover border border-gray-200 shrink-0"
                               />
                             ) : (
-                              <div className="w-14 h-14 rounded-xl bg-white border border-[#E7E0D2] flex items-center justify-center shrink-0">
-                                <UploadCloud size={20} className="text-[#C9A669] animate-pulse" />
+                              <div className="w-14 h-14 rounded-xl bg-white border border-gray-200 flex items-center justify-center shrink-0">
+                                <UploadCloud size={20} className="text-gray-500 animate-pulse" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between text-xs mb-1.5">
-                                <span className="font-semibold text-[#1C1B19] flex items-center gap-1.5">
-                                  <RefreshCw size={12} className="animate-spin text-[#9C7B3D]" />
+                                <span className="font-semibold text-gray-900 flex items-center gap-1.5">
+                                  <RefreshCw size={12} className="animate-spin text-gray-500" />
                                   Uploading cover image...
                                 </span>
-                                <span className="text-[11px] font-mono text-[#8C8270] font-bold">
+                                <span className="text-[11px] font-mono text-gray-500 font-bold">
                                   {coverProgress}%
                                 </span>
                               </div>
-                              <div className="w-full bg-[#E7E0D2] h-2 rounded-full overflow-hidden">
+                              <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-[#C9A669] transition-all duration-200 rounded-full"
+                                  className="h-full bg-black transition-all duration-200 rounded-full"
                                   style={{ width: `${coverProgress}%` }}
                                 />
                               </div>
@@ -1819,7 +1819,7 @@ export default function GalleryManager() {
                         </div>
                       ) : formData.coverImage ? (
                         /* State 2: Cover image selected / saved (Compact 200-240px height without distortion) */
-                        <div className="relative h-[210px] max-h-[240px] w-full rounded-2xl overflow-hidden border border-[#E7E0D2] bg-[#FAF8F5] flex items-center justify-center group">
+                        <div className="relative h-[210px] max-h-[240px] w-full rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center group">
                           <img
                             src={formData.coverImage}
                             alt="Cover Preview"
@@ -1829,7 +1829,7 @@ export default function GalleryManager() {
                             <button
                               type="button"
                               onClick={() => coverFileInputRef.current?.click()}
-                              className="px-4 py-2 rounded-full bg-white text-xs font-semibold text-[#1C1B19] hover:bg-[#C9A669] hover:text-white transition-colors flex items-center gap-1.5 shadow-md"
+                              className="px-4 py-2 rounded-xl bg-white text-xs font-semibold text-gray-900 hover:bg-gray-100 transition-colors flex items-center gap-1.5 shadow-sm"
                             >
                               <Camera size={13} />
                               <span>Change Image</span>
@@ -1837,7 +1837,7 @@ export default function GalleryManager() {
                             <button
                               type="button"
                               onClick={handleRemoveCover}
-                              className="p-2 rounded-full bg-rose-600 text-white hover:bg-rose-700 transition-colors shadow-md"
+                              className="p-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700 transition-colors shadow-sm"
                               title="Remove Cover Image"
                             >
                               <Trash2 size={15} />
@@ -1860,20 +1860,20 @@ export default function GalleryManager() {
                           className={`border-2 border-dashed rounded-2xl p-6 sm:p-7 text-center cursor-pointer transition-all ${
                             formErrors.coverImage || coverUploadError
                               ? "border-rose-400 bg-rose-50/20 hover:border-rose-500"
-                              : "border-[#E7E0D2] bg-[#FAF8F5] hover:border-[#C9A669] hover:bg-[#FAF8F5]/80"
+                              : "border-gray-200 bg-gray-50/50 hover:border-gray-400 hover:bg-gray-100/50"
                           } flex flex-col items-center justify-center gap-2 group`}
                         >
-                          <div className="w-12 h-12 rounded-full bg-[#C9A669]/15 border border-[#C9A669]/30 flex items-center justify-center text-[#9C7B3D] group-hover:scale-105 transition-transform">
-                            <UploadCloud size={24} />
+                          <div className="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 group-hover:scale-105 transition-transform shadow-xs">
+                            <UploadCloud size={22} />
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-[#1C1B19]">
+                            <p className="text-sm font-semibold text-gray-900">
                               Upload Cover Image
                             </p>
-                            <p className="text-xs text-[#9C7B3D] font-medium mt-0.5">
+                            <p className="text-xs text-gray-600 font-medium mt-0.5">
                               Choose Image from Device
                             </p>
-                            <p className="text-[11px] text-[#8C8270] mt-1">
+                            <p className="text-[11px] text-gray-400 mt-1">
                               Supports JPEG, PNG, WEBP up to 25MB
                             </p>
                           </div>
@@ -1898,7 +1898,7 @@ export default function GalleryManager() {
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <label className="block text-xs font-semibold text-[#1C1B19] uppercase tracking-wider">
+                          <label className="block text-xs font-semibold text-gray-900 uppercase tracking-wider">
                             Album Photos ({activePhotosCount}) {formData.published && <span className="text-rose-500">*</span>}
                           </label>
                           {pendingRemovalCount > 0 && (
@@ -1912,8 +1912,8 @@ export default function GalleryManager() {
                             </span>
                           )}
                           {pendingUploadingCount > 0 && (
-                            <span className="text-[10px] font-semibold text-[#736B5E] bg-[#FAF8F5] border border-[#E7E0D2] px-2 py-0.5 rounded-full flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#C9A669] animate-ping" />
+                            <span className="text-[10px] font-semibold text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-black animate-ping" />
                               {pendingUploadingCount} uploading / queued
                             </span>
                           )}
@@ -1932,7 +1932,7 @@ export default function GalleryManager() {
                         <button
                           type="button"
                           onClick={() => openMediaPicker("photos")}
-                          className="text-[11px] text-[#9C7B3D] hover:underline font-semibold flex items-center gap-1 transition-colors"
+                          className="text-[11px] text-gray-900 hover:underline font-semibold flex items-center gap-1 transition-colors"
                         >
                           <ImageIcon size={12} />
                           <span>Pick From Media Library</span>
@@ -1970,16 +1970,16 @@ export default function GalleryManager() {
                         tabIndex={0}
                         role="button"
                         aria-label="Add Photos. Choose multiple images from device"
-                        className="border-2 border-dashed border-[#E7E0D2] hover:border-[#C9A669] rounded-xl p-4 text-center cursor-pointer bg-[#FAF8F5] hover:bg-[#FAF8F5]/80 transition-all flex items-center justify-center gap-3 group"
+                        className="border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-xl p-4 text-center cursor-pointer bg-gray-50/50 hover:bg-gray-100/50 transition-all flex items-center justify-center gap-3 group"
                       >
-                        <div className="w-9 h-9 rounded-full bg-[#C9A669]/15 border border-[#C9A669]/30 flex items-center justify-center text-[#9C7B3D] group-hover:scale-105 transition-transform shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-600 group-hover:scale-105 transition-transform shrink-0 shadow-xs">
                           <Camera size={18} />
                         </div>
                         <div className="text-left">
-                          <p className="text-xs font-bold text-[#1C1B19]">
-                            Add Photos <span className="font-normal text-[#8C8270]">— Select multiple images from device</span>
+                          <p className="text-xs font-semibold text-gray-900">
+                            Add Photos <span className="font-normal text-gray-500">— Select multiple images from device</span>
                           </p>
-                          <p className="text-[10px] text-[#8C8270] mt-0.5">
+                          <p className="text-[10px] text-gray-400 mt-0.5">
                             Supports JPEG, PNG, WEBP up to 25MB each. Mixed aspect ratios preserved.
                           </p>
                         </div>
@@ -1987,10 +1987,10 @@ export default function GalleryManager() {
 
                       {/* Loading State for Edit Album */}
                       {editPhotosLoading && (
-                        <div className="p-8 rounded-xl border border-[#E7E0D2] bg-[#FAF8F5] text-center space-y-2">
-                          <RefreshCw size={24} className="mx-auto animate-spin text-[#C9A669]" />
-                          <p className="text-xs font-semibold text-[#1C1B19]">Loading album photographs...</p>
-                          <p className="text-[11px] text-[#8C8270]">Retrieving existing photos from storage</p>
+                        <div className="p-8 rounded-xl border border-gray-200 bg-gray-50 text-center space-y-2">
+                          <RefreshCw size={24} className="mx-auto animate-spin text-gray-500" />
+                          <p className="text-xs font-semibold text-gray-900">Loading album photographs...</p>
+                          <p className="text-[11px] text-gray-500">Retrieving existing photos from storage</p>
                         </div>
                       )}
 
@@ -2016,7 +2016,7 @@ export default function GalleryManager() {
 
                       {/* Responsive Thumbnail Grid */}
                       {!editPhotosLoading && !editPhotosError && modalPhotos.length > 0 && (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 max-h-[320px] overflow-y-auto p-2 bg-[#FAF8F5] rounded-xl border border-[#E7E0D2]">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 max-h-[320px] overflow-y-auto p-2 bg-gray-50 rounded-xl border border-gray-200">
                           {modalPhotos.map((photo, index) => {
                             const isQueued = photo.uploadStatus === "queued";
                             const isUploading = photo.uploadStatus === "uploading";
@@ -2036,7 +2036,7 @@ export default function GalleryManager() {
                                     ? "border-amber-400 ring-2 ring-amber-100"
                                     : isNew
                                     ? "border-emerald-400 ring-1 ring-emerald-100"
-                                    : "border-[#E7E0D2] hover:border-[#C9A669]"
+                                    : "border-gray-200 hover:border-gray-400"
                                 }`}
                               >
                                 {/* Thumbnail Image */}
@@ -2068,27 +2068,27 @@ export default function GalleryManager() {
                                 {/* Queued / Waiting in Concurrency Pool Overlay */}
                                 {isQueued && (
                                   <div className="absolute inset-0 bg-black/70 backdrop-blur-xs flex flex-col items-center justify-center p-2 text-white text-center z-20">
-                                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-[#C9A669] animate-spin mb-1" />
-                                    <span className="text-[10px] font-semibold text-[#E7E0D2]">Waiting...</span>
+                                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin mb-1" />
+                                    <span className="text-[10px] font-semibold text-gray-300">Waiting...</span>
                                   </div>
                                 )}
 
                                 {/* Optimizing Image Overlay */}
                                 {isOptimizing && (
                                   <div className="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center p-2 text-white text-center z-20">
-                                    <RefreshCw size={15} className="animate-spin text-[#C9A669] mb-1" />
-                                    <span className="text-[10px] font-bold text-[#E7E0D2]">Optimizing...</span>
+                                    <RefreshCw size={15} className="animate-spin text-white mb-1" />
+                                    <span className="text-[10px] font-bold text-gray-200">Optimizing...</span>
                                   </div>
                                 )}
 
                                 {/* Uploading Overlay */}
                                 {isUploading && (
                                   <div className="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center p-2 text-white text-center z-20">
-                                    <RefreshCw size={15} className="animate-spin text-[#C9A669] mb-1" />
+                                    <RefreshCw size={15} className="animate-spin text-white mb-1" />
                                     <span className="text-[10px] font-bold">{photo.uploadProgress || 0}%</span>
                                     <div className="w-4/5 bg-white/20 h-1.5 rounded-full overflow-hidden mt-1">
                                       <div
-                                        className="bg-[#C9A669] h-full transition-all duration-150"
+                                        className="bg-white h-full transition-all duration-150"
                                         style={{ width: `${photo.uploadProgress || 0}%` }}
                                       />
                                     </div>
@@ -2128,7 +2128,7 @@ export default function GalleryManager() {
                                     <button
                                       type="button"
                                       onClick={() => handleToggleRemovePhoto(photo.id)}
-                                      className="mt-2 px-2.5 py-1 rounded-full bg-white text-[#1C1B19] hover:bg-[#C9A669] hover:text-white text-[10px] font-bold flex items-center gap-1 shadow transition-colors"
+                                      className="mt-2 px-2.5 py-1 rounded-full bg-white text-gray-900 hover:bg-gray-100 text-[10px] font-bold flex items-center gap-1 shadow transition-colors"
                                     >
                                       <RotateCcw size={10} />
                                       <span>Undo</span>
@@ -2143,7 +2143,7 @@ export default function GalleryManager() {
                                     <button
                                       type="button"
                                       onClick={() => setPreviewPhotoUrl(photo.url)}
-                                      className="p-1.5 rounded-full bg-white text-[#1C1B19] hover:scale-105 transition-transform shadow"
+                                      className="p-1.5 rounded-lg bg-white text-gray-900 hover:scale-105 transition-transform shadow-xs"
                                       title="View Larger Preview"
                                     >
                                       <Eye size={12} />
@@ -2153,7 +2153,7 @@ export default function GalleryManager() {
                                     <button
                                       type="button"
                                       onClick={() => handleTriggerReplace(photo.id)}
-                                      className="px-2 py-1 rounded-full bg-white text-[#1C1B19] hover:bg-[#C9A669] hover:text-white text-[10px] font-bold flex items-center gap-1 shadow transition-colors"
+                                      className="px-2 py-1 rounded-lg bg-white text-gray-900 hover:bg-gray-100 text-[10px] font-semibold flex items-center gap-1 shadow-xs transition-colors"
                                       title="Replace this photograph"
                                     >
                                       <Camera size={11} />
@@ -2164,7 +2164,7 @@ export default function GalleryManager() {
                                     <button
                                       type="button"
                                       onClick={() => handleToggleRemovePhoto(photo.id)}
-                                      className="p-1.5 rounded-full bg-rose-600 text-white hover:bg-rose-700 hover:scale-105 transition-transform shadow"
+                                      className="p-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 hover:scale-105 transition-transform shadow-xs"
                                       title="Remove Photograph"
                                     >
                                       <Trash2 size={12} />
@@ -2187,7 +2187,7 @@ export default function GalleryManager() {
 
                     {/* Description */}
                     <div>
-                      <label className="block text-xs font-semibold text-[#1C1B19] uppercase tracking-wider mb-1.5">
+                      <label className="block text-xs font-semibold text-gray-900 uppercase tracking-wider mb-1.5">
                         Description / Editorial Notes <span className="text-rose-500">*</span>
                       </label>
                       <textarea
@@ -2199,8 +2199,8 @@ export default function GalleryManager() {
                           if (formErrors.description) setFormErrors({ ...formErrors, description: null });
                         }}
                         className={`w-full px-4 py-2.5 text-xs rounded-xl border ${
-                          formErrors.description ? "border-rose-400 bg-rose-50/30" : "border-[#E7E0D2] bg-[#FAF8F5]"
-                        } focus:outline-none focus:border-[#C9A669] focus:bg-white text-[#1C1B19] font-medium`}
+                          formErrors.description ? "border-rose-400 bg-rose-50/30" : "border-gray-200 bg-gray-50/50"
+                        } focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white text-gray-900 font-medium placeholder:text-gray-400`}
                       />
                       {formErrors.description && (
                         <p className="text-[11px] text-rose-500 mt-1 flex items-center gap-1 font-medium">
@@ -2211,12 +2211,12 @@ export default function GalleryManager() {
                     </div>
 
                     {/* Publishing Status Toggle */}
-                    <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E7E0D2] flex items-center justify-between">
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-between">
                       <div>
-                        <p className="text-xs font-bold text-[#1C1B19] uppercase tracking-wider">
+                        <p className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
                           Publishing Status
                         </p>
-                        <p className="text-[11px] text-[#736B5E] mt-0.5">
+                        <p className="text-[11px] text-gray-500 mt-0.5">
                           {formData.published
                             ? "Visible on public /gallery showcase."
                             : "Draft: Hidden from public website."}
@@ -2226,7 +2226,7 @@ export default function GalleryManager() {
                         type="button"
                         onClick={() => setFormData({ ...formData, published: !formData.published })}
                         className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                          formData.published ? "bg-[#1C1B19]" : "bg-gray-300"
+                          formData.published ? "bg-black" : "bg-gray-200"
                         }`}
                       >
                         <span
@@ -2239,18 +2239,18 @@ export default function GalleryManager() {
                   </div>
 
                   {/* Viewport-pinned Action Footer */}
-                  <div className="shrink-0 px-5 py-3.5 sm:px-7 sm:py-4 border-t border-[#E7E0D2] bg-[#FCFAF7] flex items-center justify-end gap-3 z-10">
+                  <div className="shrink-0 px-5 py-3.5 sm:px-7 sm:py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-3 z-10">
                     <button
                       type="button"
                       onClick={handleCloseAlbumModal}
-                      className="px-5 py-2.5 rounded-full border border-[#E7E0D2] text-xs font-semibold text-[#736B5E] hover:text-[#1C1B19] hover:bg-white transition-colors"
+                      className="px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-xs"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={submitting || coverUploading || editPhotosLoading || isAnyPhotoUploading}
-                      className="px-6 py-2.5 rounded-full bg-[#1C1B19] hover:bg-[#C9A669] text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 shadow-sm flex items-center gap-2"
+                      className="px-6 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-xs font-medium transition-colors disabled:opacity-50 shadow-xs flex items-center gap-2"
                     >
                       {(submitting || coverUploading || editPhotosLoading || isAnyPhotoUploading) && (
                         <RefreshCw size={13} className="animate-spin" />
@@ -2325,34 +2325,34 @@ export default function GalleryManager() {
       {createPortal(
         <AnimatePresence>
           {managePhotosModalOpen && activeAlbumForPhotos && (
-            <div className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden">
+            <div className="admin-portal fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-4xl w-full border border-[#E7E0D2] shadow-2xl relative max-h-[calc(100dvh-24px)] sm:max-h-[calc(100dvh-48px)] flex flex-col overflow-hidden"
+                className="bg-white rounded-2xl p-6 sm:p-8 max-w-4xl w-full border border-gray-200 shadow-xl relative max-h-[calc(100dvh-24px)] sm:max-h-[calc(100dvh-48px)] flex flex-col overflow-hidden"
               >
                 <button
                   onClick={() => setManagePhotosModalOpen(false)}
-                  className="absolute top-6 right-6 p-2 rounded-full hover:bg-[#FAF8F5] text-[#8C8270] hover:text-[#1C1B19] transition-colors z-10"
+                  className="absolute top-6 right-6 p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors z-10"
                 >
                   <X size={18} />
                 </button>
 
                 {/* Modal Header */}
-                <div className="mb-6 pb-4 border-b border-[#E7E0D2] shrink-0">
+                <div className="mb-6 pb-4 border-b border-gray-100 shrink-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#C9A669]/15 text-[#9C7B3D] border border-[#C9A669]/30">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-gray-100 text-gray-700 border border-gray-200">
                       {activeAlbumForPhotos.category}
                     </span>
-                    <span className="text-xs text-[#8C8270]">
+                    <span className="text-xs text-gray-500">
                       📸 {activeAlbumForPhotos.photos?.length || 0} Photographs
                     </span>
                   </div>
-                  <h2 className="font-display text-2xl text-[#1C1B19]">
+                  <h2 className="font-display text-2xl text-gray-900 font-semibold">
                     Manage Photos: &ldquo;{activeAlbumForPhotos.title}&rdquo;
                   </h2>
-                  <p className="text-xs text-[#736B5E] mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     Upload multiple photos, view live progress, retry failures, reorder photos, and set the cover image.
                   </p>
                 </div>
@@ -2360,13 +2360,13 @@ export default function GalleryManager() {
                 {/* Modal Body: Scrollable */}
                 <div className="flex-1 min-h-0 overflow-y-auto space-y-6 pr-1">
                   {/* Upload Action Zone */}
-                  <div className="bg-[#FAF8F5] p-5 rounded-2xl border border-[#E7E0D2] space-y-4">
+                  <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <h4 className="text-xs font-bold text-[#1C1B19] uppercase tracking-wider">
+                        <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
                           Upload New Photos
                         </h4>
-                        <p className="text-[11px] text-[#736B5E] mt-0.5">
+                        <p className="text-[11px] text-gray-500 mt-0.5">
                           Upload mixed aspect ratios (portrait, landscape, square). JPEG, PNG, WEBP up to 25MB.
                         </p>
                       </div>
@@ -2375,16 +2375,16 @@ export default function GalleryManager() {
                         <button
                           type="button"
                           onClick={() => openMediaPicker("photos")}
-                          className="px-3.5 py-2 rounded-full border border-[#E7E0D2] bg-white text-xs font-semibold text-[#1C1B19] hover:border-[#C9A669] hover:text-[#9C7B3D] transition-colors flex items-center gap-1.5"
+                          className="px-3.5 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5 shadow-xs"
                         >
-                          <ImageIcon size={13} className="text-[#C9A669]" />
+                          <ImageIcon size={13} className="text-gray-500" />
                           <span>Media Library</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="px-4 py-2 rounded-full bg-[#1C1B19] hover:bg-[#C9A669] text-white text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-sm"
+                          className="px-4 py-2 rounded-xl bg-black hover:bg-gray-800 text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-xs"
                         >
                           <UploadCloud size={14} />
                           <span>Select Files</span>
@@ -2403,8 +2403,8 @@ export default function GalleryManager() {
 
                     {/* Upload Progress Queue (if active) */}
                     {uploadQueue.length > 0 && (
-                      <div className="space-y-2 pt-3 border-t border-[#E7E0D2]/80">
-                        <div className="flex items-center justify-between text-xs font-medium text-[#736B5E]">
+                      <div className="space-y-2 pt-3 border-t border-gray-200/80">
+                        <div className="flex items-center justify-between text-xs font-medium text-gray-500">
                           <span>Upload Queue ({uploadQueue.length} files)</span>
                           {uploadQueue.some((it) => it.status === "failed") && (
                             <button
@@ -2422,7 +2422,7 @@ export default function GalleryManager() {
                           {uploadQueue.map((item) => (
                             <div
                               key={item.id}
-                              className="flex items-center gap-3 p-2 bg-white rounded-xl border border-[#E7E0D2] text-xs"
+                              className="flex items-center gap-3 p-2 bg-white rounded-xl border border-gray-200 text-xs"
                             >
                               <img
                                 src={item.preview}
@@ -2431,10 +2431,10 @@ export default function GalleryManager() {
                               />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-1">
-                                  <span className="font-medium truncate text-[#1C1B19]">
+                                  <span className="font-medium truncate text-gray-900">
                                     {item.name}
                                   </span>
-                                  <span className="text-[10px] text-[#8C8270] font-mono">
+                                  <span className="text-[10px] text-gray-400 font-mono">
                                     {item.status === "complete"
                                       ? "Upload complete"
                                       : item.status === "optimizing"
@@ -2446,14 +2446,14 @@ export default function GalleryManager() {
                                       : `${item.progress}%`}
                                   </span>
                                 </div>
-                                <div className="w-full bg-[#E7E0D2] h-1.5 rounded-full overflow-hidden">
+                                <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
                                   <div
                                     className={`h-full transition-all duration-200 ${
                                       item.status === "failed"
                                         ? "bg-rose-500"
                                         : item.status === "complete"
                                         ? "bg-emerald-500"
-                                        : "bg-[#C9A669]"
+                                        : "bg-black"
                                     }`}
                                     style={{ width: `${item.progress}%` }}
                                   />
@@ -2474,10 +2474,10 @@ export default function GalleryManager() {
                   {/* Album Photos List & Reorder */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-bold text-[#1C1B19] uppercase tracking-wider">
+                      <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
                         Current Album Photos ({activeAlbumForPhotos.photos?.length || 0})
                       </h4>
-                      <span className="text-[11px] text-[#8C8270]">
+                      <span className="text-[11px] text-gray-500">
                         Use ← / → arrows to reorder • Star to set cover
                       </span>
                     </div>
@@ -2491,10 +2491,10 @@ export default function GalleryManager() {
                           return (
                             <div
                               key={photo.id}
-                              className={`relative rounded-2xl overflow-hidden border bg-[#FAF8F5] transition-all flex flex-col group ${
+                              className={`relative rounded-2xl overflow-hidden border bg-gray-50 transition-all flex flex-col group ${
                                 isCover
-                                  ? "border-[#C9A669] ring-2 ring-[#C9A669]/30"
-                                  : "border-[#E7E0D2]"
+                                  ? "border-black ring-2 ring-black/10"
+                                  : "border-gray-200"
                               }`}
                             >
                               {/* Photo Aspect Preview */}
@@ -2512,7 +2512,7 @@ export default function GalleryManager() {
 
                                 {/* Cover Badge */}
                                 {isCover && (
-                                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#C9A669] text-white text-[10px] font-bold tracking-wider uppercase flex items-center gap-1 shadow-sm">
+                                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black text-white text-[10px] font-bold tracking-wider uppercase flex items-center gap-1 shadow-sm">
                                     <Star size={10} className="fill-white" />
                                     <span>Cover</span>
                                   </div>
@@ -2520,14 +2520,14 @@ export default function GalleryManager() {
                               </div>
 
                               {/* Card Control Toolbar */}
-                              <div className="p-2.5 bg-white border-t border-[#E7E0D2] flex items-center justify-between gap-1 text-xs">
+                              <div className="p-2.5 bg-white border-t border-gray-100 flex items-center justify-between gap-1 text-xs">
                                 {/* Reorder Buttons */}
                                 <div className="flex items-center gap-0.5">
                                   <button
                                     type="button"
                                     disabled={index === 0}
                                     onClick={() => handleMovePhoto(index, -1)}
-                                    className="p-1 rounded-md hover:bg-[#FAF8F5] text-[#736B5E] hover:text-[#1C1B19] disabled:opacity-25"
+                                    className="p-1 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-900 disabled:opacity-25"
                                     title="Move Left / Earlier"
                                   >
                                     <MoveLeft size={13} />
@@ -2536,7 +2536,7 @@ export default function GalleryManager() {
                                     type="button"
                                     disabled={index === activeAlbumForPhotos.photos.length - 1}
                                     onClick={() => handleMovePhoto(index, 1)}
-                                    className="p-1 rounded-md hover:bg-[#FAF8F5] text-[#736B5E] hover:text-[#1C1B19] disabled:opacity-25"
+                                    className="p-1 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-900 disabled:opacity-25"
                                     title="Move Right / Later"
                                   >
                                     <MoveRight size={13} />
@@ -2549,7 +2549,7 @@ export default function GalleryManager() {
                                     <button
                                       type="button"
                                       onClick={() => handleSetCover(photo.url)}
-                                      className="px-2 py-1 rounded text-[10px] font-bold text-[#9C7B3D] hover:bg-[#FAF8F5] border border-[#E7E0D2]"
+                                      className="px-2 py-1 rounded-lg text-[10px] font-semibold text-gray-700 hover:bg-gray-100 border border-gray-200"
                                       title="Set as Album Cover"
                                     >
                                       Set Cover
@@ -2559,7 +2559,7 @@ export default function GalleryManager() {
                                   <button
                                     type="button"
                                     onClick={() => handleRemovePhoto(photo.id)}
-                                    className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded"
+                                    className="p-1 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg"
                                     title="Delete Photograph"
                                   >
                                     <Trash2 size={13} />
@@ -2571,12 +2571,12 @@ export default function GalleryManager() {
                         })}
                       </div>
                     ) : (
-                      <div className="py-12 text-center bg-[#FAF8F5] rounded-2xl border border-[#E7E0D2]">
-                        <Camera size={32} className="mx-auto text-[#C9A669] mb-2 opacity-60" />
-                        <p className="text-xs font-semibold text-[#1C1B19]">
+                      <div className="py-12 text-center bg-gray-50 rounded-2xl border border-gray-200">
+                        <Camera size={32} className="mx-auto text-gray-400 mb-2 opacity-60" />
+                        <p className="text-xs font-semibold text-gray-900">
                           No photos in this album yet
                         </p>
-                        <p className="text-[11px] text-[#736B5E] mt-0.5">
+                        <p className="text-[11px] text-gray-500 mt-0.5">
                           Select files above or pick photos from the Media Library.
                         </p>
                       </div>
@@ -2585,8 +2585,8 @@ export default function GalleryManager() {
                 </div>
 
                 {/* Modal Footer */}
-                <div className="pt-4 mt-6 border-t border-[#E7E0D2] flex items-center justify-between shrink-0">
-                  <span className="text-xs text-[#8C8270]">
+                <div className="pt-4 mt-6 border-t border-gray-100 flex items-center justify-between shrink-0">
+                  <span className="text-xs text-gray-500">
                     Changes to photo order and uploads are saved in real-time.
                   </span>
                   <button
@@ -2595,7 +2595,7 @@ export default function GalleryManager() {
                       setManagePhotosModalOpen(false);
                       refetchAlbums();
                     }}
-                    className="px-6 py-2.5 rounded-full bg-[#1C1B19] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#C9A669] transition-colors"
+                    className="px-6 py-2.5 rounded-xl bg-black text-white text-xs font-medium hover:bg-gray-800 transition-colors shadow-xs"
                   >
                     Done
                   </button>
@@ -2613,30 +2613,30 @@ export default function GalleryManager() {
       {createPortal(
         <AnimatePresence>
           {mediaLibraryModalOpen && (
-            <div className="fixed inset-0 z-[99995] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden">
+            <div className="admin-portal fixed inset-0 z-[99995] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 max-w-3xl w-full border border-[#E7E0D2] shadow-2xl relative max-h-[calc(100dvh-24px)] sm:max-h-[calc(100dvh-48px)] flex flex-col overflow-hidden"
+                className="bg-white rounded-2xl p-6 sm:p-8 max-w-3xl w-full border border-gray-200 shadow-xl relative max-h-[calc(100dvh-24px)] sm:max-h-[calc(100dvh-48px)] flex flex-col overflow-hidden"
               >
                 <button
                   onClick={() => setMediaLibraryModalOpen(false)}
-                  className="absolute top-6 right-6 p-2 rounded-full hover:bg-[#FAF8F5] text-[#8C8270] hover:text-[#1C1B19] transition-colors"
+                  className="absolute top-6 right-6 p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
                 >
                   <X size={18} />
                 </button>
 
                 <div className="mb-4 shrink-0">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#C9A669]/15 text-[#9C7B3D] border border-[#C9A669]/30">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-gray-100 text-gray-700 border border-gray-200">
                     Media Library
                   </span>
-                  <h3 className="font-display text-xl text-[#1C1B19] mt-1.5">
+                  <h3 className="font-display text-xl text-gray-900 font-semibold mt-1.5">
                     {mediaPickerMode === "cover"
                       ? "Choose Cover Image from Studio Photos"
                       : `Pick Photos to Add (${selectedMediaUrls.length} selected)`}
                   </h3>
-                  <p className="text-xs text-[#736B5E]">
+                  <p className="text-xs text-gray-500">
                     Select from existing studio photographs without re-uploading duplicate assets.
                   </p>
                 </div>
@@ -2645,8 +2645,8 @@ export default function GalleryManager() {
                 <div className="flex-1 min-h-0 overflow-y-auto py-2">
                   {loadingMediaLibrary ? (
                     <div className="py-20 text-center">
-                      <div className="w-8 h-8 rounded-full border-2 border-[#C9A669] border-t-transparent animate-spin mx-auto mb-2" />
-                      <p className="text-xs text-[#8C8270]">Loading Media Library...</p>
+                      <div className="w-8 h-8 rounded-full border-2 border-black border-t-transparent animate-spin mx-auto mb-2" />
+                      <p className="text-xs text-gray-500">Loading Media Library...</p>
                     </div>
                   ) : mediaLibraryItems.length > 0 ? (
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -2659,8 +2659,8 @@ export default function GalleryManager() {
                             onClick={() => handleSelectMediaItem(item.url)}
                             className={`relative aspect-square rounded-xl overflow-hidden border cursor-pointer transition-all ${
                               isSelected
-                                ? "border-[#C9A669] ring-3 ring-[#C9A669]/40 scale-[0.98]"
-                                : "border-[#E7E0D2] hover:border-[#C9A669]"
+                                ? "border-black ring-2 ring-black/10 scale-[0.98]"
+                                : "border-gray-200 hover:border-gray-400"
                             }`}
                           >
                             <img
@@ -2679,7 +2679,7 @@ export default function GalleryManager() {
 
                             {/* Checkmark for multi-select */}
                             {isSelected && (
-                              <div className="absolute top-1.5 right-1.5 p-1 rounded-full bg-[#C9A669] text-white">
+                              <div className="absolute top-1.5 right-1.5 p-1 rounded-full bg-black text-white shadow-xs">
                                 <Check size={12} />
                               </div>
                             )}
@@ -2688,15 +2688,15 @@ export default function GalleryManager() {
                       })}
                     </div>
                   ) : (
-                    <div className="py-16 text-center text-xs text-[#8C8270]">
+                    <div className="py-16 text-center text-xs text-gray-500">
                       No legacy studio photos found in media library.
                     </div>
                   )}
                 </div>
 
                 {/* Footer */}
-                <div className="pt-4 border-t border-[#E7E0D2] flex items-center justify-between shrink-0">
-                  <span className="text-xs text-[#8C8270]">
+                <div className="pt-4 border-t border-gray-100 flex items-center justify-between shrink-0">
+                  <span className="text-xs text-gray-500">
                     {mediaPickerMode === "cover"
                       ? "Click any photograph to set as album cover."
                       : `${selectedMediaUrls.length} photos selected.`}
@@ -2706,7 +2706,7 @@ export default function GalleryManager() {
                     <button
                       type="button"
                       onClick={() => setMediaLibraryModalOpen(false)}
-                      className="px-4 py-2 rounded-full border border-[#E7E0D2] text-xs font-semibold text-[#736B5E]"
+                      className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-xs"
                     >
                       Cancel
                     </button>
@@ -2715,7 +2715,7 @@ export default function GalleryManager() {
                         type="button"
                         disabled={selectedMediaUrls.length === 0}
                         onClick={handleConfirmMediaPhotos}
-                        className="px-5 py-2 rounded-full bg-[#1C1B19] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#C9A669] transition-colors disabled:opacity-40"
+                        className="px-5 py-2 rounded-xl bg-black text-white text-xs font-medium hover:bg-gray-800 transition-colors disabled:opacity-40 shadow-xs"
                       >
                         Add Selected ({selectedMediaUrls.length})
                       </button>

@@ -157,12 +157,61 @@ body::before {
   justify-content: center;
   padding: 0.75rem;
   overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
 }
 
 @media (min-width: 640px) {
   .admin-modal-overlay {
     padding: 1.5rem;
   }
+}
+
+/* ==========================================================
+   ADMIN PORTAL LIGHT THEME
+   Strictly scoped to .admin-portal so public website styles remain unchanged.
+========================================================== */
+.admin-portal {
+  font-family: var(--font-family-body);
+  color: #111827;
+}
+
+/* Ensure any admin modal backdrop overlays remain translucent dark with gentle blur,
+   covering the complete viewport (including sidebar/header) without white/light-grey bleed */
+.admin-portal.fixed.inset-0,
+.admin-portal.admin-modal-overlay,
+.admin-modal-overlay {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+.admin-portal h1,
+.admin-portal h2,
+.admin-portal h3,
+.admin-portal h4,
+.admin-portal h5,
+.admin-portal h6,
+.admin-portal .font-display {
+  font-family: var(--font-family-body) !important;
+}
+
+.admin-portal ::selection {
+  background: #111827;
+  color: #FFFFFF;
+}
+
+.admin-portal :focus-visible {
+  outline: 2px solid #111827 !important;
+  outline-offset: 2px !important;
+}
+
+.admin-portal input:focus-visible,
+.admin-portal textarea:focus-visible,
+.admin-portal select:focus-visible {
+  outline: 2px solid #111827 !important;
+  outline-offset: 1px !important;
 }
 
 .eyebrow {

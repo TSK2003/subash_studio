@@ -243,26 +243,26 @@ export default function Enquiries() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
+          <h2 className="text-xl sm:text-2xl font-display font-bold text-gray-900">
             Client Leads &amp; Enquiries
           </h2>
-          <p className="text-xs text-[#6F6A62] mt-0.5">
+          <p className="text-xs text-gray-500 mt-0.5">
             Website visitors interested in bookings, consultations, and studio quotes.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 bg-[#FDFBF7] border border-[#E4D3A6] rounded-full text-xs font-semibold text-[#9C7B3D]">
+          <span className="px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-semibold text-amber-800">
             {statusCounts.NEW} New Leads
           </span>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-[#E7E0D2] shadow-sm space-y-3">
+      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-gray-200 shadow-xs space-y-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8E867B]" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search enquiries by client name, phone, message..."
@@ -271,7 +271,7 @@ export default function Enquiries() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] placeholder:text-[#8E867B] focus:outline-none focus:border-[#C9A669]"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white"
             />
           </div>
 
@@ -282,7 +282,7 @@ export default function Enquiries() {
               setCurrentPage(1);
             }}
             aria-label="Filter by Service"
-            className="px-3 py-2 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:outline-none focus:border-[#C9A669]"
+            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:border-black focus:bg-white"
           >
             <option value="All">All Interested Services</option>
             {services.map((s) => (
@@ -294,8 +294,8 @@ export default function Enquiries() {
         </div>
 
         {/* Status Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-[#F8F6F2]">
-          <span className="text-[11px] text-[#6F6A62] font-semibold mr-1 shrink-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar pt-1 border-t border-gray-100">
+          <span className="text-[11px] text-gray-500 font-semibold mr-1 shrink-0">
             Status:
           </span>
           {STATUS_FILTERS.map(({ key, label }) => {
@@ -311,16 +311,16 @@ export default function Enquiries() {
                 }}
                 className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   isSelected
-                    ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm font-semibold"
-                    : "bg-[#F8F6F2] text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F3EFE8]"
+                    ? "bg-black text-white shadow-xs font-semibold"
+                    : "bg-gray-100 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
                 }`}
               >
                 <span>{label}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full ${
                     isSelected
-                      ? "bg-[#3D3A34] text-[#E4D3A6]"
-                      : "bg-[#E7E0D2] text-[#6F6A62]"
+                      ? "bg-gray-800 text-white"
+                      : "bg-gray-200 text-gray-700"
                   }`}
                 >
                   {count}
@@ -339,10 +339,10 @@ export default function Enquiries() {
           description="Incoming lead messages submitted through the website contact form will appear here."
         />
       ) : (
-        <div className="bg-white rounded-xl border border-[#E7E0D2] shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#FDFBF7] border-b border-[#E7E0D2] text-[#6F6A62]">
+              <thead className="bg-gray-50/80 border-b border-gray-200 text-gray-500">
                 <tr>
                   <th className="py-3.5 px-4 font-semibold">Client Name</th>
                   <th className="py-3.5 px-4 font-semibold">Service</th>
@@ -352,43 +352,43 @@ export default function Enquiries() {
                   <th className="py-3.5 px-4 text-right font-semibold">Connect &amp; Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F8F6F2]">
+              <tbody className="divide-y divide-gray-100">
                 {paginatedEnquiries.map((enq) => {
                   const isNew = enq.status === "New";
                   return (
                     <tr
                       key={enq.id}
                       onClick={() => handleOpenDetail(enq)}
-                      className={`hover:bg-[#FDFBF7] transition-colors cursor-pointer ${
-                        isNew ? "bg-[#FFFDF9] font-medium" : ""
+                      className={`hover:bg-gray-50/80 transition-colors cursor-pointer ${
+                        isNew ? "bg-blue-50/20 font-medium" : ""
                       }`}
                     >
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
                           {isNew && (
-                            <span className="w-2 h-2 rounded-full bg-[#C9A669] shrink-0 animate-ping" />
+                            <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0 animate-pulse" />
                           )}
                           <div>
-                            <div className="font-bold text-[#2B2B2B]">
+                            <div className="font-bold text-gray-900">
                               {enq.clientName || enq.name || "Anonymous"}
                             </div>
-                            <div className="text-[11px] text-[#6F6A62]">
+                            <div className="text-[11px] text-gray-500">
                               {enq.phone || "No phone"}
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="font-semibold text-[#9C7B3D]">
+                        <span className="font-semibold text-gray-900">
                           {enq.interestedService || enq.service || "General Inquiry"}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 max-w-xs">
-                        <p className="text-[#6F6A62] truncate text-xs">
+                        <p className="text-gray-500 truncate text-xs">
                           {enq.message || enq.notes || enq.clientMessage || "No message provided."}
                         </p>
                       </td>
-                      <td className="py-3.5 px-4 text-[#8E867B] whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-gray-400 whitespace-nowrap">
                         {enq.receivedDate || enq.createdAt || "Recent"}
                       </td>
                       <td className="py-3.5 px-4" onClick={(e) => e.stopPropagation()}>
@@ -410,7 +410,7 @@ export default function Enquiries() {
                           </a>
                           <a
                             href={`tel:${enq.phone || ""}`}
-                            className="p-1.5 bg-[#F8F6F2] text-[#2B2B2B] hover:bg-[#E7E0D2] rounded-lg transition-colors"
+                            className="p-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
                             title="Direct Call"
                           >
                             <PhoneCall className="w-4 h-4" />
@@ -418,7 +418,7 @@ export default function Enquiries() {
                           <button
                             type="button"
                             onClick={() => handleOpenDetail(enq)}
-                            className="p-1.5 text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-[#F8F6F2] rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                             title="View Full Enquiry"
                           >
                             <Eye className="w-4 h-4" />
@@ -426,7 +426,7 @@ export default function Enquiries() {
                           <button
                             type="button"
                             onClick={() => handleOpenEditModal(enq)}
-                            className="p-1.5 text-[#6F6A62] hover:text-[#9C7B3D] hover:bg-[#F8F6F2] rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                             title="Edit Enquiry"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -434,7 +434,7 @@ export default function Enquiries() {
                           <button
                             type="button"
                             onClick={() => handleDeletePrompt(enq)}
-                            className="p-1.5 text-[#6F6A62] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                             title="Delete Enquiry"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -448,7 +448,7 @@ export default function Enquiries() {
             </table>
           </div>
 
-          <div className="p-3 border-t border-[#E7E0D2]">
+          <div className="p-3 border-t border-gray-200">
             <Pagination
               currentPage={currentPage}
               totalItems={filteredEnquiries.length}
@@ -465,7 +465,7 @@ export default function Enquiries() {
           <AnimatePresence>
             {activeEnquiry && (
               <div
-                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+                className="admin-portal fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
                 role="dialog"
                 aria-modal="true"
               >
@@ -481,29 +481,29 @@ export default function Enquiries() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
+                  className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-200 z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
               {/* Fixed Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 shrink-0 bg-white">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-mono font-bold text-[#9C7B3D]">
+                    <span className="text-[11px] font-mono font-bold text-blue-600">
                       {activeEnquiry.id}
                     </span>
                     <StatusBadge status={activeEnquiry.status} size="sm" />
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
+                  <h3 className="text-xl sm:text-2xl font-display font-bold text-gray-900">
                     {activeEnquiry.clientName || activeEnquiry.name || "Anonymous"}
                   </h3>
-                  <p className="text-xs text-[#6F6A62]">
+                  <p className="text-xs text-gray-500">
                     Received on {activeEnquiry.receivedDate || activeEnquiry.createdAt || "Recent"}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setActiveEnquiry(null)}
-                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-900 rounded-xl hover:bg-gray-100 transition-colors"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -516,16 +516,16 @@ export default function Enquiries() {
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <a
                     href={`tel:${activeEnquiry.phone || ""}`}
-                    className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] hover:border-[#C9A669] text-[#2B2B2B] font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    className="p-2.5 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-900 font-semibold flex items-center justify-center gap-1.5 transition-all"
                   >
-                    <PhoneCall className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                    <PhoneCall className="w-3.5 h-3.5 text-gray-500" />
                     <span>{activeEnquiry.phone || "Call"}</span>
                   </a>
                   <a
                     href={`https://wa.me/${(activeEnquiry.phone || "").replace(/[^0-9]/g, "")}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-900 font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 font-semibold flex items-center justify-center gap-1.5 transition-all"
                   >
                     <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
                     <span>WhatsApp</span>
@@ -533,37 +533,37 @@ export default function Enquiries() {
                   {activeEnquiry.email ? (
                     <a
                       href={`mailto:${activeEnquiry.email}`}
-                      className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] hover:border-[#C9A669] text-[#2B2B2B] font-semibold flex items-center justify-center gap-1.5 transition-all truncate"
+                      className="p-2.5 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-900 font-semibold flex items-center justify-center gap-1.5 transition-all truncate"
                       title={activeEnquiry.email}
                     >
-                      <Mail className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                      <Mail className="w-3.5 h-3.5 text-gray-500" />
                       <span className="truncate">{activeEnquiry.email}</span>
                     </a>
                   ) : (
-                    <div className="p-2.5 rounded-xl border border-[#E7E0D2] bg-[#F8F6F2] text-[#8E867B] flex items-center justify-center gap-1.5 opacity-60">
-                      <Mail className="w-3.5 h-3.5 text-[#8E867B]" />
+                    <div className="p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-400 flex items-center justify-center gap-1.5 opacity-60">
+                      <Mail className="w-3.5 h-3.5 text-gray-400" />
                       <span>No Email</span>
                     </div>
                   )}
                 </div>
 
                 {/* Service & Event Info */}
-                <div className="p-4 rounded-xl bg-[#FDFBF7] border border-[#E7E0D2] space-y-2 text-xs">
+                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-[#6F6A62]">Interested Service:</span>
-                    <span className="font-bold text-[#2B2B2B]">
+                    <span className="text-gray-500">Interested Service:</span>
+                    <span className="font-bold text-gray-900">
                       {activeEnquiry.interestedService || activeEnquiry.service || "General Inquiry"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#6F6A62]">Proposed Date:</span>
-                    <span className="font-semibold text-[#2B2B2B]">
+                    <span className="text-gray-500">Proposed Date:</span>
+                    <span className="font-semibold text-gray-900">
                       {activeEnquiry.proposedDate || activeEnquiry.eventDate || "Not specified"}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#6F6A62]">Location:</span>
-                    <span className="font-semibold text-[#2B2B2B]">
+                    <span className="text-gray-500">Location:</span>
+                    <span className="font-semibold text-gray-900">
                       {activeEnquiry.location || activeEnquiry.venue || "Not specified"}
                     </span>
                   </div>
@@ -571,21 +571,21 @@ export default function Enquiries() {
 
                 {/* Client Message */}
                 <div className="space-y-1.5 text-xs">
-                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
+                  <span className="font-bold uppercase tracking-wider text-gray-500">
                     Client Inquiry Message
                   </span>
-                  <div className="p-4 rounded-xl bg-[#F8F6F2] border border-[#E7E0D2] text-[#2B2B2B] leading-relaxed text-sm whitespace-pre-wrap">
+                  <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 leading-relaxed text-sm whitespace-pre-wrap">
                     {(activeEnquiry.message || activeEnquiry.notes || activeEnquiry.clientMessage)?.trim() ? (
                       `"${(activeEnquiry.message || activeEnquiry.notes || activeEnquiry.clientMessage).trim()}"`
                     ) : (
-                      <span className="text-[#8E867B] italic">No message provided.</span>
+                      <span className="text-gray-400 italic">No message provided.</span>
                     )}
                   </div>
                 </div>
 
                 {/* Update Status */}
                 <div className="space-y-1.5 text-xs">
-                  <span className="font-bold uppercase tracking-wider text-[#6F6A62]">
+                  <span className="font-bold uppercase tracking-wider text-gray-500">
                     Update Status
                   </span>
                   <div className="flex flex-wrap gap-2">
@@ -596,8 +596,8 @@ export default function Enquiries() {
                         onClick={() => handleStatusChange(activeEnquiry.id, key)}
                         className={`px-3 py-1.5 rounded-xl font-semibold border transition-all ${
                           normalizeEnquiryStatus(activeEnquiry.status) === key
-                            ? "bg-[#2B2B2B] text-[#E4D3A6] border-[#2B2B2B]"
-                            : "bg-white text-[#6F6A62] border-[#E7E0D2] hover:bg-[#F8F6F2]"
+                            ? "bg-black text-white border-black"
+                            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
                         }`}
                       >
                         {label}
@@ -608,7 +608,7 @@ export default function Enquiries() {
               </div>
 
               {/* Fixed Footer */}
-              <div className="px-6 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-between shrink-0">
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between shrink-0">
                 <button
                   type="button"
                   onClick={() => {
@@ -624,7 +624,7 @@ export default function Enquiries() {
                   <button
                     type="button"
                     onClick={() => setActiveEnquiry(null)}
-                    className="px-5 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold text-xs transition-colors"
+                    className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-semibold text-xs transition-colors"
                   >
                     Close
                   </button>
@@ -635,7 +635,7 @@ export default function Enquiries() {
                       setActiveEnquiry(null);
                       handleOpenEditModal(enq);
                     }}
-                    className="px-5 py-2.5 bg-[#2B2B2B] text-[#E4D3A6] hover:bg-[#1C1B19] rounded-xl font-semibold text-xs transition-all shadow flex items-center gap-1.5"
+                    className="px-5 py-2.5 bg-black text-white hover:bg-gray-800 rounded-xl font-semibold text-xs transition-all shadow-xs flex items-center gap-1.5"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                     <span>Edit Enquiry</span>
@@ -655,7 +655,7 @@ export default function Enquiries() {
           <AnimatePresence>
             {editModalOpen && editingEnquiry && (
               <div
-                className="fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
+                className="admin-portal fixed inset-0 z-[99990] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-hidden"
                 role="dialog"
                 aria-modal="true"
               >
@@ -671,28 +671,28 @@ export default function Enquiries() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="relative w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-[#E7E0D2] z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
+                  className="relative w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-200 z-10 max-h-[calc(100dvh-48px)] sm:max-h-[calc(100dvh-64px)] my-auto flex flex-col overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                 >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EBE1] shrink-0 bg-white">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 shrink-0 bg-white">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-mono font-bold text-[#9C7B3D]">
+                    <span className="text-[11px] font-mono font-bold text-blue-600">
                       {editingEnquiry.id}
                     </span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#6F6A62]">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500">
                       Edit Lead &amp; Enquiry
                     </span>
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
+                  <h3 className="text-xl sm:text-2xl font-display font-bold text-gray-900">
                     Edit Enquiry Details
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={handleCloseEditModal}
-                  className="p-2 text-[#6F6A62] hover:text-[#2B2B2B] rounded-xl hover:bg-[#F8F6F2] transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-900 rounded-xl hover:bg-gray-100 transition-colors"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -705,7 +705,7 @@ export default function Enquiries() {
                   {/* Row 1: Client Name & Phone */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label htmlFor="enquiry-clientName" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="enquiry-clientName" className="font-semibold text-gray-700">
                         Client / Lead Name *
                       </label>
                       <input
@@ -716,9 +716,9 @@ export default function Enquiries() {
                         onChange={(e) =>
                           setEditFormData((prev) => ({ ...prev, clientName: e.target.value }))
                         }
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          editFormErrors.clientName ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          editFormErrors.clientName ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {editFormErrors.clientName && (
                         <p className="text-rose-600 text-[10px]">{editFormErrors.clientName}</p>
@@ -726,7 +726,7 @@ export default function Enquiries() {
                     </div>
 
                     <div className="space-y-1">
-                      <label htmlFor="enquiry-phone" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="enquiry-phone" className="font-semibold text-gray-700">
                         Phone Number *
                       </label>
                       <input
@@ -737,9 +737,9 @@ export default function Enquiries() {
                         onChange={(e) =>
                           setEditFormData((prev) => ({ ...prev, phone: e.target.value }))
                         }
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          editFormErrors.phone ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          editFormErrors.phone ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {editFormErrors.phone && (
                         <p className="text-rose-600 text-[10px]">{editFormErrors.phone}</p>
@@ -750,7 +750,7 @@ export default function Enquiries() {
                   {/* Row 2: Email & Interested Service */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label htmlFor="enquiry-email" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="enquiry-email" className="font-semibold text-gray-700">
                         Email Address
                       </label>
                       <input
@@ -761,9 +761,9 @@ export default function Enquiries() {
                         onChange={(e) =>
                           setEditFormData((prev) => ({ ...prev, email: e.target.value }))
                         }
-                        className={`w-full p-2.5 bg-[#F8F6F2] border ${
-                          editFormErrors.email ? "border-rose-400" : "border-[#E7E0D2]"
-                        } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none`}
+                        className={`w-full p-2.5 bg-gray-50 border ${
+                          editFormErrors.email ? "border-rose-400" : "border-gray-200"
+                        } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none`}
                       />
                       {editFormErrors.email && (
                         <p className="text-rose-600 text-[10px]">{editFormErrors.email}</p>
@@ -771,7 +771,7 @@ export default function Enquiries() {
                     </div>
 
                     <div className="space-y-1">
-                      <label htmlFor="enquiry-service" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="enquiry-service" className="font-semibold text-gray-700">
                         Interested Service
                       </label>
                       <select
@@ -780,7 +780,7 @@ export default function Enquiries() {
                         onChange={(e) =>
                           setEditFormData((prev) => ({ ...prev, interestedService: e.target.value }))
                         }
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                        className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none"
                       >
                         <option value="General Inquiry">General Inquiry</option>
                         {services.map((s) => (
@@ -795,7 +795,7 @@ export default function Enquiries() {
                   {/* Row 3: Proposed Date & Location */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label htmlFor="enquiry-eventDate" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="enquiry-eventDate" className="font-semibold text-gray-700">
                         Proposed / Event Date
                       </label>
                       <input
@@ -805,12 +805,12 @@ export default function Enquiries() {
                         onChange={(e) =>
                           setEditFormData((prev) => ({ ...prev, eventDate: e.target.value }))
                         }
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                        className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label htmlFor="enquiry-location" className="font-semibold text-[#6F6A62]">
+                      <label htmlFor="enquiry-location" className="font-semibold text-gray-700">
                         Location / Venue
                       </label>
                       <input
@@ -821,14 +821,14 @@ export default function Enquiries() {
                         onChange={(e) =>
                           setEditFormData((prev) => ({ ...prev, location: e.target.value }))
                         }
-                        className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                        className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none"
                       />
                     </div>
                   </div>
 
                   {/* Row 4: Status */}
                   <div className="space-y-1">
-                    <label className="font-semibold text-[#6F6A62]">Enquiry Status</label>
+                    <label className="font-semibold text-gray-700">Enquiry Status</label>
                     <div className="flex flex-wrap gap-2">
                       {STATUS_FILTERS.filter((s) => s.key !== "ALL").map(({ key, label }) => {
                         const isSelected = editFormData.status === key;
@@ -839,8 +839,8 @@ export default function Enquiries() {
                             onClick={() => setEditFormData((prev) => ({ ...prev, status: key }))}
                             className={`px-3 py-1.5 rounded-xl font-semibold border text-xs transition-all ${
                               isSelected
-                                ? "bg-[#2B2B2B] text-[#E4D3A6] border-[#2B2B2B]"
-                                : "bg-[#F8F6F2] text-[#6F6A62] border-[#E7E0D2] hover:bg-[#F3EFE8]"
+                                ? "bg-black text-white border-black"
+                                : "bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200"
                             }`}
                           >
                             {label}
@@ -852,7 +852,7 @@ export default function Enquiries() {
 
                   {/* Row 5: Message / Client Notes */}
                   <div className="space-y-1">
-                    <label htmlFor="enquiry-message" className="font-semibold text-[#6F6A62]">
+                    <label htmlFor="enquiry-message" className="font-semibold text-gray-700">
                       Client Message &amp; Notes *
                     </label>
                     <textarea
@@ -863,9 +863,9 @@ export default function Enquiries() {
                       onChange={(e) =>
                         setEditFormData((prev) => ({ ...prev, message: e.target.value }))
                       }
-                      className={`w-full p-3 bg-[#F8F6F2] border ${
-                        editFormErrors.message ? "border-rose-400" : "border-[#E7E0D2]"
-                      } rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none resize-none leading-relaxed`}
+                      className={`w-full p-3 bg-gray-50 border ${
+                        editFormErrors.message ? "border-rose-400" : "border-gray-200"
+                      } rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none resize-none leading-relaxed`}
                     />
                     {editFormErrors.message && (
                       <p className="text-rose-600 text-[10px]">{editFormErrors.message}</p>
@@ -874,25 +874,25 @@ export default function Enquiries() {
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 bg-[#FCFAF7] border-t border-[#E7E0D2] flex items-center justify-end gap-2 shrink-0">
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={handleCloseEditModal}
                     disabled={isSubmitting}
-                    className="px-5 py-2.5 rounded-xl border border-[#E7E0D2] text-[#6F6A62] hover:bg-[#F8F6F2] font-semibold text-xs transition-colors"
+                    className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 font-semibold text-xs transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 bg-[#2B2B2B] text-[#E4D3A6] hover:bg-[#1C1B19] rounded-xl font-semibold text-xs transition-all shadow flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-6 py-2.5 bg-black text-white hover:bg-gray-800 rounded-xl font-semibold text-xs transition-all shadow-xs flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {isSubmitting ? (
                       <span>Saving...</span>
                     ) : (
                       <>
-                        <CheckCircle className="w-4 h-4 text-[#E4D3A6]" />
+                        <CheckCircle className="w-4 h-4 text-white" />
                         <span>Save Changes</span>
                       </>
                     )}

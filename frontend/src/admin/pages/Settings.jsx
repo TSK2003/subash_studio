@@ -8,6 +8,7 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import ImageUploader from "../components/ImageUploader";
 import { useAdminAuth } from "../context/AdminAuthContext";
@@ -31,30 +32,30 @@ function PasswordCredentialsCard({
     <form
       id={formId}
       onSubmit={handleSaveSecurity}
-      className="bg-[#FAF8F5] rounded-xl sm:rounded-2xl border border-[#E7E0D2] p-4 sm:p-5 space-y-4"
+      className="bg-gray-50/70 rounded-xl sm:rounded-2xl border border-gray-200 p-4 sm:p-5 space-y-4"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 sm:pb-4 border-b border-[#E7E0D2] gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 sm:pb-4 border-b border-gray-200 gap-3">
         <div>
-          <h3 className="text-sm sm:text-base font-display font-bold text-[#2B2B2B]">
+          <h3 className="text-xs sm:text-sm font-semibold text-gray-900">
             Update Password &amp; Credentials
           </h3>
-          <p className="text-[11px] sm:text-xs text-[#6F6A62]">
+          <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5">
             Keep your studio administration portal protected.
           </p>
         </div>
         <button
           type="submit"
           disabled={savingPassword}
-          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 disabled:opacity-60 cursor-pointer shrink-0"
+          className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 text-xs font-medium flex items-center gap-1.5 shadow-xs transition-colors disabled:opacity-60 cursor-pointer shrink-0"
         >
-          <Lock className="w-3.5 h-3.5 text-[#E4D3A6]" />
+          <Lock className="w-3.5 h-3.5 text-gray-500" />
           <span>{savingPassword ? "Updating..." : "Change Password"}</span>
         </button>
       </div>
 
       <div className="space-y-3.5 text-xs">
         <div className="space-y-1">
-          <label className="font-semibold text-[#6F6A62]">Current Password</label>
+          <label className="font-medium text-gray-700">Current Password</label>
           <div className="relative">
             <input
               type={showCurrentPassword ? "text" : "password"}
@@ -63,12 +64,12 @@ function PasswordCredentialsCard({
               onChange={(e) =>
                 setSecurityForm({ ...securityForm, currentPassword: e.target.value })
               }
-              className="w-full p-2.5 pr-10 bg-white border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+              className="w-full p-2.5 pr-10 bg-white border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:outline-none transition-colors"
             />
             <button
               type="button"
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B] cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
               aria-label={
                 showCurrentPassword ? "Hide current password" : "Show current password"
               }
@@ -84,7 +85,7 @@ function PasswordCredentialsCard({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div className="space-y-1">
-            <label className="font-semibold text-[#6F6A62]">New Password</label>
+            <label className="font-medium text-gray-700">New Password</label>
             <div className="relative">
               <input
                 type={showNewPassword ? "text" : "password"}
@@ -93,12 +94,12 @@ function PasswordCredentialsCard({
                 onChange={(e) =>
                   setSecurityForm({ ...securityForm, newPassword: e.target.value })
                 }
-                className="w-full p-2.5 pr-10 bg-white border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+                className="w-full p-2.5 pr-10 bg-white border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:outline-none transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B] cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                 aria-label={showNewPassword ? "Hide new password" : "Show new password"}
               >
                 {showNewPassword ? (
@@ -111,7 +112,7 @@ function PasswordCredentialsCard({
           </div>
 
           <div className="space-y-1">
-            <label className="font-semibold text-[#6F6A62]">Confirm New Password</label>
+            <label className="font-medium text-gray-700">Confirm New Password</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -123,12 +124,12 @@ function PasswordCredentialsCard({
                     confirmPassword: e.target.value,
                   })
                 }
-                className="w-full p-2.5 pr-10 bg-white border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+                className="w-full p-2.5 pr-10 bg-white border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:outline-none transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867B] hover:text-[#2B2B2B] cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                 aria-label={
                   showConfirmPassword ? "Hide confirm password" : "Show confirm password"
                 }
@@ -277,28 +278,32 @@ export default function Settings() {
     addToast("Notification preferences updated.", "success");
   };
 
-
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
-          Admin &amp; Studio Settings
-        </h2>
-        <p className="text-xs text-[#6F6A62] mt-0.5">
-          Configure admin access credentials, studio business metadata, and alert preferences.
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-700 shadow-xs shrink-0">
+          <SettingsIcon className="w-5 h-5 text-gray-700" />
+        </div>
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+            Admin &amp; Studio Settings
+          </h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Configure admin access credentials, studio business metadata, and alert preferences.
+          </p>
+        </div>
       </div>
 
       {/* Tabs Bar */}
-      <div className="flex items-center gap-2 border-b border-[#E7E0D2] pb-2 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 border-b border-gray-200 pb-2 overflow-x-auto no-scrollbar">
         <button
           type="button"
           onClick={() => setActiveTab("profile")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
             currentTab === "profile"
-              ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
-              : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
+              ? "bg-black text-white shadow-xs"
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           }`}
         >
           <User className="w-4 h-4" />
@@ -308,10 +313,10 @@ export default function Settings() {
         <button
           type="button"
           onClick={() => setActiveTab("studio")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
             currentTab === "studio"
-              ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
-              : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
+              ? "bg-black text-white shadow-xs"
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           }`}
         >
           <Building className="w-4 h-4" />
@@ -321,10 +326,10 @@ export default function Settings() {
         <button
           type="button"
           onClick={() => setActiveTab("notifications")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
             currentTab === "notifications"
-              ? "bg-[#2B2B2B] text-[#E4D3A6] shadow-sm"
-              : "text-[#6F6A62] hover:text-[#2B2B2B] hover:bg-white"
+              ? "bg-black text-white shadow-xs"
+              : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           }`}
         >
           <Bell className="w-4 h-4" />
@@ -335,23 +340,23 @@ export default function Settings() {
       {/* Tab: Profile */}
       {currentTab === "profile" && (
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-[#E7E0D2] p-5 sm:p-6 lg:p-8 shadow-sm transition-all space-y-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 lg:p-8 shadow-xs space-y-6">
             {/* Top Card Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 sm:pb-6 border-b border-[#E7E0D2] gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 sm:pb-6 border-b border-gray-100 gap-4">
               <div>
-                <h3 className="text-xl sm:text-2xl font-display font-bold text-[#2B2B2B]">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">
                   Admin Profile Details
                 </h3>
-                <p className="text-xs sm:text-sm text-[#6F6A62] mt-0.5">
+                <p className="text-xs text-gray-500 mt-0.5">
                   Your director profile displayed across the admin portal and studio headers.
                 </p>
               </div>
               <button
                 type="submit"
                 form="admin-profile-form"
-                className="self-start sm:self-auto px-6 py-2.5 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer shrink-0"
+                className="self-start sm:self-auto px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 text-xs font-medium flex items-center gap-2 shadow-xs transition-colors cursor-pointer shrink-0"
               >
-                <Save className="w-4 h-4 text-[#E4D3A6]" />
+                <Save className="w-4 h-4" />
                 <span>Save Profile</span>
               </button>
             </div>
@@ -382,8 +387,8 @@ export default function Settings() {
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs sm:text-sm font-semibold text-[#2B2B2B] block">
-                        Admin Full Name <span className="text-[#9C7B3D]">*</span>
+                      <label className="text-xs font-medium text-gray-700 block">
+                        Admin Full Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -393,12 +398,12 @@ export default function Settings() {
                           setProfileForm({ ...profileForm, adminName: e.target.value })
                         }
                         placeholder="Enter admin name"
-                        className="w-full px-4 py-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs sm:text-sm text-[#2B2B2B] focus:border-[#C9A669] focus:bg-white focus:outline-none transition-all font-medium"
+                        className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none transition-colors"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs sm:text-sm font-semibold text-[#2B2B2B] block">
+                      <label className="text-xs font-medium text-gray-700 block">
                         Designation / Role
                       </label>
                       <input
@@ -408,13 +413,13 @@ export default function Settings() {
                           setProfileForm({ ...profileForm, role: e.target.value })
                         }
                         placeholder="e.g. Studio Director & Lead Photographer"
-                        className="w-full px-4 py-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs sm:text-sm text-[#2B2B2B] focus:border-[#C9A669] focus:bg-white focus:outline-none transition-all font-medium"
+                        className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none transition-colors"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs sm:text-sm font-semibold text-[#2B2B2B] block">
-                        Admin Email <span className="text-[#9C7B3D]">*</span>
+                      <label className="text-xs font-medium text-gray-700 block">
+                        Admin Email <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
@@ -424,12 +429,12 @@ export default function Settings() {
                           setProfileForm({ ...profileForm, email: e.target.value })
                         }
                         placeholder="admin@subashstudio.com"
-                        className="w-full px-4 py-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs sm:text-sm text-[#2B2B2B] focus:border-[#C9A669] focus:bg-white focus:outline-none transition-all font-medium"
+                        className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none transition-colors"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs sm:text-sm font-semibold text-[#2B2B2B] block">
+                      <label className="text-xs font-medium text-gray-700 block">
                         Phone Number
                       </label>
                       <input
@@ -439,7 +444,7 @@ export default function Settings() {
                           setProfileForm({ ...profileForm, phone: e.target.value })
                         }
                         placeholder="+91 93457 06609"
-                        className="w-full px-4 py-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs sm:text-sm text-[#2B2B2B] focus:border-[#C9A669] focus:bg-white focus:outline-none transition-all font-medium"
+                        className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none transition-colors"
                       />
                     </div>
                   </div>
@@ -461,8 +466,8 @@ export default function Settings() {
                 />
 
                 {/* 3. Bottom Helper Text */}
-                <div className="pt-3 border-t border-[#E7E0D2]/80">
-                  <p className="text-xs text-[#6F6A62]">
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">
                     Updates to your credentials and contact information apply immediately across the studio portal.
                   </p>
                 </div>
@@ -475,71 +480,71 @@ export default function Settings() {
       {/* Tab: Studio Business */}
       {currentTab === "studio" && (
         <form onSubmit={handleSaveStudio} className="space-y-6">
-          <div className="bg-white rounded-xl border border-[#E7E0D2] p-5 sm:p-6 shadow-sm space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E7E0D2]">
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-xs space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div>
-                <h3 className="text-lg font-display font-bold text-[#2B2B2B]">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">
                   Studio Legal &amp; Business Info
                 </h3>
-                <p className="text-xs text-[#6F6A62]">
-                  Registered company name, tax registration and default pricing currency.
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Registered company name, tax registration, and default pricing currency.
                 </p>
               </div>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95"
+                className="px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 text-xs font-medium flex items-center gap-2 shadow-xs transition-colors"
               >
-                <Save className="w-4 h-4 text-[#E4D3A6]" />
+                <Save className="w-4 h-4" />
                 <span>Save Studio Info</span>
               </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="space-y-1">
-                <label className="font-semibold text-[#6F6A62]">Registered Studio Name</label>
+              <div className="space-y-1.5">
+                <label className="font-medium text-gray-700 block">Registered Studio Name</label>
                 <input
                   type="text"
                   value={studioForm.studioName}
                   onChange={(e) =>
                     setStudioForm({ ...studioForm, studioName: e.target.value })
                   }
-                  className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-bold"
+                  className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none font-semibold transition-colors"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="font-semibold text-[#6F6A62]">Tagline</label>
+              <div className="space-y-1.5">
+                <label className="font-medium text-gray-700 block">Tagline</label>
                 <input
                   type="text"
                   value={studioForm.tagline}
                   onChange={(e) =>
                     setStudioForm({ ...studioForm, tagline: e.target.value })
                   }
-                  className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none transition-colors"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="font-semibold text-[#6F6A62]">GST / Tax Identification</label>
+              <div className="space-y-1.5">
+                <label className="font-medium text-gray-700 block">GST / Tax Identification</label>
                 <input
                   type="text"
                   value={studioForm.gstNumber}
                   onChange={(e) =>
                     setStudioForm({ ...studioForm, gstNumber: e.target.value })
                   }
-                  className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none transition-colors"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="font-semibold text-[#6F6A62]">Billing Currency</label>
+              <div className="space-y-1.5">
+                <label className="font-medium text-gray-700 block">Billing Currency</label>
                 <input
                   type="text"
                   value={studioForm.currency}
                   onChange={(e) =>
                     setStudioForm({ ...studioForm, currency: e.target.value })
                   }
-                  className="w-full p-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-xs text-[#2B2B2B] focus:border-[#C9A669] focus:outline-none font-medium"
+                  className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/10 focus:bg-white focus:outline-none font-medium transition-colors"
                 />
               </div>
             </div>
@@ -550,75 +555,74 @@ export default function Settings() {
       {/* Tab: Notifications */}
       {currentTab === "notifications" && (
         <form onSubmit={handleSaveNotifications} className="space-y-6">
-          <div className="bg-white rounded-3xl border border-[#E7E0D2] p-6 sm:p-8 shadow-sm space-y-6 max-w-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-[#E7E0D2]">
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 lg:p-8 shadow-xs space-y-6 max-w-2xl">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
               <div>
-                <h3 className="text-lg font-display font-bold text-[#2B2B2B]">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900">
                   Alert &amp; Lead Notification Triggers
                 </h3>
-                <p className="text-xs text-[#6F6A62]">
-                  Control SMS, WhatsApp and email triggers for new leads.
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Control WhatsApp and enquiry indicators for new leads.
                 </p>
               </div>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#2B2B2B] text-white hover:bg-[#1C1B19] text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95"
+                className="px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 text-xs font-medium flex items-center gap-2 shadow-xs transition-colors"
               >
-                <Save className="w-4 h-4 text-[#E4D3A6]" />
+                <Save className="w-4 h-4" />
                 <span>Save Alerts</span>
               </button>
             </div>
 
-            <div className="space-y-4 text-xs">
-              <label className="flex items-start gap-3 p-3.5 rounded-2xl border border-[#E7E0D2] hover:bg-[#FDFBF7] cursor-pointer transition-colors">
+            <div className="space-y-3.5 text-xs">
+              <label className="flex items-start gap-3 p-3.5 rounded-xl border border-gray-200 hover:bg-gray-50/70 cursor-pointer transition-colors bg-white">
                 <input
                   type="checkbox"
                   checked={notifForm.bookingAlerts}
                   onChange={(e) =>
                     setNotifForm({ ...notifForm, bookingAlerts: e.target.checked })
                   }
-                  className="mt-0.5 w-4 h-4 rounded text-[#9C7B3D] focus:ring-[#C9A669]"
+                  className="mt-0.5 w-4 h-4 rounded text-black focus:ring-black/20 accent-black"
                 />
                 <div>
-                  <span className="font-bold text-[#2B2B2B] block">New Shoot Booking Notifications</span>
-                  <span className="text-[#6F6A62]">Receive immediate app notification when a new shoot is scheduled.</span>
+                  <span className="font-semibold text-gray-900 block text-xs">New Shoot Booking Notifications</span>
+                  <span className="text-gray-500 text-xs mt-0.5 block">Receive immediate app notification when a new shoot is scheduled.</span>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 p-3.5 rounded-2xl border border-[#E7E0D2] hover:bg-[#FDFBF7] cursor-pointer transition-colors">
+              <label className="flex items-start gap-3 p-3.5 rounded-xl border border-gray-200 hover:bg-gray-50/70 cursor-pointer transition-colors bg-white">
                 <input
                   type="checkbox"
                   checked={notifForm.enquiryAlerts}
                   onChange={(e) =>
                     setNotifForm({ ...notifForm, enquiryAlerts: e.target.checked })
                   }
-                  className="mt-0.5 w-4 h-4 rounded text-[#9C7B3D] focus:ring-[#C9A669]"
+                  className="mt-0.5 w-4 h-4 rounded text-black focus:ring-black/20 accent-black"
                 />
                 <div>
-                  <span className="font-bold text-[#2B2B2B] block">Website Lead Enquiry Alerts</span>
-                  <span className="text-[#6F6A62]">Show red badge indicator in top navigation bar for unread leads.</span>
+                  <span className="font-semibold text-gray-900 block text-xs">Website Lead Enquiry Alerts</span>
+                  <span className="text-gray-500 text-xs mt-0.5 block">Show red badge indicator in top navigation bar for unread leads.</span>
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 p-3.5 rounded-2xl border border-[#E7E0D2] hover:bg-[#FDFBF7] cursor-pointer transition-colors">
+              <label className="flex items-start gap-3 p-3.5 rounded-xl border border-gray-200 hover:bg-gray-50/70 cursor-pointer transition-colors bg-white">
                 <input
                   type="checkbox"
                   checked={notifForm.whatsappAlerts}
                   onChange={(e) =>
                     setNotifForm({ ...notifForm, whatsappAlerts: e.target.checked })
                   }
-                  className="mt-0.5 w-4 h-4 rounded text-[#9C7B3D] focus:ring-[#C9A669]"
+                  className="mt-0.5 w-4 h-4 rounded text-black focus:ring-black/20 accent-black"
                 />
                 <div>
-                  <span className="font-bold text-[#2B2B2B] block">WhatsApp Lead Forwarding</span>
-                  <span className="text-[#6F6A62]">Forward incoming bride/groom enquiries directly to studio owner WhatsApp.</span>
+                  <span className="font-semibold text-gray-900 block text-xs">WhatsApp Lead Forwarding</span>
+                  <span className="text-gray-500 text-xs mt-0.5 block">Forward incoming bride/groom enquiries directly to studio owner WhatsApp.</span>
                 </div>
               </label>
             </div>
           </div>
         </form>
       )}
-
     </div>
   );
 }

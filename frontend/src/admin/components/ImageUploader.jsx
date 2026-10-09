@@ -149,7 +149,7 @@ export default function ImageUploader({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-semibold uppercase tracking-wider text-[#6F6A62]">
+        <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
           {label}
         </label>
         <div className="flex items-center gap-3">
@@ -157,19 +157,19 @@ export default function ImageUploader({
             <button
               type="button"
               onClick={() => setIsPreviewOpen(true)}
-              className="text-xs text-[#9C7B3D] hover:underline flex items-center gap-1 font-medium cursor-pointer"
+              className="text-xs text-gray-900 hover:underline flex items-center gap-1 font-medium cursor-pointer"
               title="View full-size photo"
             >
-              <Eye className="w-3.5 h-3.5" />
+              <Eye className="w-3.5 h-3.5 text-gray-700" />
               <span>View</span>
             </button>
           )}
           <button
             type="button"
             onClick={() => setUseUrlInput(!useUrlInput)}
-            className="text-xs text-[#9C7B3D] hover:underline flex items-center gap-1 font-medium cursor-pointer"
+            className="text-xs text-gray-900 hover:underline flex items-center gap-1 font-medium cursor-pointer"
           >
-            <Link2 className="w-3.5 h-3.5" />
+            <Link2 className="w-3.5 h-3.5 text-gray-700" />
             {useUrlInput ? "Upload File instead" : "Use Image URL"}
           </button>
         </div>
@@ -182,29 +182,29 @@ export default function ImageUploader({
             placeholder="https://example.com/photo.jpg or /images/..."
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
-            className="flex-1 px-4 py-2.5 bg-[#F8F6F2] border border-[#E7E0D2] rounded-xl text-sm focus:outline-none focus:border-[#C9A669]"
+            className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-gray-900"
           />
           <button
             type="button"
             onClick={handleApplyUrl}
-            className="px-4 py-2.5 bg-[#2B2B2B] text-white rounded-xl text-sm font-medium hover:bg-[#1C1B19]"
+            className="px-4 py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800"
           >
             Apply
           </button>
         </div>
       ) : value ? (
-        <div className={`relative group rounded-xl overflow-hidden border border-[#E7E0D2] bg-[#F8F6F2] transition-all duration-300 flex items-center justify-center ${containerAspectClasses}`}>
+        <div className={`relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-50 transition-all duration-300 flex items-center justify-center ${containerAspectClasses}`}>
           <img
             src={value}
             alt="Uploaded Preview"
             onClick={() => showView && setIsPreviewOpen(true)}
             className={`w-full h-full ${
-              isPortrait ? "object-contain bg-[#1C1B19]/5" : "object-cover"
+              isPortrait ? "object-contain bg-black/5" : "object-cover"
             } transition-all duration-300 ${showView ? "cursor-pointer" : ""}`}
           />
           {/* Orientation Badge Overlay */}
           <div className="absolute top-2.5 left-2.5 pointer-events-none z-10 transition-opacity">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#1C1B19]/85 backdrop-blur-md text-[#E4D3A6] border border-[#3D3A34]/50 shadow-sm">
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/75 backdrop-blur-md text-white border border-white/20 shadow-xs">
               <span
                 className={`inline-block border border-current rounded-[1px] ${
                   isPortrait ? "w-1.5 h-2.5" : "w-2.5 h-1.5"
@@ -215,8 +215,8 @@ export default function ImageUploader({
           </div>
           {uploading && (
             <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-xs gap-2 z-20 backdrop-blur-[2px]">
-              <Loader2 className="w-6 h-6 animate-spin text-[#C9A669]" />
-              <span className="font-medium text-[#FAF7F2]">{uploadStatus || "Optimizing image..."}</span>
+              <Loader2 className="w-6 h-6 animate-spin text-white" />
+              <span className="font-medium text-white">{uploadStatus || "Optimizing image..."}</span>
             </div>
           )}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">
@@ -224,17 +224,17 @@ export default function ImageUploader({
               <button
                 type="button"
                 onClick={() => setIsPreviewOpen(true)}
-                className="px-3 py-1.5 bg-white text-[#2B2B2B] rounded-lg text-xs font-medium shadow hover:bg-[#F8F6F2] flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                className="px-3 py-1.5 bg-white text-gray-900 rounded-lg text-xs font-medium shadow hover:bg-gray-100 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                 title="View full-size photo"
               >
-                <Eye className="w-3.5 h-3.5 text-[#9C7B3D]" />
+                <Eye className="w-3.5 h-3.5 text-gray-700" />
                 <span>View</span>
               </button>
             )}
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              className="px-3 py-1.5 bg-white text-[#2B2B2B] rounded-lg text-xs font-medium shadow hover:bg-[#F8F6F2] transition-all active:scale-95 cursor-pointer"
+              className="px-3 py-1.5 bg-white text-gray-900 rounded-lg text-xs font-medium shadow hover:bg-gray-100 transition-all active:scale-95 cursor-pointer"
             >
               Replace
             </button>
@@ -258,21 +258,21 @@ export default function ImageUploader({
           onClick={() => !uploading && inputRef.current?.click()}
           className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center ${
             dragActive
-              ? "border-[#C9A669] bg-[#FDFBF7]"
-              : "border-[#E7E0D2] hover:border-[#C9A669] bg-[#FDFBF7]/60"
+              ? "border-gray-900 bg-gray-50"
+              : "border-gray-300 hover:border-gray-400 bg-gray-50/50"
           }`}
         >
-          <div className="p-3 bg-[#F4EFE6] text-[#9C7B3D] rounded-full mb-3">
+          <div className="p-3 bg-blue-50 text-blue-600 rounded-full mb-3">
             {uploading ? (
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
               <UploadCloud className="w-6 h-6" />
             )}
           </div>
-          <p className="text-sm font-medium text-[#2B2B2B]">
+          <p className="text-sm font-medium text-gray-900">
             {uploading ? (uploadStatus || "Optimizing image...") : "Click to upload or drag & drop"}
           </p>
-          <p className="text-xs text-[#6F6A62] mt-1">{helpText}</p>
+          <p className="text-xs text-gray-500 mt-1">{helpText}</p>
           {uploadError && (
             <p className="text-xs text-amber-600 mt-2 font-medium">{uploadError}</p>
           )}

@@ -1,5 +1,6 @@
 import * as framesService from "../services/framesService.js";
 import { notifyDataChanged } from "../services/realtimeService.js";
+import { sendOrderNotifications } from "../services/emailService.js";
 
 // ==========================================
 // WOOD TYPES
@@ -220,7 +221,24 @@ export async function createOrder(req, res, next) {
       });
     }
 
-    res.status(201).json(order);
+    // Dispatch transactional order emails to customer and studio owner
+    // We await this so serverless and cloud Node runtimes don't terminate background promises prematurely
+    let emailNotifications = null;
+    try {
+      emailNotifications = await sendOrderNotifications({ order });
+      console.log(`[FramesController] Transactional email dispatch completed for #${order.id}:`, {
+        customer: emailNotifications.customer?.sent,
+        owner: emailNotifications.owner?.sent,
+      });
+    } catch (emailErr) {
+      console.error(`[FramesController] Non-fatal email dispatch error for #${order.id}:`, emailErr.message);
+      emailNotifications = { error: emailErr.message };
+    }
+
+    res.status(201).json({
+      ...order,
+      emailNotifications,
+    });
 
     // Real-time notification dispatched asynchronously right after successful commit
     setImmediate(() => {
@@ -271,3 +289,21 @@ export async function deleteOrder(req, res, next) {
     next(err);
   }
 }
+
+export async function resendOrderBill(req, res, next) {
+  try {
+    const order = await framesService.getOrderById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: "Frame order not found." });
+    }
+    const emailNotifications = await sendOrderNotifications({ order, force: true });
+    res.json({
+      success: true,
+      message: "Order bill notifications dispatched.",
+      emailNotifications,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
