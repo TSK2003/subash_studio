@@ -1569,6 +1569,16 @@ function RatioModal({ isOpen, mode, initialData, existingRatios = [], onClose, o
     }
   }, [isOpen, mode, initialData]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
@@ -1637,16 +1647,6 @@ function RatioModal({ isOpen, mode, initialData, existingRatios = [], onClose, o
       setIsSaving(false);
     }
   };
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
 
   return typeof document !== "undefined" && createPortal(
     <div

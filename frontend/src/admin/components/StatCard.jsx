@@ -5,7 +5,7 @@ export default function StatCard({
   trend,
   trendPositive = true,
   description,
-  accent = "blue",
+  accent: _accent = "blue",
   onClick,
 }) {
   // Uniform neutral badge palette matching approved reference design
